@@ -31,3 +31,8 @@ export type EleventyDirs = {
 	layouts?: string;
 	output: string;
 };
+
+export interface EleventyJavascriptClassTemplate {
+	data<T>(): (() => T | Promise<T>) | T;
+	render(props: Awaited<this["data"]>): string;
+}

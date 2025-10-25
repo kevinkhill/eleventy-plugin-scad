@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8"/>
-        <title>STL Viewer</title>
+        <title>{{ stlFile }}</title>
         {% threejs_importmap %}
         {% w3_theme_css %}
         <style>
@@ -17,9 +17,13 @@
                 padding: 0 2rem;
                 box-sizing: border-box;
                 overflow: auto;
-                /* background: #f7f7f7; */
+                & h1 {
+                    font-size: 3rem;
+                    margin: 1rem 0;
+                }
                 & table tr td:first-child {
                     text-align: right;
+                    padding-right: 5px;
                 }
             }
             #viewer {
@@ -57,7 +61,7 @@
                     </td>
                 </tr>
             </table>
-            <h2>File Content</h2>
+            <h4>File Content</h4>
             <pre>{{ content | safe }}</pre>
         </div>
 
@@ -72,10 +76,6 @@
             import GUI from 'https://cdn.jsdelivr.net/npm/lil-gui@0.21/+esm';
 
             const loader = new STLLoader();
-            const material = new THREE.MeshPhongMaterial({
-                // color: THREE.Color.NAMES.skyblue
-                color: 0x5588ff
-            });
             const container = document.getElementById('viewer');
 
             let renderer,
@@ -85,40 +85,43 @@
 
             function setupRenderer() {
                 renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
-                renderer.setClearColor(0xffffff, 0);
                 renderer.setSize(container.clientWidth, container.clientHeight);
+                renderer.setClearColor(0xffffff, 0);
                 container.appendChild(renderer.domElement);
             }
 
-            function setupCamera([x, y, z] = [8, 8, 8]) {
+            function setupCameraAndControls([x, y, z] = [8, 8, 8]) {
                 const fov = 60;
                 const aspect = container.clientWidth / container.clientHeight;
                 camera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 1000);
                 camera
                     .position
                     .set(x, y, z);
-            }
-
-            function setupControls() {
                 controls = new OrbitControls(camera, renderer.domElement);
             }
 
             function setupScene() {
+                scene = new THREE.Scene();
+                // scene.background = new THREE.Color(0x000000);
+
                 const roomLight = new THREE.AmbientLight(0x888888);
+                scene.add(roomLight);
+
                 const spotLight = new THREE.DirectionalLight(0xffffff, 1);
                 spotLight
                     .position
                     .set(24, 48, 100);
-
-                scene = new THREE.Scene();
-                // scene.background = new THREE.Color(0x000000);
-                scene.add(roomLight);
                 scene.add(spotLight);
             }
 
+            function renderScene() {
+                renderer.render(scene, camera);
+            }
+
             function loadSTL(stlUrl) {
+                const material = new THREE.MeshPhongMaterial({color: 0x5588ff});
+
                 loader.load(stlUrl, (geometry) => {
-                    const mesh = new THREE.Mesh(geometry, material);
                     const center = new THREE.Vector3();
 
                     geometry.computeBoundingBox();
@@ -128,21 +131,10 @@
                         .negate();
                     geometry.translate(center.x, center.y, center.z);
 
+                    const mesh = new THREE.Mesh(geometry, material);
+
                     scene.add(mesh);
                 });
-            }
-
-            function setupResizeHandler() {
-                window.addEventListener('resize', () => {
-                    const {clientHeight, clientWidth} = container;
-                    renderer.setSize(clientWidth, clientHeight);
-                    camera.aspect = clientWidth / clientHeight;
-                    camera.updateProjectionMatrix();
-                });
-            }
-
-            function renderScene() {
-                renderer.render(scene, camera);
             }
 
             function setupGUI() {
@@ -165,6 +157,15 @@
                 cameraFolder.add(cameraPos, "z", 0, 100, 1);
             }
 
+            function setupResizeHandler() {
+                window.addEventListener('resize', () => {
+                    const {clientHeight, clientWidth} = container;
+                    renderer.setSize(clientWidth, clientHeight);
+                    camera.aspect = clientWidth / clientHeight;
+                    camera.updateProjectionMatrix();
+                });
+            }
+
             function animate() {
                 requestAnimationFrame(animate);
                 controls.update();
@@ -173,12 +174,11 @@
 
             function init() {
                 setupRenderer();
-                setupCamera();
-                setupControls();
                 setupScene();
+                setupCameraAndControls();
+                setupResizeHandler();
                 setupGUI();
                 loadSTL({% stl_url page.fileSlug %});
-                setupResizeHandler();
                 animate();
             }
 

@@ -4,6 +4,8 @@ import type { EleventyConfig, PluginOptions } from "../types";
 
 export const DEFAULT_THREE_JS_VERSION = "0.180.0";
 
+export const DEFAULT_LIL_GUI_VERSION = "0.21";
+
 /**
  * Helper Shortcodes for generating pages from scad templates
  */
@@ -43,8 +45,8 @@ export function addShortcodes(
 	 * {% threejs_importmap %}
 	 * {% threejs_importmap "1.2.3" %}
 	 */
-	eleventyConfig.addShortcode("threejs_importmap", (arg1: string) => {
-		const v = arg1.length > 0 ? arg1 : DEFAULT_THREE_JS_VERSION;
+	eleventyConfig.addShortcode("threejs_importmap", (version: string) => {
+		const v = version.length > 0 ? version : DEFAULT_THREE_JS_VERSION;
 		return `\
 		<script type="importmap">
 			{

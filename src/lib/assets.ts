@@ -6,6 +6,9 @@ import { debug } from "./debug";
 let assetPath: string = "";
 
 export function getAssetPath() {
+	if (assetPath === "") {
+		throw new Error(`"assetPath" is not set, was "ensureAssetPath()" called?`);
+	}
 	return assetPath;
 }
 
@@ -26,8 +29,11 @@ export function ensureAssetPath() {
 	}
 }
 
+/**
+ * Load an asset file from the bundle
+ */
 export function getAssetFile(file: string) {
-	const resPath = path.join(assetPath, file);
+	const resPath = path.join(getAssetPath(), file);
 	debug(`loading asset "%s`, resPath);
 	return readFileSync(resPath, "utf8");
 }

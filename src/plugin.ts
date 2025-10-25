@@ -12,11 +12,10 @@ import {
 	DOT_SCAD,
 	DOT_STL,
 	PluginOptionsSchema,
-	registerEventHandlers,
 	SCAD_EXT,
 	scad2stl,
 } from "./core";
-import { ensureAssetPath, getLogger, startTimer } from "./lib";
+import { createScadLogger, ensureAssetPath, startTimer } from "./lib";
 import type {
 	EleventyConfig,
 	EleventyDirs,
@@ -44,25 +43,24 @@ export default function (
 			`[${name}] WARN Eleventy plugin compatibility: ${(e as Error).message}`,
 		);
 	}
+
 	ensureAssetPath();
-	const logger = getLogger(eleventyConfig);
+	// registerEventHandlers(eleventyConfig);
+	const _log = createScadLogger(eleventyConfig);
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
 
 	if (parsedOptions.error) {
-		logger(red("Options Error"));
-		logger(prettifyError(parsedOptions.error));
+		_log(red("Options Error"));
+		_log(prettifyError(parsedOptions.error));
 		process.exit();
 	}
 
 	const { launchPath, layout, collectionPage, noSTL, verbose, silent, theme } =
 		parsedOptions.data;
 
-	// Wrapping logger to make it able to be silenced
-	const log: typeof logger = (arg) => {
-		if (!silent) logger(arg);
-	};
+	// Wrap _log to make it able to be silenced
+	const log: typeof _log = (arg) => !silent && _log(arg);
 
-	// registerEventHandlers(eleventyConfig);
 	logPluginReadyMessage(log, parsedOptions.data);
 
 	/**

@@ -1,10 +1,9 @@
 import { spawn } from "node:child_process";
 import { debug } from "../lib";
 
-type ProcessedScadFile = {
-	outLines: string[];
-	errLines: string[];
-	exitCode: number | null;
+type ScadExportResult = {
+	output: string[];
+	ok: boolean;
 };
 
 let workerId = 0;
@@ -15,51 +14,38 @@ let workerId = 0;
 export async function scad2stl(
 	launchPath: string,
 	files: { in: string; out: string },
-): Promise<{ output: string[]; ok: boolean }> {
+): Promise<ScadExportResult> {
 	const debugWorker = debug.extend(`worker${workerId++}`);
 
-	return new Promise<{ output: string[]; ok: boolean }>((resolve, reject) => {
-		const output: string[] = [];
-		const scad = spawn(launchPath, ["--o", files.out, files.in]);
-		debugWorker("spawned %s", launchPath);
+	debugWorker("spawned %s", launchPath);
+	debugWorker("input: %s", files.in);
+	debugWorker("output: %s", files.out);
 
-		scad.stdout.on("data", (data) => {
-			debugWorker("[stdout] %s", data.toString());
-		});
+	const { promise, resolve, reject } =
+		Promise.withResolvers<ScadExportResult>();
 
-		scad.stderr.on("data", (data) => {
-			const lines = String(data).split("\n");
-			lines.forEach((line) => void debugWorker("[stderr] %s", line));
-			output.push(data.toString());
-		});
+	const scad = spawn(launchPath, ["--o", files.out, files.in]);
+	const output: string[] = [];
 
-		scad.on("error", (err) => {
-			debugWorker("[ERROR] %s", err.message);
-			reject({ output: err, ok: false });
-		});
-
-		scad.on("close", (exitCode) => {
-			debugWorker("process closed");
-			resolve({ output, ok: exitCode === 0 });
-		});
+	scad.stdout.on("data", (data) => {
+		debugWorker("[stdout] %s", data.toString());
 	});
-}
 
-/**
- * Generate an `.stl` from a given `.scad` file
- */
-export async function scad2stl__v1(
-	launchPath: string,
-	files: { in: string; out: string },
-) {
-	return new Promise<ProcessedScadFile>((resolve, reject) => {
-		const outLines: string[] = [];
-		const errLines: string[] = [];
-
-		const scad = spawn(launchPath, ["--o", files.out, files.in]);
-		scad.stdout.on("data", (data) => outLines.push(data.toString()));
-		scad.stderr.on("data", (data) => errLines.push(data.toString()));
-		scad.on("error", (err) => reject(err));
-		scad.on("close", (exitCode) => resolve({ outLines, errLines, exitCode }));
+	scad.stderr.on("data", (data) => {
+		const lines = String(data).split("\n");
+		lines.forEach((line) => void debugWorker("[stderr] %s", line));
+		output.push(data.toString());
 	});
+
+	scad.on("error", (err) => {
+		debugWorker("!ERROR! %s", err.message);
+		reject({ output: err, ok: false });
+	});
+
+	scad.on("close", (exitCode) => {
+		debugWorker("process closed");
+		resolve({ output, ok: exitCode === 0 });
+	});
+
+	return promise;
 }
