@@ -9,6 +9,7 @@ export type ScadTemplateData = {
 	layout: string;
 	title: string;
 	tags: string[];
+	slug: string;
 	scadFile: string;
 	stlFile: string;
 };

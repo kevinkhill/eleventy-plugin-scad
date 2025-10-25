@@ -5,11 +5,11 @@ import z from "zod";
 /**
  * Eleventy OpenSCAD Plugin Options
  *
- * - **launchPath**: Location of the OpenSCAD executable
+ * - **launchPath**: Location of the OpenSCAD executable (required)
  * - **layout**: Use a custom layout for the scad files
+ * - **collectionPage**: Set `true` to generate a listing page from `collections.scad`
  * - **verbose**: Set `true` to view the compilation output from OpenSCAD
  * - **noSTL**: Set `true` to skip generating STLs
- * - **noListing**: Set `true` to skip generating a listing page from `collections.scad`
  */
 export default z.object({
 	launchPath: z.string().refine((val) => {
@@ -17,6 +17,10 @@ export default z.object({
 		return true;
 	}),
 	layout: z.string().optional().nullish(),
+	collectionPage: z
+		.boolean()
+		.optional()
+		.default(parseBooleanEnv(env.ELEVENTY_SCAD_COLLECTION_PAGE, true)),
 	verbose: z
 		.boolean()
 		.optional()
@@ -25,12 +29,11 @@ export default z.object({
 		.boolean()
 		.optional()
 		.default(parseBooleanEnv(env.ELEVENTY_SCAD_NO_STL, false)),
-	noListing: z
-		.boolean()
-		.optional()
-		.default(parseBooleanEnv(env.ELEVENTY_SCAD_NO_LISTING, true)),
 });
 
+/**
+ * Helper function to get default values if set via envvars
+ */
 function parseBooleanEnv(val: unknown, defaultVal: boolean): boolean {
 	if (typeof val === "boolean") return val;
 	if (typeof val === "string") {

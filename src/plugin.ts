@@ -1,12 +1,12 @@
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
-import { stripVTControlCharacters } from "node:util";
 import { blue, bold, gray, green, red } from "yoctocolors";
+import { prettifyError } from "zod";
 import { version } from "../package.json" with { type: "json" };
 import {
 	addBuiltinScadLayoutVirtualTemplate,
 	addScadCollectionVirtualTemplate,
-	createOptionParser,
+	PluginOptionsSchema,
 	registerShortcodes,
 	scad2stl,
 } from "./core";
@@ -32,17 +32,26 @@ export default function (
 	options: MaybePluginOptions,
 ) {
 	const log = getLogger(eleventyConfig);
-	const parseOptions = createOptionParser({ logger: log });
-	const parsedOptions = parseOptions(options);
-	const { launchPath, layout, noSTL, noListing, verbose } = parsedOptions;
+	const parsedOptions = PluginOptionsSchema.safeParse(options);
 
-	log([
-		green("Plugin Ready"),
+	if (parsedOptions.error) {
+		log(red("Options Error"));
+		log(prettifyError(parsedOptions.error));
+		process.exit();
+	}
+
+	const { launchPath, layout, collectionPage, noSTL, verbose } =
+		parsedOptions.data;
+
+	const initLog = [
+		green("Ready"),
 		gray(`(v${version})`),
 		verbose ? green("+verbose") : "",
 		noSTL ? red("-noSTL") : "",
-		noListing ? red("-noListing") : "",
-	]);
+		!collectionPage ? red("-collectionPage") : "",
+	];
+
+	log(initLog.join(" ").replaceAll(/\s+/g, " "));
 
 	/**
 	 * Handy shortcodes for building up STL renderers
@@ -57,7 +66,7 @@ export default function (
 	/**
 	 * Add template file that lists all the collected `.scad` files
 	 */
-	if (!noListing) {
+	if (collectionPage) {
 		addScadCollectionVirtualTemplate(eleventyConfig);
 	}
 
@@ -80,6 +89,7 @@ export default function (
 			return {
 				layout: layout ?? DEFAULT_SCAD_LAYOUT,
 				tags: ["scad"],
+				slug: filename.replace(DOT_SCAD, ""),
 				title: filename,
 				scadFile: inputPath,
 				stlFile: filename.replace(DOT_SCAD, DOT_STL),
