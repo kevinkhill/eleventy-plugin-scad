@@ -1,15 +1,15 @@
 import { existsSync } from "node:fs";
+import { env } from "node:process";
 import z from "zod";
-
-const ELEVENTY_SCAD_NO_STL = process.env.ELEVENTY_SCAD_NO_STL;
-const ELEVENTY_SCAD_NO_LISTING = process.env.ELEVENTY_SCAD_NO_LISTING;
 
 /**
  * Eleventy OpenSCAD Plugin Options
  *
  * - **launchPath**: Location of the OpenSCAD executable
  * - **layout**: Use a custom layout for the scad files
+ * - **verbose**: Set `true` to view the compilation output from OpenSCAD
  * - **noSTL**: Set `true` to skip generating STLs
+ * - **noListing**: Set `true` to skip generating a listing page from `collections.scad`
  */
 export default z.object({
 	launchPath: z.string().refine((val) => {
@@ -17,14 +17,26 @@ export default z.object({
 		return true;
 	}),
 	layout: z.string().optional().nullish(),
+	verbose: z
+		.boolean()
+		.optional()
+		.default(parseBooleanEnv(env.ELEVENTY_SCAD_VERBOSE, false)),
 	noSTL: z
 		.boolean()
 		.optional()
-		.default(ELEVENTY_SCAD_NO_STL ? Boolean(ELEVENTY_SCAD_NO_STL) : false),
+		.default(parseBooleanEnv(env.ELEVENTY_SCAD_NO_STL, false)),
 	noListing: z
 		.boolean()
 		.optional()
-		.default(
-			ELEVENTY_SCAD_NO_LISTING ? Boolean(ELEVENTY_SCAD_NO_LISTING) : false,
-		),
+		.default(parseBooleanEnv(env.ELEVENTY_SCAD_NO_LISTING, true)),
 });
+
+function parseBooleanEnv(val: unknown, defaultVal: boolean): boolean {
+	if (typeof val === "boolean") return val;
+	if (typeof val === "string") {
+		const v = val.trim().toLowerCase();
+		if (["true", "1"].includes(v)) return true;
+		if (["false", "0"].includes(v)) return false;
+	}
+	return defaultVal;
+}

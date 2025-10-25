@@ -21,19 +21,21 @@
     "types": "./dist/index.d.ts",
     "default": "./dist/index.js"
   },
+  "main": "./dist/index.js",
   "files": [
     "dist",
     "_layouts",
     "_includes"
   ],
-  "main": "./dist/index.js",
   "scripts": {
     "build": "tsdown",
-    "clean": "rm -rf dist",
-    "dev": "tsdown --watch ./src",
+    "clean": "rm -rvf ./dist/*",
+    "clean-test": "rm -rvf ./test/_11ty/output/*",
+    "dev": "npm run start",
     "release": "bumpp && npm publish",
+    "serve-test": "cd ./test/_11ty && eleventy --serve",
+    "start": "tsdown --watch ./src",
     "test": "vitest",
-    "serve-test": "cd test/_11ty && eleventy --serve",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

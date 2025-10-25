@@ -12,12 +12,6 @@ export default function (eleventyConfig) {
   addOpenSCADPlugin(eleventyConfig, {
     launchPath: SCAD_BIN,
     noListing: true,
+    verbose: true,
   });
 }
-
-// export const config = {
-//   dir: {
-//     input: "input",
-//     output: "output",
-//   },
-// };

@@ -6,12 +6,11 @@ export type MaybePluginOptions = z.input<typeof PluginOptionsSchema>;
 export type PluginOptions = z.infer<typeof PluginOptionsSchema>;
 
 export type ScadTemplateData = {
+	layout: string;
 	title: string;
+	tags: string[];
 	scadFile: string;
 	stlFile: string;
-	stlUrl: string;
-	layout: string;
-	tags: string[];
 };
 
 export type FullPageData = EleventyScope &
@@ -21,3 +20,13 @@ export type FullPageData = EleventyScope &
 			scad: ScadTemplateData[];
 		};
 	};
+
+export type EleventyDirs = {
+	input: string;
+	inputFile?: string;
+	inputGlob?: string;
+	data: string;
+	includes: string;
+	layouts?: string;
+	output: string;
+};

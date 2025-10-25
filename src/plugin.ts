@@ -1,4 +1,6 @@
-import { basename } from "node:path";
+import { mkdir } from "node:fs/promises";
+import path from "node:path";
+import { stripVTControlCharacters } from "node:util";
 import { blue, bold, gray, green, red } from "yoctocolors";
 import { version } from "../package.json" with { type: "json" };
 import {
@@ -13,6 +15,7 @@ import { getLogger } from "./lib/logger";
 import { startTimer } from "./lib/timer";
 import type {
 	EleventyConfig,
+	EleventyDirs,
 	FullPageData,
 	MaybePluginOptions,
 	ScadTemplateData,
@@ -31,11 +34,12 @@ export default function (
 	const log = getLogger(eleventyConfig);
 	const parseOptions = createOptionParser({ logger: log });
 	const parsedOptions = parseOptions(options);
-	const { launchPath, layout, noSTL, noListing } = parsedOptions;
+	const { launchPath, layout, noSTL, noListing, verbose } = parsedOptions;
 
 	log([
 		green("Plugin Ready"),
 		gray(`(v${version})`),
+		verbose ? green("+verbose") : "",
 		noSTL ? red("-noSTL") : "",
 		noListing ? red("-noListing") : "",
 	]);
@@ -71,37 +75,15 @@ export default function (
 		/**
 		 * Data provided to the layout & page of a `.scad` file template
 		 */
-		getData(inputPath: string): Partial<FullPageData> {
-			const inputDirName = eleventyConfig.directoryAssignments.input;
-			const outputDirName = eleventyConfig.dir.output;
-			log(`inputDirName=${inputDirName}`);
-			log(`outputDirName=${outputDirName}`);
-			// console.dir(eleventyConfig, { depth: 1 });
-
-			const filename = basename(inputPath);
-			const fileSlug = filename.replace(DOT_SCAD, "");
-
-			const outFile = inputPath
-				.replace(inputDirName, outputDirName)
-				.replace(filename, `${fileSlug}/${filename}`)
-				.replace(DOT_SCAD, DOT_STL);
-
-			const outFileUrl = outFile
-				.replace(/^\.\/?/, "")
-				.replace(outputDirName, "");
-
-			const scadData: ScadTemplateData = {
+		getData(inputPath: string) {
+			const filename = path.basename(inputPath);
+			return {
 				layout: layout ?? DEFAULT_SCAD_LAYOUT,
 				tags: ["scad"],
 				title: filename,
 				scadFile: inputPath,
-				stlFile: outFile,
-				stlUrl: outFileUrl,
-			};
-			log("Collected Data");
-			log(JSON.stringify(scadData));
-
-			return scadData;
+				stlFile: filename.replace(DOT_SCAD, DOT_STL),
+			} satisfies ScadTemplateData;
 		},
 		/**
 		 * Compile `.scad` files into `.stl`
@@ -110,23 +92,33 @@ export default function (
 			if (noSTL) return () => inputContent;
 
 			return async (data: FullPageData) => {
-				console.log("PAGE DATA", data);
+				//@ts-expect-error This does exist but my `.d.ts` is not working right
+				const dirs = data.eleventy?.directories as EleventyDirs;
+				const writeDir = path.join(dirs.output, data.page.fileSlug);
+
+				// This was added because writing of the template actually creates the dir
+				// so trying to write the STL to the same location before the template was failing
+				await mkdir(writeDir, { recursive: true });
+
 				const action = noSTL ? blue("Would write") : "Writing";
 				log(`${action} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
 
 				const stopTimer = startTimer();
 				const { output, ok } = await scad2stl(launchPath, {
 					in: data.scadFile,
-					out: data.stlFile,
+					out: path.join(writeDir, data.stlFile),
 				});
 				const { duration } = stopTimer();
 				if (ok) {
-					for (const line of output) {
-						log(line);
+					if (verbose) {
+						const lines = output.flatMap((line) => line.split("\n"));
+						for (const line of lines) {
+							log(gray(`\t${line}`));
+						}
 					}
 					log(
 						green(
-							`Wrote ${bold(basename(data.stlFile))} in ${bold(duration.toFixed(2))} seconds`,
+							`Wrote ${bold(data.stlFile)} in ${bold(duration.toFixed(2))} seconds`,
 						),
 					);
 				} else {
@@ -141,11 +133,11 @@ export default function (
 		},
 	});
 
-	eleventyConfig.on("eleventy.after", ({ dir, runMode }) => {
-		log("eleventy.after");
-		console.log("Resolved directories:", dir);
-		console.log("Output directory:", dir.output);
-		console.log("runMode:", runMode);
-		// Now you can use dir.output in your plugin logic
-	});
+	// eleventyConfig.on("eleventy.after", ({ dir, runMode }) => {
+	// 	log("eleventy.after");
+	// 	console.log("Resolved directories:", dir);
+	// 	console.log("Output directory:", dir.output);
+	// 	console.log("runMode:", runMode);
+	// 	// Now you can use dir.output in your plugin logic
+	// });
 }
