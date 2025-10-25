@@ -21,6 +21,11 @@
     "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
+  "files": [
+    "eleventy.d.ts",
+    "tsdown.config.ts",
+    "vitest.config.ts"
+  ],
   "include": [
     "src"
   ],
