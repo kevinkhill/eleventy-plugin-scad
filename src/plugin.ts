@@ -24,8 +24,11 @@ import type {
 
 /**
  * Eleventy Plugin for OpenSCAD
+ *
+ * @param {EleventyConfig} eleventyConfig
+ * @param {MaybePluginOptions} options
  */
-export function EleventyPluginOpenSCAD(
+export default function (
 	eleventyConfig: EleventyConfig,
 	options: MaybePluginOptions,
 ) {
@@ -34,13 +37,11 @@ export function EleventyPluginOpenSCAD(
 	const parsedOptions = parseOptions(options);
 	const { launchPath, layout, noSTL } = parsedOptions;
 
-	log(
-		[
-			green("Plugin Ready"),
-			gray(`(v${version})`),
-			noSTL ? red("(STLs disabled)") : "",
-		].join(" "),
-	);
+	log([
+		green("Plugin Ready"),
+		gray(`(v${version})`),
+		noSTL ? red("(STLs disabled)") : "",
+	]);
 
 	registerTemplates(eleventyConfig);
 	registerShortcodes(eleventyConfig);
