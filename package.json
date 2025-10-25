@@ -1,37 +1,51 @@
 {
   "name": "11ty-plugin-openscad",
   "version": "0.1.0",
-  "description": "",
-  "keywords": [],
+  "description": "Eleventy plugin to treat SCAD files as templates that need rendering to STL and showcased",
+  "keywords": [
+    "eleventy",
+    "11ty",
+    "openscad"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/khill-fbmc/11ty-plugin-openscad"
   },
-  "license": "ISC",
+  "license": "UNLICENSED",
   "author": {
     "name": "Kevin Hill",
     "email": "kevin.hill@fortunabmc.com"
   },
   "type": "module",
   "exports": {
+    "types": "./dist/index.d.ts",
     "default": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "_layouts",
+    "_includes"
+  ],
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsdown",
+    "clean": "rm -rf dist",
     "dev": "tsdown --watch",
     "release": "bumpp && npm publish",
     "test": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "11ty.ts": "^0.0.6",
-    "yoctocolors": "^2.1.2",
-    "zod": "^4.1.11"
+    "11ty.ts": "0.0.6",
+    "find-up": "8.0.0",
+    "rollup-plugin-copy": "^3.5.0",
+    "yoctocolors": "2.1.2",
+    "zod": "4.1.11"
   },
   "devDependencies": {
     "@11ty/eleventy": "^3.1.2",
-    "@types/node": "^24.6.2",
+    "@biomejs/biome": "2.2.5",
+    "@types/node": "^24",
     "bumpp": "^10.1.0",
     "tsdown": "^0.11.9",
     "typescript": "^5.9.3",

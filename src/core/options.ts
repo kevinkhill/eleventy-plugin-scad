@@ -1,5 +1,5 @@
-import z from "zod";
 import { existsSync } from "node:fs";
+import z from "zod";
 
 /**
  * Eleventy OpenSCAD Plugin Options
@@ -9,10 +9,10 @@ import { existsSync } from "node:fs";
  * - **noSTL**: Set `true` to skip generating STLs
  */
 export default z.object({
-  launchPath: z.string().refine((val) => {
-    if (!existsSync(val)) return `Does Not Exist: ${val}`;
-    return true;
-  }),
-  layout: z.string().nullish(),
-  noSTL: z.boolean().nullish(),
+	launchPath: z.string().refine((val) => {
+		if (!existsSync(val)) return `Does Not Exist: ${val}`;
+		return true;
+	}),
+	noSTL: z.boolean().optional().default(false),
+	layout: z.string().optional().nullish(),
 });
