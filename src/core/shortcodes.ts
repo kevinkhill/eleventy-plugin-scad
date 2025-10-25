@@ -1,4 +1,4 @@
-import { DEFAULT_THREE_JS_VERSION, DOT_STL } from "../lib";
+import { DEFAULT_THREE_JS_VERSION, DOT_STL } from "../lib/const";
 import type { EleventyConfig } from "../types";
 
 /**

@@ -1,17 +1,21 @@
 import { join } from "node:path";
-import { DOT_SCAD, DOT_STL, getLogger } from "../lib";
-import scad2stl from "./scad2stl";
-import type { EleventyConfig, PageContext } from "../types";
+import { DOT_SCAD, DOT_STL } from "../lib/const";
+import { getLogger } from "../lib/logger";
+import { scad2stl } from "./scad2stl";
+import type { EleventyConfig, EleventyScope } from "../types";
 
 /**
  * Rendering STLs as a transformer
  */
-export default function (eleventyConfig: EleventyConfig, launchPath: string) {
+export function registerTransformer(
+	eleventyConfig: EleventyConfig,
+	launchPath: string,
+) {
 	const log = getLogger(eleventyConfig);
 
 	eleventyConfig.addTransform(
 		"scad-to-stl",
-		async function transformer(this: PageContext, content: string) {
+		async function transformer(this: EleventyScope, content: string) {
 			const outputDirName = eleventyConfig.dir.output;
 			if ((this.page.inputPath || "").endsWith(DOT_SCAD)) {
 				log("Transforming");

@@ -1,4 +1,4 @@
-import { addOpenSCADPlugin } from "./lib";
+import { addOpenSCADPlugin } from "./lib/register";
 import EleventyPluginOpenSCAD from "./plugin";
 
 export default EleventyPluginOpenSCAD;

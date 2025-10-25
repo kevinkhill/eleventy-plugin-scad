@@ -25,6 +25,6 @@ export default z.object({
 		.boolean()
 		.optional()
 		.default(
-			ELEVENTY_SCAD_NO_LISTING ? Boolean(ELEVENTY_SCAD_NO_LISTING) : true,
+			ELEVENTY_SCAD_NO_LISTING ? Boolean(ELEVENTY_SCAD_NO_LISTING) : false,
 		),
 });
