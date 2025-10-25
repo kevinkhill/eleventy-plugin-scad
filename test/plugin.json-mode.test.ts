@@ -1,6 +1,19 @@
+// @ts-expect-error I know there is no `.d.ts`
+import Eleventy from "@11ty/eleventy";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { EleventySCAD } from "./EleventySCAD";
+import { addOpenSCADPlugin } from "../src";
+import { ELEVENTY_TEST_INPUT, ELEVENTY_TEST_OUTPUT } from "./_setup/paths";
+import type { EleventyConfig } from "../src";
 import type { EleventyPageJSON } from "./_setup/types";
+
+const OpenSCAD =
+	"/Users/kevinhill/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD";
+
+const EleventySCAD = new Eleventy(ELEVENTY_TEST_INPUT, ELEVENTY_TEST_OUTPUT, {
+	config: (eleventyConfig: EleventyConfig) => {
+		addOpenSCADPlugin(eleventyConfig, { launchPath: OpenSCAD });
+	},
+});
 
 describe("JSON Mode", () => {
 	const pages: EleventyPageJSON[] = [];

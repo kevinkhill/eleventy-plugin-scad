@@ -1,6 +1,7 @@
 import "vitest";
 
 interface CustomMatchers<R = unknown> {
+	toExist: () => R;
 	toMatchStartOfString: (expected: string) => R;
 	toMatchEndOfString: (expected: string) => R;
 }
