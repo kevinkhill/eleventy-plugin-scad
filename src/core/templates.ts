@@ -1,4 +1,4 @@
-import { getAssetFile } from "../lib/assets";
+import { debug, getAssetFile } from "../lib";
 import type { EleventyConfig } from "../types";
 
 export const DEFAULT_SCAD_LAYOUT = "scad.viewer.njk";
@@ -13,6 +13,7 @@ export function addBuiltinScadLayoutVirtualTemplate(
 		getAssetFile(DEFAULT_SCAD_LAYOUT),
 		{},
 	);
+	debug(`added virtual layout: %s`, DEFAULT_SCAD_LAYOUT);
 }
 
 export function addScadCollectionVirtualTemplate(
@@ -23,8 +24,12 @@ export function addScadCollectionVirtualTemplate(
 		getAssetFile(DEFAULT_COLLECTION_LAYOUT),
 		{},
 	);
+	debug(`added virtual layout: %s`, DEFAULT_COLLECTION_LAYOUT);
+
+	const DEFAULT_COLLECTION_TEMPLATE = "index.njk";
+
 	eleventyConfig.addTemplate(
-		`index.njk`,
+		DEFAULT_COLLECTION_TEMPLATE,
 		`<ul>
 			{% for item in collections.scad %}
           		<li><a href="/{{ item.data.slug }}">{{ item.data.title }}</a></li>
@@ -34,4 +39,5 @@ export function addScadCollectionVirtualTemplate(
 			layout: DEFAULT_COLLECTION_LAYOUT,
 		},
 	);
+	debug(`added virtual template: %s`, DEFAULT_COLLECTION_TEMPLATE);
 }

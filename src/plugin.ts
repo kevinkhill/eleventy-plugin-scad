@@ -2,18 +2,19 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { blue, bold, gray, green, red } from "yoctocolors";
 import { prettifyError } from "zod";
-import { name } from "../package.json" with { type: "json" };
+import { name, version } from "../package.json" with { type: "json" };
 import {
 	addBuiltinScadLayoutVirtualTemplate,
 	addScadCollectionVirtualTemplate,
 	DEFAULT_SCAD_LAYOUT,
+	DOT_SCAD,
+	DOT_STL,
 	PluginOptionsSchema,
 	registerShortcodes,
+	SCAD_EXT,
 	scad2stl,
 } from "./core";
-import { DOT_SCAD, DOT_STL, SCAD_EXT } from "./lib/const";
-import { getLogger } from "./lib/logger";
-import { startTimer } from "./lib/timer";
+import { ensureAssetPath, getLogger, startTimer } from "./lib";
 import type {
 	EleventyConfig,
 	EleventyDirs,
@@ -41,6 +42,7 @@ export default function (
 			`[${name}] WARN Eleventy plugin compatibility: ${(e as Error).message}`,
 		);
 	}
+	ensureAssetPath();
 	const logger = getLogger(eleventyConfig);
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
 
@@ -70,10 +72,10 @@ export default function (
 	 */
 	addBuiltinScadLayoutVirtualTemplate(eleventyConfig);
 
+	/**
+	 * Add template file that lists all the collected `.scad` files
+	 */
 	if (collectionPage) {
-		/**
-		 * Add template file that lists all the collected `.scad` files
-		 */
 		addScadCollectionVirtualTemplate(eleventyConfig);
 	}
 
@@ -158,12 +160,12 @@ export default function (
 
 	eleventyConfig.on("eleventy.before", (event) => {
 		log("🪵  eleventy.before");
-		console.dir(event, { depth: 1 });
+		// console.dir(event, { depth: 1 });
 	});
 
 	eleventyConfig.on("eleventy.after", (event) => {
 		log("🪵  eleventy.after");
-		console.dir(event, { depth: 1 });
+		// console.dir(event, { depth: 1 });
 	});
 }
 
@@ -171,14 +173,17 @@ function logPluginReadyMessage(
 	log: (m: string) => void,
 	{ silent, theme, verbose, noSTL, collectionPage }: PluginOptions,
 ) {
-	const initLog = [
-		green("Ready"),
-		gray(`(${theme})`),
-		silent ? green("+silent") : "",
-		verbose ? green("+verbose") : "",
-		noSTL ? red("-noSTL") : "",
-		!collectionPage ? red("-collectionPage") : "",
-	];
-
-	log(initLog.join(" ").replaceAll(/\s+/g, " "));
+	log(green(`Plugin v${version} Ready`));
+	log(`${gray("Theme: ")} ${theme}`);
+	log(
+		[
+			gray("Options: "),
+			silent ? green("+silent") : "",
+			verbose ? green("+verbose") : "",
+			noSTL ? red("-noSTL") : "",
+			!collectionPage ? red("-collectionPage") : "",
+		]
+			.join(" ")
+			.replaceAll(/\s+/g, " "),
+	);
 }

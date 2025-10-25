@@ -1,6 +1,6 @@
 import { join } from "node:path";
-import { DOT_SCAD, DOT_STL } from "../lib/const";
 import { getLogger } from "../lib/logger";
+import { DOT_SCAD, DOT_STL } from "./constants";
 import { scad2stl } from "./scad2stl";
 import type { EleventyConfig, EleventyScope } from "../types";
 
