@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import z from "zod";
 
 const ELEVENTY_SCAD_NO_STL = process.env.ELEVENTY_SCAD_NO_STL;
+const ELEVENTY_SCAD_NO_LISTING = process.env.ELEVENTY_SCAD_NO_LISTING;
 
 /**
  * Eleventy OpenSCAD Plugin Options
@@ -20,4 +21,10 @@ export default z.object({
 		.boolean()
 		.optional()
 		.default(ELEVENTY_SCAD_NO_STL ? Boolean(ELEVENTY_SCAD_NO_STL) : false),
+	noListing: z
+		.boolean()
+		.optional()
+		.default(
+			ELEVENTY_SCAD_NO_LISTING ? Boolean(ELEVENTY_SCAD_NO_LISTING) : true,
+		),
 });

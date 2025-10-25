@@ -35,7 +35,7 @@ export default function (
 	const log = getLogger(eleventyConfig);
 	const parseOptions = createOptionParser({ logger: log });
 	const parsedOptions = parseOptions(options);
-	const { launchPath, layout, noSTL } = parsedOptions;
+	const { launchPath, layout, noSTL, noListing } = parsedOptions;
 
 	log([
 		green("Plugin Ready"),
@@ -43,7 +43,7 @@ export default function (
 		noSTL ? red("(STLs disabled)") : "",
 	]);
 
-	registerTemplates(eleventyConfig);
+	registerTemplates(eleventyConfig, noListing);
 	registerShortcodes(eleventyConfig);
 
 	/**
