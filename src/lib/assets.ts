@@ -7,6 +7,16 @@ const debug = $debug.extend("assets");
 
 let assetPath: string = "";
 
+/**
+ * Load an asset file from the bundle
+ */
+export function getAssetFileContent(file: string): string {
+	const resPath = path.join(getAssetPath(), file);
+	const content = readFileSync(resPath, "utf8");
+	debug(`read from disk "%s"`, file);
+	return content;
+}
+
 export function getAssetPath() {
 	if (assetPath === "") {
 		throw new Error(`"assetPath" is not set, was "ensureAssetPath()" called?`);
@@ -30,14 +40,4 @@ export function ensureAssetPath() {
 		debug(`found "%s"`, found);
 		assetPath = found;
 	}
-}
-
-/**
- * Load an asset file from the bundle
- */
-export function getAssetFileContent(file: string): string {
-	const resPath = path.join(getAssetPath(), file);
-	const content = readFileSync(resPath, "utf8");
-	debug(`read from disk "%s"`, file);
-	return content;
 }

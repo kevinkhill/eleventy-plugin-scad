@@ -4,6 +4,7 @@ import type { PluginOptionsSchema } from "../core/options";
 
 export type MaybePluginOptions = z.input<typeof PluginOptionsSchema>;
 export type PluginOptions = z.infer<typeof PluginOptionsSchema>;
+export type StlViewerThemes = PluginOptions["theme"];
 
 export type ScadTemplateData = {
 	layout: string;
@@ -31,8 +32,3 @@ export type EleventyDirs = {
 	layouts?: string;
 	output: string;
 };
-
-export interface EleventyJavascriptClassTemplate {
-	data<T>(): (() => T | Promise<T>) | T;
-	render(props: Awaited<this["data"]>): string;
-}

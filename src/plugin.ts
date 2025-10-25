@@ -146,7 +146,7 @@ export default function (
 					in: data.scadFile,
 					out: path.join(writeDir, data.stlFile),
 				});
-				const { duration } = stopTimer();
+				const duration = stopTimer();
 
 				if (!ok) {
 					log(red("OpenSCAD encountered an issue"));

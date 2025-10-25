@@ -1,18 +1,18 @@
-/**
- * Testing & Development Config
- */
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { addOpenSCADPlugin, SCAD_BIN } from "../../dist/index.js";
 
-/** @param {import("@11ty/eleventy/UserConfig").default} eleventyConfig */
+/**
+ * Testing & Development Config
+ *
+ *  @param {import("@11ty/eleventy/UserConfig").default} eleventyConfig
+ */
 export default function (eleventyConfig) {
+  eleventyConfig.setQuietMode(false);
   eleventyConfig.setInputDirectory("input");
   eleventyConfig.setOutputDirectory("output");
   eleventyConfig.addWatchTarget("../../dist/**/*");
 
   addOpenSCADPlugin(eleventyConfig, {
-    launchPath: join(homedir(), SCAD_BIN.MACOS),
+    launchPath: SCAD_BIN.LINUX_NIGHTLY,
     verbose: true,
     collectionPage: true,
   });

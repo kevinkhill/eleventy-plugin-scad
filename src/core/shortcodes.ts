@@ -1,5 +1,5 @@
 import { debug as $debug } from "../lib";
-import { DOT_STL } from "./constants";
+import { DOT_STL } from "./extensions";
 import type { EleventyConfig, PluginOptions } from "../types";
 
 export const DEFAULT_THREE_JS_VERSION = "0.180.0";
@@ -10,10 +10,10 @@ const debug = $debug.extend("shortcodes");
 
 /**
  * Helper Shortcodes for generating pages from scad templates
-*/
+ */
 export function addShortcodes(
 	eleventyConfig: EleventyConfig,
-	{ theme }: { theme: PluginOptions["theme"]; },
+	{ theme }: { theme: PluginOptions["theme"] },
 ) {
 	const registerShortcode: (typeof eleventyConfig)["addShortcode"] = (
 		shortcodeName,

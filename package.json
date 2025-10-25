@@ -1,6 +1,6 @@
 {
   "name": "eleventy-plugin-scad",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Eleventy plugin to treat SCAD files as templates that need rendering to STL and showcased",
   "keywords": [
     "eleventy",
@@ -12,21 +12,27 @@
     "type": "git",
     "url": "https://github.com/kevinkhill/eleventy-plugin-scad"
   },
-  "license": "UNLICENSED",
+  "license": "MIT",
   "author": {
     "name": "Kevin Hill",
     "email": "kevinkhill@gmail.com"
   },
   "type": "module",
   "exports": {
-    "types": "./dist/index.d.ts",
-    "default": "./dist/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./register": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
   "main": "./dist/index.js",
   "files": [
     "dist",
-    "_layouts",
-    "_includes"
+    "README.md",
+    "package.json"
   ],
   "scripts": {
     "build": "tsdown",
@@ -50,13 +56,13 @@
     "11ty.ts": "0.0.6",
     "@11ty/eleventy": "^3.1.2",
     "@biomejs/biome": "2.2.5",
-    "rollup-plugin-copy": "3.5.0",
     "@rollup/plugin-replace": "6.0.2",
     "@types/debug": "^4.1.12",
     "@types/he": "^1.2.3",
     "@types/node": "^24.7.1",
     "bumpp": "10.3.1",
     "rimraf": "6.0.1",
+    "rollup-plugin-copy": "3.5.0",
     "tsdown": "0.11.13",
     "tsx": "4.20.6",
     "typescript": "^5.9.3",

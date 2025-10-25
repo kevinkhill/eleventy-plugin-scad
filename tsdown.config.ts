@@ -1,9 +1,9 @@
 import replace from "@rollup/plugin-replace";
 import copy from "rollup-plugin-copy";
 import { defineConfig } from "tsdown";
-import type { PluginOptions } from "./src/types/core";
+import type { StlViewerThemes } from "./src/types/core";
 
-const DEFAULT_THEME: PluginOptions["theme"] = "Midnight";
+const DEFAULT_THEME: StlViewerThemes = "Midnight";
 
 export default defineConfig([
 	{
