@@ -10,6 +10,7 @@ import z from "zod";
  * - **collectionPage**: Set `true` to generate a listing page from `collections.scad`
  * - **verbose**: Set `true` to view the compilation output from OpenSCAD
  * - **noSTL**: Set `true` to skip generating STLs
+ * - **silent**: Set `true` to disable all logging from the plugin
  */
 export default z.object({
 	launchPath: z.string().refine((val) => {
@@ -22,6 +23,10 @@ export default z.object({
 		.optional()
 		.default(parseBooleanEnv(env.ELEVENTY_SCAD_COLLECTION_PAGE, true)),
 	verbose: z
+		.boolean()
+		.optional()
+		.default(parseBooleanEnv(env.ELEVENTY_SCAD_VERBOSE, false)),
+	silent: z
 		.boolean()
 		.optional()
 		.default(parseBooleanEnv(env.ELEVENTY_SCAD_VERBOSE, false)),

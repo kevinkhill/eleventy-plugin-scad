@@ -1,17 +1,17 @@
-import path from "node:path";
+import { homedir } from "node:os";
+import { join } from "node:path";
 // @ts-expect-error I know there is no `.d.ts`
 import Eleventy from "@11ty/eleventy";
 import { beforeAll, describe, expect, it } from "vitest";
-import { addOpenSCADPlugin } from "../src";
+import { addOpenSCADPlugin, SCAD_BIN } from "../src";
 import { ELEVENTY_TEST_INPUT, ELEVENTY_TEST_OUTPUT } from "./_setup/paths";
 import type { EleventyConfig } from "../src";
 
-const SCAD_BIN =
-	"/Users/kevinhill/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD";
-
 const EleventySCAD = new Eleventy(ELEVENTY_TEST_INPUT, ELEVENTY_TEST_OUTPUT, {
 	config: (eleventyConfig: EleventyConfig) => {
-		addOpenSCADPlugin(eleventyConfig, { launchPath: SCAD_BIN });
+		addOpenSCADPlugin(eleventyConfig, {
+			launchPath: join(homedir(), SCAD_BIN.MACOS),
+		});
 	},
 });
 
@@ -22,15 +22,15 @@ describe("WRITE Mode", () => {
 	});
 
 	describe("cube.scad", () => {
-		const generatedDir = path.join(ELEVENTY_TEST_OUTPUT, "cube");
+		const generatedDir = join(ELEVENTY_TEST_OUTPUT, "cube");
 
 		it(`generated "cube/index.html"`, () => {
-			const index = path.join(generatedDir, "index.html");
+			const index = join(generatedDir, "index.html");
 			expect(index).toExist();
 		});
 
 		it(`generated "cube/cube.stl"`, () => {
-			const stl = path.join(generatedDir, "cube.stl");
+			const stl = join(generatedDir, "cube.stl");
 			expect(stl).toExist();
 		});
 	});

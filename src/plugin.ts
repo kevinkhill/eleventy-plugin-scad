@@ -32,17 +32,24 @@ export default function (
 	eleventyConfig: EleventyConfig,
 	options: MaybePluginOptions,
 ) {
-	const log = getLogger(eleventyConfig);
+	const logger = getLogger(eleventyConfig);
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
 
 	if (parsedOptions.error) {
-		log(red("Options Error"));
-		log(prettifyError(parsedOptions.error));
+		logger(red("Options Error"));
+		logger(prettifyError(parsedOptions.error));
 		process.exit();
 	}
 
-	const { launchPath, layout, collectionPage, noSTL, verbose } =
+	const { launchPath, layout, collectionPage, noSTL, verbose, silent } =
 		parsedOptions.data;
+
+	/**
+	 * Wrapping logger to make it able to be silenced
+	 */
+	const log: typeof logger = (arg) => {
+		if (!silent) logger(arg);
+	};
 
 	const initLog = [
 		green("Ready"),
