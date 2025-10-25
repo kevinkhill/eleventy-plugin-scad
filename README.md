@@ -52,7 +52,7 @@ export default function (eleventyConfig) {
 
 ### Method 2
 This method uses a helper function to type-hint the plugin's options.
-We flip the call by binding the plugin to the helper and passing in `eleventyConfig` instead of passing the plugin to `eleventyConfig.addPlugin()`.
+We flip the call by binding the plugin to the helper and passing in `eleventyConfig`. The helper calls `eleventyConfig.addPlugin()` with the options applied.
 
 ```js
 import { addOpenSCADPlugin, SCAD_BIN } from "eleventy-plugin-scad";
