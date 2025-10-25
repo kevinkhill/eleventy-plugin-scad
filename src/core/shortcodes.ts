@@ -1,5 +1,7 @@
-import { DEFAULT_THREE_JS_VERSION, DOT_STL } from "../lib/const";
+import { DOT_STL } from "../lib/const";
 import type { EleventyConfig } from "../types";
+
+export const DEFAULT_THREE_JS_VERSION = "0.180.0";
 
 /**
  * Helper Shortcodes for generating pages from scad templates
@@ -14,7 +16,7 @@ export default function (eleventyConfig: EleventyConfig) {
 	 */
 	eleventyConfig.addShortcode("stl_url", (fileSlug: string) => {
 		const stlPath = `${fileSlug}/${fileSlug}${DOT_STL}`;
-		return `new URL("${stlPath}",window.location.origin)`;
+		return `new URL("${stlPath}", window.location.origin)`;
 	});
 
 	/**
@@ -33,7 +35,6 @@ export default function (eleventyConfig: EleventyConfig) {
 					"three/addons/": "https://cdn.jsdelivr.net/npm/three@${v}/examples/jsm/"
 				}
 			}
-		</script>\
-		`;
+		</script>`;
 	});
 }

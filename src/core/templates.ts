@@ -1,6 +1,9 @@
 import { getAssetFile } from "../lib/assets";
-import { DEFAULT_COLLECTION_LAYOUT, DEFAULT_SCAD_LAYOUT } from "../lib/const";
 import type { EleventyConfig } from "../types";
+
+export const DEFAULT_SCAD_LAYOUT = "scad.viewer.njk";
+
+export const DEFAULT_COLLECTION_LAYOUT = "scad.collection.html";
 
 export function addBuiltinScadLayoutVirtualTemplate(
 	eleventyConfig: EleventyConfig,

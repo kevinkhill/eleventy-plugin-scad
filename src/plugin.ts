@@ -6,11 +6,12 @@ import { version } from "../package.json" with { type: "json" };
 import {
 	addBuiltinScadLayoutVirtualTemplate,
 	addScadCollectionVirtualTemplate,
+	DEFAULT_SCAD_LAYOUT,
 	PluginOptionsSchema,
 	registerShortcodes,
 	scad2stl,
 } from "./core";
-import { DEFAULT_SCAD_LAYOUT, DOT_SCAD, DOT_STL, SCAD_EXT } from "./lib/const";
+import { DOT_SCAD, DOT_STL, SCAD_EXT } from "./lib/const";
 import { getLogger } from "./lib/logger";
 import { startTimer } from "./lib/timer";
 import type {
