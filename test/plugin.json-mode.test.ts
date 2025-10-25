@@ -1,17 +1,17 @@
 // @ts-expect-error I know there is no `.d.ts`
 import Eleventy from "@11ty/eleventy";
-import { beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { addOpenSCADPlugin } from "../src";
 import { ELEVENTY_TEST_INPUT, ELEVENTY_TEST_OUTPUT } from "./_setup/paths";
-import type { EleventyConfig } from "../src";
+import type { EleventyConfig, ScadTemplateData } from "../src";
 import type { EleventyPageJSON } from "./_setup/types";
 
-const OpenSCAD =
+const SCAD_BIN =
 	"/Users/kevinhill/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD";
 
 const EleventySCAD = new Eleventy(ELEVENTY_TEST_INPUT, ELEVENTY_TEST_OUTPUT, {
 	config: (eleventyConfig: EleventyConfig) => {
-		addOpenSCADPlugin(eleventyConfig, { launchPath: OpenSCAD });
+		addOpenSCADPlugin(eleventyConfig, { launchPath: SCAD_BIN });
 	},
 });
 
@@ -28,11 +28,7 @@ describe("JSON Mode", () => {
 	});
 
 	describe("cube.scad", () => {
-		let page: EleventyPageJSON;
-
-		beforeEach(() => {
-			page = pages[0];
-		});
+		const page = pages[0] as EleventyPageJSON & ScadTemplateData;
 
 		it("has the correct URL", () => {
 			expect(page.url).toBe("/cube/");
@@ -43,11 +39,16 @@ describe("JSON Mode", () => {
 		});
 
 		it("has the correct input path", () => {
+			expect(page.scadFile).toMatchEndOfString("input/cube.scad");
 			expect(page.inputPath).toMatchEndOfString("input/cube.scad");
 		});
 
-		it("has the correct output path", () => {
+		it("generated the correct output HTML file", () => {
 			expect(page.outputPath).toMatchEndOfString("output/cube/index.html");
+		});
+
+		it("generated the correct output STL file", () => {
+			expect(page.stlFile).toMatchEndOfString("output/cube/cube.stl");
 		});
 
 		it("has the correct raw input", () => {
