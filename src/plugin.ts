@@ -92,13 +92,6 @@ export function EleventyPluginOpenSCAD(
 		async compile(inputContent: string, inputPath: string) {
 			return async (data: FullPageData) => {
 				const stopTimer = startTimer();
-
-				console.log("\n");
-				console.log("\n");
-				console.log(data);
-				console.log("\n");
-				console.log("\n");
-
 				if (!noSTL) {
 					log("Generating STL");
 					scad2stl(launchPath, {
