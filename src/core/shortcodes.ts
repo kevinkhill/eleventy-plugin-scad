@@ -1,3 +1,4 @@
+import { debug } from "../lib";
 import { DOT_STL } from "./constants";
 import type { EleventyConfig, PluginOptions } from "../types";
 
@@ -21,6 +22,7 @@ export function addShortcodes(
 		const stlPath = `${fileSlug}/${fileSlug}${DOT_STL}`;
 		return `new URL("${stlPath}", window.location.origin)`;
 	});
+	debug(`added shortcode "%s"`, "stl_url");
 
 	/**
 	 * Shortcode to produce a style block with themes created by w3.org
@@ -33,6 +35,7 @@ export function addShortcodes(
 	eleventyConfig.addShortcode("w3_theme_css", () => {
 		return `<link rel="stylesheet" href="https://www.w3.org/StyleSheets/Core/${theme}" type="text/css">`;
 	});
+	debug(`added shortcode "%s"`, "w3_theme_css");
 
 	/**
 	 * Shortcode to produce the importmaps for three.js
@@ -52,6 +55,7 @@ export function addShortcodes(
 			}
 		</script>`;
 	});
+	debug(`added shortcode "%s"`, "threejs_importmap");
 }
 
 // <script type="module">

@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8"/>
         <title>STL Viewer</title>
+        {% threejs_importmap %}
         {% w3_theme_css %}
         <style>
             body {
@@ -34,10 +35,6 @@
                 background-color: hsla(0, 0%, 100%, 0.1);
             }
         </style>
-        <script>
-            console.log({{ page | dump | safe }});
-        </script>
-        {% threejs_importmap %}
     </head>
 
     <body>
