@@ -8,15 +8,11 @@ import { existsSync } from "node:fs";
  * - **layout**: Use a custom layout for the scad files
  * - **noSTL**: Set `true` to skip generating STLs
  */
-const PluginOptionsSchema = z.strictObject({
+export default z.object({
   launchPath: z.string().refine((val) => {
     if (!existsSync(val)) return `Does Not Exist: ${val}`;
     return true;
   }),
-  layout: z.string().optional(),
-  noSTL: z.boolean().optional().default(false),
+  layout: z.string().nullish(),
+  noSTL: z.boolean().nullish(),
 });
-
-export default PluginOptionsSchema;
-
-export type PluginOptions = z.infer<typeof PluginOptionsSchema>;

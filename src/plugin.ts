@@ -4,10 +4,10 @@ import { blue, bold, cyan, gray, green, red } from "yoctocolors";
 import z from "zod";
 import pkg from "../package.json" with { type: "json" };
 import { getLogger } from "./logger";
-import PluginOptionsSchema, { type PluginOptions } from "./options";
+import PluginOptionsSchema from "./options";
 import { scad2stl } from "./scad2stl";
 import { SCAD_EXT, DOT_SCAD } from "./const";
-import type { EleventyConfig, ScadPageData } from "./types";
+import type { EleventyConfig, PluginOptions, ScadPageData } from "./types";
 
 const DEFAULT_THREE_JS_VERSION = "0.180.0";
 
@@ -161,7 +161,7 @@ function getFilename(filepath:string): string {
   return basename(filepath).replace(DOT_SCAD, "");
 }
 
-function virtualFileHTML(mocked:boolean) {
+function virtualFileHTML(mocked: any) {
   return `<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -239,7 +239,7 @@ function virtualFileHTML(mocked:boolean) {
       import {STLLoader} from 'three/addons/loaders/STLLoader.js';
 
       ${
-        mocked
+        Boolean(mocked)
           ? `const stlUrl = "https://www.ozeki.hu/attachments/116/Menger_sponge_sample.stl";`
           : `const stlUrl = new URL("{{ outFileUrl }}", window.location.origin);`
       }
