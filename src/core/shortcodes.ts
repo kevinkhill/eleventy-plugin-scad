@@ -6,7 +6,7 @@ export const DEFAULT_THREE_JS_VERSION = "0.180.0";
 /**
  * Helper Shortcodes for generating pages from scad templates
  */
-export function registerShortcodes(
+export function addShortcodes(
 	eleventyConfig: EleventyConfig,
 	{ theme }: { theme: PluginOptions["theme"] },
 ) {

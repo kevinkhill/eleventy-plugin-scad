@@ -6,11 +6,13 @@ import { name, version } from "../package.json" with { type: "json" };
 import {
 	addBuiltinScadLayoutVirtualTemplate,
 	addScadCollectionVirtualTemplate,
+	addScadMarkdownHighlighter,
+	addShortcodes,
 	DEFAULT_SCAD_LAYOUT,
 	DOT_SCAD,
 	DOT_STL,
 	PluginOptionsSchema,
-	registerShortcodes,
+	registerEventHandlers,
 	SCAD_EXT,
 	scad2stl,
 } from "./core";
@@ -60,12 +62,18 @@ export default function (
 		if (!silent) logger(arg);
 	};
 
+	// registerEventHandlers(eleventyConfig);
 	logPluginReadyMessage(log, parsedOptions.data);
+
+	/**
+	 * Highlight markdown blocks with "```scad"
+	 */
+	addScadMarkdownHighlighter(eleventyConfig);
 
 	/**
 	 * Handy shortcodes for building up STL renderers
 	 */
-	registerShortcodes(eleventyConfig, { theme });
+	addShortcodes(eleventyConfig, { theme });
 
 	/**
 	 * Default renderer for `.scad` files once turned into HTML
@@ -156,16 +164,6 @@ export default function (
 				return inputContent;
 			};
 		},
-	});
-
-	eleventyConfig.on("eleventy.before", (event) => {
-		log("🪵  eleventy.before");
-		// console.dir(event, { depth: 1 });
-	});
-
-	eleventyConfig.on("eleventy.after", (event) => {
-		log("🪵  eleventy.after");
-		// console.dir(event, { depth: 1 });
 	});
 }
 
