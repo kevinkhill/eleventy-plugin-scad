@@ -9,7 +9,8 @@ export default defineConfig([
 		dts: true,
 		plugins: [
 			copy({
-				targets: [{ src: "src/assets", dest: "dist" }],
+				targets: [{ src: "src/assets/**/*", dest: "dist/assets" }],
+				verbose: true,
 			}),
 		],
 	},

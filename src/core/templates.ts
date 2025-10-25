@@ -3,7 +3,7 @@ import type { EleventyConfig } from "../types";
 
 export const DEFAULT_SCAD_LAYOUT = "scad.viewer.njk";
 
-export const DEFAULT_COLLECTION_LAYOUT = "scad.collection.html";
+export const DEFAULT_COLLECTION_LAYOUT = "scad.collection.njk";
 
 export function addBuiltinScadLayoutVirtualTemplate(
 	eleventyConfig: EleventyConfig,

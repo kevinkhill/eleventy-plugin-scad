@@ -2,7 +2,7 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { blue, bold, gray, green, red } from "yoctocolors";
 import { prettifyError } from "zod";
-import { version } from "../package.json" with { type: "json" };
+import { name } from "../package.json" with { type: "json" };
 import {
 	addBuiltinScadLayoutVirtualTemplate,
 	addScadCollectionVirtualTemplate,
@@ -19,6 +19,7 @@ import type {
 	EleventyDirs,
 	FullPageData,
 	MaybePluginOptions,
+	PluginOptions,
 	ScadTemplateData,
 } from "./types";
 
@@ -32,6 +33,14 @@ export default function (
 	eleventyConfig: EleventyConfig,
 	options: MaybePluginOptions,
 ) {
+	try {
+		// Emit a warning message if the application is not using Eleventy 3.0 or newer (including prereleases).
+		eleventyConfig.versionCheck(">=3.0");
+	} catch (e) {
+		console.log(
+			`[${name}] WARN Eleventy plugin compatibility: ${(e as Error).message}`,
+		);
+	}
 	const logger = getLogger(eleventyConfig);
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
 
@@ -41,40 +50,30 @@ export default function (
 		process.exit();
 	}
 
-	const { launchPath, layout, collectionPage, noSTL, verbose, silent } =
+	const { launchPath, layout, collectionPage, noSTL, verbose, silent, theme } =
 		parsedOptions.data;
 
-	/**
-	 * Wrapping logger to make it able to be silenced
-	 */
+	// Wrapping logger to make it able to be silenced
 	const log: typeof logger = (arg) => {
 		if (!silent) logger(arg);
 	};
 
-	const initLog = [
-		green("Ready"),
-		gray(`(v${version})`),
-		verbose ? green("+verbose") : "",
-		noSTL ? red("-noSTL") : "",
-		!collectionPage ? red("-collectionPage") : "",
-	];
-
-	log(initLog.join(" ").replaceAll(/\s+/g, " "));
+	logPluginReadyMessage(log, parsedOptions.data);
 
 	/**
 	 * Handy shortcodes for building up STL renderers
 	 */
-	registerShortcodes(eleventyConfig);
+	registerShortcodes(eleventyConfig, { theme });
 
 	/**
 	 * Default renderer for `.scad` files once turned into HTML
 	 */
 	addBuiltinScadLayoutVirtualTemplate(eleventyConfig);
 
-	/**
-	 * Add template file that lists all the collected `.scad` files
-	 */
 	if (collectionPage) {
+		/**
+		 * Add template file that lists all the collected `.scad` files
+		 */
 		addScadCollectionVirtualTemplate(eleventyConfig);
 	}
 
@@ -121,41 +120,65 @@ export default function (
 				const action = noSTL ? blue("Would write") : "Writing";
 				log(`${action} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
 
+				/**
+				 * Begin STL Compilation
+				 */
 				const stopTimer = startTimer();
 				const { output, ok } = await scad2stl(launchPath, {
 					in: data.scadFile,
 					out: path.join(writeDir, data.stlFile),
 				});
 				const { duration } = stopTimer();
-				if (ok) {
-					if (verbose) {
-						const lines = output.flatMap((line) => line.split("\n"));
-						for (const line of lines) {
-							log(gray(`\t${line}`));
-						}
-					}
-					log(
-						green(
-							`Wrote ${bold(data.stlFile)} in ${bold(duration.toFixed(2))} seconds`,
-						),
-					);
-				} else {
+
+				if (!ok) {
 					log(red("OpenSCAD encountered an issue"));
 					for (const line of output) {
 						const cleanLine = line.replaceAll("\n", "");
 						log(red(cleanLine));
 					}
+					return inputContent;
 				}
+
+				if (verbose) {
+					const lines = output.flatMap((line) => line.split("\n"));
+					for (const line of lines) {
+						log(gray(`\t${line}`));
+					}
+				}
+				log(
+					green(
+						`Wrote ${bold(data.stlFile)} in ${bold(duration.toFixed(2))} seconds`,
+					),
+				);
+
 				return inputContent;
 			};
 		},
 	});
 
-	// eleventyConfig.on("eleventy.after", ({ dir, runMode }) => {
-	// 	log("eleventy.after");
-	// 	console.log("Resolved directories:", dir);
-	// 	console.log("Output directory:", dir.output);
-	// 	console.log("runMode:", runMode);
-	// 	// Now you can use dir.output in your plugin logic
-	// });
+	eleventyConfig.on("eleventy.before", (event) => {
+		log("🪵  eleventy.before");
+		console.dir(event, { depth: 1 });
+	});
+
+	eleventyConfig.on("eleventy.after", (event) => {
+		log("🪵  eleventy.after");
+		console.dir(event, { depth: 1 });
+	});
+}
+
+function logPluginReadyMessage(
+	log: (m: string) => void,
+	{ silent, theme, verbose, noSTL, collectionPage }: PluginOptions,
+) {
+	const initLog = [
+		green("Ready"),
+		gray(`(${theme})`),
+		silent ? green("+silent") : "",
+		verbose ? green("+verbose") : "",
+		noSTL ? red("-noSTL") : "",
+		!collectionPage ? red("-collectionPage") : "",
+	];
+
+	log(initLog.join(" ").replaceAll(/\s+/g, " "));
 }

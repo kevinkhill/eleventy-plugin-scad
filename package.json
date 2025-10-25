@@ -1,20 +1,21 @@
 {
-  "name": "11ty-plugin-openscad",
+  "name": "eleventy-plugin-scad",
   "version": "0.1.0",
   "description": "Eleventy plugin to treat SCAD files as templates that need rendering to STL and showcased",
   "keywords": [
     "eleventy",
-    "11ty",
-    "openscad"
+    "eleventy-plugin",
+    "openscad",
+    "scad"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/khill-fbmc/11ty-plugin-openscad"
+    "url": "https://github.com/kevinkhill/eleventy-plugin-scad"
   },
   "license": "UNLICENSED",
   "author": {
     "name": "Kevin Hill",
-    "email": "kevin.hill@fortunabmc.com"
+    "email": "kevinkhill@gmail.com"
   },
   "type": "module",
   "exports": {
