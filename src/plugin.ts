@@ -2,11 +2,10 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { blue, bold, gray, green, red } from "yoctocolors";
 import { prettifyError } from "zod";
-import { name, version } from "../package.json" with { type: "json" };
+import { name } from "../package.json" with { type: "json" };
 import {
 	addBuiltinScadLayoutVirtualTemplate,
 	addScadCollectionVirtualTemplate,
-	addScadMarkdownHighlighter,
 	addShortcodes,
 	DEFAULT_SCAD_LAYOUT,
 	DOT_SCAD,
@@ -15,7 +14,8 @@ import {
 	SCAD_EXT,
 	scad2stl,
 } from "./core";
-import { createScadLogger, ensureAssetPath, startTimer } from "./lib";
+import { addScadGlobalData } from "./core/global-data";
+import { createScadLogger, debug, ensureAssetPath, startTimer } from "./lib";
 import type {
 	EleventyConfig,
 	EleventyDirs,
@@ -36,8 +36,11 @@ export default function (
 	options: MaybePluginOptions,
 ) {
 	try {
-		// Emit a warning message if the application is not using Eleventy 3.0 or newer (including prereleases).
-		eleventyConfig.versionCheck(">=3.0");
+		if (!("addTemplate" in eleventyConfig)) {
+			throw new Error(
+				`Virtual Templates are required for this plugin, please use Eleventy v3.0 or newer.`,
+			);
+		}
 	} catch (e) {
 		console.log(
 			`[${name}] WARN Eleventy plugin compatibility: ${(e as Error).message}`,
@@ -46,27 +49,34 @@ export default function (
 
 	ensureAssetPath();
 	// registerEventHandlers(eleventyConfig);
-	const _log = createScadLogger(eleventyConfig);
+
+	const log = createScadLogger(eleventyConfig);
+
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
+	debug.extend("zod")("parsed options = %O", parsedOptions);
 
 	if (parsedOptions.error) {
-		_log(red("Options Error"));
-		_log(prettifyError(parsedOptions.error));
-		process.exit();
+		log(red("Options Error"));
+		log(prettifyError(parsedOptions.error));
+		return;
 	}
 
 	const { launchPath, layout, collectionPage, noSTL, verbose, silent, theme } =
 		parsedOptions.data;
 
-	// Wrap _log to make it able to be silenced
-	const log: typeof _log = (arg) => !silent && _log(arg);
+	if (!silent) {
+		logPluginReadyMessage(parsedOptions.data);
+	}
 
-	logPluginReadyMessage(log, parsedOptions.data);
+	/**
+	 * Global data for templates
+	 */
+	addScadGlobalData(eleventyConfig);
 
 	/**
 	 * Highlight markdown blocks with "```scad"
 	 */
-	addScadMarkdownHighlighter(eleventyConfig);
+	// addScadMarkdownHighlighter(eleventyConfig);
 
 	/**
 	 * Handy shortcodes for building up STL renderers
@@ -163,23 +173,28 @@ export default function (
 			};
 		},
 	});
-}
 
-function logPluginReadyMessage(
-	log: (m: string) => void,
-	{ silent, theme, verbose, noSTL, collectionPage }: PluginOptions,
-) {
-	log(green(`Plugin v${version} Ready`));
-	log(`${gray("Theme: ")} ${theme}`);
-	log(
-		[
-			gray("Options: "),
-			silent ? green("+silent") : "",
-			verbose ? green("+verbose") : "",
-			noSTL ? red("-noSTL") : "",
-			!collectionPage ? red("-collectionPage") : "",
-		]
-			.join(" ")
-			.replaceAll(/\s+/g, " "),
-	);
+	/**
+	 * Helper to de-clutter the top of the plugin
+	 */
+	function logPluginReadyMessage({
+		silent,
+		theme,
+		verbose,
+		noSTL,
+		collectionPage,
+	}: PluginOptions) {
+		log(`${gray("Theme:")} ${theme}`);
+		log(
+			[
+				gray(" Opts:"),
+				silent ? green("+silent") : "",
+				verbose ? green("+verbose") : "",
+				noSTL ? red("-noSTL") : "",
+				!collectionPage ? red("-collectionPage") : "",
+			]
+				.join(" ")
+				.replaceAll(/\s+/g, " "),
+		);
+	}
 }

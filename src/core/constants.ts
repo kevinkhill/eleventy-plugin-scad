@@ -1,3 +1,7 @@
+import type { PluginOptions } from "../types/core";
+
+export const DEFAULT_THEME: PluginOptions["theme"] = "Steely";
+
 export const SCAD_EXT = "scad";
 
 export const DOT_SCAD = `.${SCAD_EXT}`;

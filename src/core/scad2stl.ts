@@ -17,7 +17,7 @@ export async function scad2stl(
 ): Promise<ScadExportResult> {
 	const debugWorker = debug.extend(`worker${workerId++}`);
 
-	debugWorker("spawned %s", launchPath);
+	// debugWorker("spawned %s", launchPath);
 	debugWorker("input: %s", files.in);
 	debugWorker("output: %s", files.out);
 
@@ -33,12 +33,11 @@ export async function scad2stl(
 
 	scad.stderr.on("data", (data) => {
 		const lines = String(data).split("\n");
-		lines.forEach((line) => void debugWorker("[stderr] %s", line));
+		// lines.forEach((line) => void debugWorker("[stderr] %s", line));
 		output.push(data.toString());
 	});
 
 	scad.on("error", (err) => {
-		debugWorker("!ERROR! %s", err.message);
 		reject({ output: err, ok: false });
 	});
 

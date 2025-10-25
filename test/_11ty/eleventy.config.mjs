@@ -9,7 +9,7 @@ import { addOpenSCADPlugin, SCAD_BIN } from "../../dist/index.js";
 export default function (eleventyConfig) {
   eleventyConfig.setInputDirectory("input");
   eleventyConfig.setOutputDirectory("output");
-  eleventyConfig.addWatchTarget("../../dist/**/*", { reloadConfig: true });
+  eleventyConfig.addWatchTarget("../../dist/**/*");
 
   addOpenSCADPlugin(eleventyConfig, {
     launchPath: join(homedir(), SCAD_BIN.MACOS),

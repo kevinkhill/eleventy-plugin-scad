@@ -5,13 +5,13 @@ import z from "zod";
 const OptBoolSchema = z.boolean().optional();
 
 export const ThemeSchema = z.enum([
-	"Chocolate",
-	"Midnight",
+	"Traditional",
 	"Modernist",
+	"Midnight",
+	"Chocolate",
 	"Oldstyle",
 	"Steely",
 	"Swiss",
-	"Traditional",
 	"Ultramarine",
 ]);
 
@@ -24,7 +24,8 @@ export const PluginOptionsSchema = z.object({
 	theme: ThemeSchema.optional().default(
 		parseStringEnv<z.infer<typeof ThemeSchema>>(
 			"ELEVENTY_SCAD_THEME",
-			"Traditional",
+			// @ts-expect-error ↙ This will be replaced at build time
+			"__DEFAULT_THEME__",
 		),
 	),
 	collectionPage: OptBoolSchema.default(

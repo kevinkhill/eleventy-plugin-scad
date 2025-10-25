@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { findUpSync } from "find-up";
-import { debug } from "./debug";
+import { debug as $debug } from "./debug";
+
+const debug = $debug.extend("assets");
 
 let assetPath: string = "";
 
@@ -13,10 +15,11 @@ export function getAssetPath() {
 }
 
 export function ensureAssetPath() {
+	debug(`ensuring asset path is set`);
 	if (assetPath) {
 		debug(`assetPath = "%s"`, assetPath);
 	} else {
-		debug(`searching "%s" for "assets/"`, import.meta.dirname);
+		debug(`searching "%s"`, import.meta.dirname);
 		const found = findUpSync("assets", {
 			cwd: import.meta.dirname,
 			type: "directory",
@@ -24,7 +27,7 @@ export function ensureAssetPath() {
 
 		if (!found) throw new Error(`"assets/" was not found!`);
 
-		debug(`found at "%s"`, found);
+		debug(`found "%s"`, found);
 		assetPath = found;
 	}
 }
@@ -32,8 +35,9 @@ export function ensureAssetPath() {
 /**
  * Load an asset file from the bundle
  */
-export function getAssetFile(file: string) {
+export function getAssetFileContent(file: string): string {
 	const resPath = path.join(getAssetPath(), file);
-	debug(`loading asset "%s`, resPath);
-	return readFileSync(resPath, "utf8");
+	const content = readFileSync(resPath, "utf8");
+	debug(`read from disk "%s"`, file);
+	return content;
 }

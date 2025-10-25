@@ -22,6 +22,7 @@ describe.for([["cube"], ["sphere"], ["cylinder"]])("%s.scad", ([name]) => {
 
 	beforeEach(() => {
 		page = pages.find((p) => p.url.includes(name)) as EleventyPageJSON;
+		console.log(page);
 	});
 
 	it("has the correct URL", () => {
@@ -32,7 +33,7 @@ describe.for([["cube"], ["sphere"], ["cylinder"]])("%s.scad", ([name]) => {
 		expect(page?.inputPath).toEndWithString(`input/${name}.scad`);
 	});
 
-	it("generated the correct output HTML file", () => {
+	it("has the correct output path", () => {
 		expect(page.outputPath).toEndWithString(`output/${name}/index.html`);
 	});
 

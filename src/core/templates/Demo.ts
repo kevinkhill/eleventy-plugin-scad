@@ -1,13 +1,12 @@
 import type { EleventyJavascriptClassTemplate } from "../../types";
 
 class Demo implements EleventyJavascriptClassTemplate {
-	data() {
-		return {
+	data = () =>
+		({
 			name: "Ted",
-		} as const;
-	}
+		}) as const;
 
-	render({ name }: ReturnType<Demo["data"]>) {
+	render({ name }) {
 		console.log("rendering TED");
 		// will always be "Ted"
 		return `<p>${name}</p>`;

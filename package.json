@@ -40,27 +40,27 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "11ty.ts": "0.0.6",
-    "@11ty/eleventy-utils": "^2.0.7",
     "debug": "4.4.3",
     "find-up": "8.0.0",
     "he": "1.2.0",
-    "rollup-plugin-copy": "^3.5.0",
     "yoctocolors": "2.1.2",
     "zod": "4.1.11"
   },
   "devDependencies": {
+    "11ty.ts": "0.0.6",
     "@11ty/eleventy": "^3.1.2",
     "@biomejs/biome": "2.2.5",
+    "rollup-plugin-copy": "3.5.0",
+    "@rollup/plugin-replace": "6.0.2",
     "@types/debug": "^4.1.12",
     "@types/he": "^1.2.3",
     "@types/node": "^24.7.1",
-    "bumpp": "^10.3.1",
+    "bumpp": "10.3.1",
     "rimraf": "6.0.1",
-    "tsdown": "^0.11.13",
-    "tsx": "^4.20.6",
+    "tsdown": "0.11.13",
+    "tsx": "4.20.6",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "3.2.4"
   },
   "peerDependencies": {
     "@11ty/eleventy": "^3"
