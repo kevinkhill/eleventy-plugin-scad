@@ -1,5 +1,5 @@
 import { debug as $debug } from "../lib";
-import { DOT_STL } from "./extensions";
+import { DOT_STL } from "./const";
 import type { EleventyConfig, PluginOptions } from "../types";
 
 export const DEFAULT_THREE_JS_VERSION = "0.180.0";

@@ -14,6 +14,13 @@ import { spawn } from "node:child_process";
 var name = "eleventy-plugin-scad";
 
 //#endregion
+//#region src/core/const.ts
+const STL_EXT = "stl";
+const DOT_STL = `.${STL_EXT}`;
+const SCAD_EXT = "scad";
+const DOT_SCAD = `.${SCAD_EXT}`;
+
+//#endregion
 //#region src/lib/debug.ts
 const debug$3 = Debug("eleventy:scad");
 
@@ -78,13 +85,6 @@ function startTimer() {
 		return (end - start) / 1e3;
 	};
 }
-
-//#endregion
-//#region src/core/extensions.ts
-const STL_EXT = "stl";
-const DOT_STL = `.${STL_EXT}`;
-const SCAD_EXT = "scad";
-const DOT_SCAD = `.${SCAD_EXT}`;
 
 //#endregion
 //#region src/core/options.ts
