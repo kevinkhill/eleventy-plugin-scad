@@ -1,4 +1,4 @@
-import type { EleventyConfig } from "../types";
+import type { EleventyConfig } from "../lib/types";
 
 export function addScadGlobalData(eleventyConfig: EleventyConfig) {
 	eleventyConfig.addGlobalData("scad_plugin.retro_background", () => {

@@ -1,33 +1,29 @@
 {
   "compilerOptions": {
+    "strict": true,
     "target": "esnext",
     "lib": [
-      "es2024"
+      "ES2024"
     ],
-    "moduleDetection": "force",
-    "module": "preserve",
     "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "types": [
-      "node"
-    ],
-    "strict": true,
-    "noUnusedLocals": true,
+    "moduleDetection": "force",
+    "module": "esnext",
     "declaration": true,
-    "emitDeclarationOnly": true,
+    "noUnusedLocals": true,
     "esModuleInterop": true,
     "isolatedModules": true,
-    // "isolatedDeclarations": true,
+    "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
-    "skipLibCheck": true
+    // "isolatedDeclarations": true,
+    "skipLibCheck": true,
   },
   "files": [
-    "eleventy.d.ts",
-    "tsdown.config.ts",
-    "vitest.config.ts"
+    "demo.ts",
+    "../eleventy-dts/src/index.d.ts"
   ],
   "include": [
-    "src"
+    "src",
+    "types",
   ],
   "exclude": [
     "node_modules"

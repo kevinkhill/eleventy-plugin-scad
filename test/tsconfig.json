@@ -1,9 +1,10 @@
 {
   "extends": "../tsconfig.json",
   "files": [
-    "vitest.d.ts"
+    "vitest.d.ts",
+    "../../eleventy-dts/src/index.d.ts"
   ],
   "include": [
-    "."
+    ".",
   ]
 }

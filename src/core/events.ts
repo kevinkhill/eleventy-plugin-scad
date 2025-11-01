@@ -1,10 +1,11 @@
 import { getLogger } from "../lib";
-import type { EleventyConfig } from "../types";
+import type { EleventyConfig } from "../lib/types";
 
 export function registerEventHandlers(eleventyConfig: EleventyConfig) {
 	const logger = getLogger(eleventyConfig);
 
-	eleventyConfig.on("eleventy.before", (event) => {
+	// biome-ignore lint/suspicious/noExplicitAny: merp
+	eleventyConfig.on("eleventy.before", (_event: any) => {
 		logger.logWithOptions({
 			message: "eleventy.before",
 			color: "magenta",
@@ -13,7 +14,8 @@ export function registerEventHandlers(eleventyConfig: EleventyConfig) {
 		});
 	});
 
-	eleventyConfig.on("eleventy.after", (event) => {
+	// biome-ignore lint/suspicious/noExplicitAny: merp
+	eleventyConfig.on("eleventy.after", (_event: any) => {
 		logger.logWithOptions({
 			message: "eleventy.after",
 			color: "magenta",

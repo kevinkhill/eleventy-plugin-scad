@@ -17,7 +17,7 @@ const THEMES = [
 ];
 
 describe.for(THEMES)("Theme: %s", ([theme]) => {
-	const EleventySCAD = createEleventyScadClient({
+	const escad = createEleventyScadClient({
 		launchPath: join(homedir(), SCAD_BIN.MACOS),
 		// biome-ignore lint/suspicious/noExplicitAny: its fine
 		theme: theme as any,
@@ -25,9 +25,9 @@ describe.for(THEMES)("Theme: %s", ([theme]) => {
 	});
 
 	it("has the correct theme css", async () => {
-		const pages = (await EleventySCAD.toJSON()) as EleventyPageJSON[];
+		const pages = (await escad.toJSON()) as EleventyPageJSON[];
 		for (const page of pages) {
-			expect(page.content).includes("Chocolate");
+			expect(page.content).includes(theme);
 		}
 	});
 });

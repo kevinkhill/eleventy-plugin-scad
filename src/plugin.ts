@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { blue, bold, gray, green, red } from "yoctocolors";
@@ -23,7 +24,7 @@ import type {
 	MaybePluginOptions,
 	PluginOptions,
 	ScadTemplateData,
-} from "./types";
+} from "./lib/types";
 
 /**
  * Eleventy Plugin for OpenSCAD
@@ -63,6 +64,10 @@ export default function (
 
 	const { launchPath, layout, collectionPage, noSTL, verbose, silent, theme } =
 		parsedOptions.data;
+
+	if (!existsSync(launchPath)) {
+		throw new Error(`${launchPath} is not a valid launchPath`);
+	}
 
 	if (!silent) {
 		logPluginReadyMessage(parsedOptions.data);
@@ -127,7 +132,6 @@ export default function (
 			if (noSTL) return () => inputContent;
 
 			return async (data: FullPageData) => {
-				//@ts-expect-error This does exist but my `.d.ts` is not working right
 				const dirs = data.eleventy?.directories as EleventyDirs;
 				const writeDir = path.join(dirs.output, data.page.fileSlug);
 

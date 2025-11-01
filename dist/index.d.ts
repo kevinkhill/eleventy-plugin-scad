@@ -1,10 +1,9 @@
 import z from "zod";
-import { EleventyScope, EleventySuppliedData } from "11ty.ts";
+import { EleventyConfig, EleventyScope, EleventySuppliedData } from "11ty.ts";
+import { EleventyConfig as EleventyConfig$1, MaybePluginOptions as MaybePluginOptions$1 } from "../types";
 
-//#region rolldown:runtime
-
-//#endregion
 //#region src/core/options.d.ts
+
 declare const PluginOptionsSchema: z.ZodObject<{
   launchPath: z.ZodString;
   layout: z.ZodOptional<z.ZodNullable<z.ZodString>>;
@@ -24,7 +23,7 @@ declare const PluginOptionsSchema: z.ZodObject<{
   noSTL: z.ZodDefault<z.ZodOptional<z.ZodBoolean>>;
 }, z.core.$strip>;
 //#endregion
-//#region src/types/core.d.ts
+//#region src/lib/types.d.ts
 type MaybePluginOptions = z.input<typeof PluginOptionsSchema>;
 type PluginOptions = z.infer<typeof PluginOptionsSchema>;
 type StlViewerThemes = PluginOptions["theme"];
@@ -51,12 +50,6 @@ type EleventyDirs = {
   layouts?: string;
   output: string;
 };
-declare namespace index_d_exports$1 {
-  export { EleventyDirs, FullPageData, MaybePluginOptions, PluginOptions, ScadTemplateData, StlViewerThemes };
-}
-import * as import__11ty_ts from "11ty.ts";
-__reExport(index_d_exports$1, import__11ty_ts);
-
 //#endregion
 //#region src/plugin.d.ts
 /**
@@ -65,7 +58,7 @@ __reExport(index_d_exports$1, import__11ty_ts);
  * @param {EleventyConfig} eleventyConfig
  * @param {MaybePluginOptions} options
  */
-declare function export_default(eleventyConfig: index_d_exports$1.EleventyConfig, options: MaybePluginOptions): void;
+declare function export_default(eleventyConfig: EleventyConfig, options: MaybePluginOptions): void;
 //#endregion
 //#region src/core/scad-bin.d.ts
 declare const SCAD_BIN: {
@@ -87,11 +80,6 @@ declare function detectBinFromPlatfrom(): string;
 declare function macosUserInstalledOpenSCAD(): string;
 //#endregion
 //#region src/lib/register.d.ts
-declare function addOpenSCADPlugin(eleventyConfig: index_d_exports$1.EleventyConfig, options: MaybePluginOptions): void;
-declare namespace index_d_exports {
-  export { EleventyDirs, export_default as EleventyPluginOpenSCAD, FullPageData, MaybePluginOptions, PLATFORM_MAP_SCAD_BIN, PluginOptions, SCAD_BIN, ScadTemplateData, StlViewerThemes, addOpenSCADPlugin, export_default as default, detectBinFromPlatfrom, macosUserInstalledOpenSCAD };
-}
-__reExport(index_d_exports, index_d_exports$1);
-
+declare function addOpenSCADPlugin(eleventyConfig: EleventyConfig$1, options: MaybePluginOptions$1): void;
 //#endregion
-export { EleventyDirs, export_default as EleventyPluginOpenSCAD, FullPageData, MaybePluginOptions, PLATFORM_MAP_SCAD_BIN, PluginOptions, SCAD_BIN, ScadTemplateData, StlViewerThemes, addOpenSCADPlugin, export_default as default, detectBinFromPlatfrom, macosUserInstalledOpenSCAD };
+export { type EleventyConfig, EleventyDirs, export_default as EleventyPluginOpenSCAD, FullPageData, MaybePluginOptions, PLATFORM_MAP_SCAD_BIN, PluginOptions, SCAD_BIN, ScadTemplateData, StlViewerThemes, addOpenSCADPlugin, export_default as default, detectBinFromPlatfrom, macosUserInstalledOpenSCAD };

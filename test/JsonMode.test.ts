@@ -5,7 +5,7 @@ import { SCAD_BIN } from "../src";
 import { createEleventyScadClient } from "./_setup/11ty-scad";
 import type { EleventyPageJSON } from "./_setup/types";
 
-const EleventySCAD = createEleventyScadClient({
+const escad = createEleventyScadClient({
 	launchPath: join(homedir(), SCAD_BIN.MACOS),
 	silent: true,
 });
@@ -13,7 +13,7 @@ const EleventySCAD = createEleventyScadClient({
 const pages: EleventyPageJSON[] = [];
 
 beforeAll(async () => {
-	const generated = (await EleventySCAD.toJSON()) as EleventyPageJSON[];
+	const generated = (await escad.toJSON()) as EleventyPageJSON[];
 	pages.push(...generated);
 });
 

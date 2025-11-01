@@ -1,6 +1,12 @@
-import type { EleventyScope, EleventySuppliedData } from "11ty.ts";
+import type {
+	EleventyConfig,
+	EleventyScope,
+	EleventySuppliedData,
+} from "11ty.ts";
 import type z from "zod";
 import type { PluginOptionsSchema } from "../core/options";
+
+export type { EleventyConfig };
 
 export type MaybePluginOptions = z.input<typeof PluginOptionsSchema>;
 export type PluginOptions = z.infer<typeof PluginOptionsSchema>;

@@ -1,8 +1,8 @@
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path, { join } from "node:path";
 import { blue, bold, gray, green, red, yellow } from "yoctocolors";
 import z, { prettifyError } from "zod";
-import { existsSync, readFileSync } from "node:fs";
 import { findUpSync } from "find-up";
 import Debug from "debug";
 import "he";
@@ -308,6 +308,7 @@ function plugin_default(eleventyConfig, options) {
 		return;
 	}
 	const { launchPath, layout, collectionPage, noSTL, verbose, silent, theme } = parsedOptions.data;
+	if (!existsSync(launchPath)) throw new Error(`${launchPath} is not a valid launchPath`);
 	if (!silent) logPluginReadyMessage(parsedOptions.data);
 	/**
 	* Global data for templates

@@ -1,6 +1,6 @@
 import { debug as $debug } from "../lib";
 import { DOT_STL } from "./const";
-import type { EleventyConfig, PluginOptions } from "../types";
+import type { EleventyConfig, PluginOptions } from "../lib/types";
 
 export const DEFAULT_THREE_JS_VERSION = "0.180.0";
 
@@ -15,7 +15,7 @@ export function addShortcodes(
 	eleventyConfig: EleventyConfig,
 	{ theme }: { theme: PluginOptions["theme"] },
 ) {
-	const registerShortcode: (typeof eleventyConfig)["addShortcode"] = (
+	const registerShortcode: EleventyConfig["addShortcode"] = (
 		shortcodeName,
 		filter,
 	) => {
