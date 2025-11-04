@@ -6,6 +6,7 @@ import { name } from "../package.json" with { type: "json" };
 import {
 	addBuiltinScadLayoutVirtualTemplate,
 	addScadCollectionVirtualTemplate,
+	addScadGlobalData,
 	addShortcodes,
 	DEFAULT_SCAD_LAYOUT,
 	DOT_SCAD,
@@ -14,29 +15,31 @@ import {
 	SCAD_EXT,
 	scad2stl,
 } from "./core";
-import { addScadGlobalData } from "./core/global-data";
 import {
+	assertValidLaunchPath,
 	createScadLogger,
 	debug,
 	ensureAssetPath,
 	resolveOpenSCAD,
 	startTimer,
 } from "./lib";
-import type { PluginOptions, PluginOptionsInput } from "./core";
 import type {
 	EleventyConfig,
 	EleventyDirs,
 	FullPageData,
+	PluginOptions,
+	PluginOptionsInput,
 	ScadTemplateData,
 } from "./types";
 
+// #region Begin Plugin
 /**
  * Eleventy Plugin for OpenSCAD
  *
  * @param {EleventyConfig} eleventyConfig
  * @param {PluginOptionsInput} options
  */
-export default function (
+export default function EleventyPluginOpenSCAD(
 	eleventyConfig: EleventyConfig,
 	options: PluginOptionsInput,
 ) {
@@ -62,9 +65,10 @@ export default function (
 	debug.extend("zod")("parsed options = %O", parsedOptions);
 
 	if (parsedOptions.error) {
+		const message = prettifyError(parsedOptions.error);
 		log(red("Options Error"));
-		log(prettifyError(parsedOptions.error));
-		return;
+		log(message);
+		throw new Error(message);
 	}
 
 	const {
@@ -81,13 +85,15 @@ export default function (
 	/**
 	 * This is hacky, but I want an escape hatch for testing
 	 */
-	let resolvedScadBinary: string;
-	if (checkLaunchPath && !launchPath) {
-		resolvedScadBinary = resolveOpenSCAD(launchPath);
+	const resolvedScadBin = resolveOpenSCAD(launchPath);
+
+	if (checkLaunchPath && resolvedScadBin === null) {
 		const message = `The launchPath "${launchPath}" does not exist.`;
 		log(red(message));
 		throw new Error(message);
 	}
+
+	assertValidLaunchPath(resolvedScadBin);
 
 	if (!silent) {
 		logPluginReadyMessage(parsedOptions.data);
@@ -171,7 +177,7 @@ export default function (
 				 * Begin STL Compilation
 				 */
 				const stopTimer = startTimer();
-				const { output, ok } = await scad2stl(resolvedScadBinary, {
+				const { output, ok } = await scad2stl(resolvedScadBin, {
 					in: data.scadFile,
 					out: path.join(writeDir, data.stlFile),
 				});
@@ -232,3 +238,4 @@ export default function (
 	}
 	// #endregion
 }
+// #endregion

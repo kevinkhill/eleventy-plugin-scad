@@ -10,7 +10,7 @@ import type { PathLike } from "node:fs";
 export function resolveOpenSCAD(launchPath?: PathLike | null) {
 	const pathStr = String(launchPath);
 	if (existsSync(pathStr)) return pathStr;
-	return which.sync(pathStr);
+	return which.sync(pathStr, { nothrow: true });
 }
 
 /**

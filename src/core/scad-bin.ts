@@ -1,6 +1,5 @@
 import { homedir, platform } from "node:os";
 import { join } from "node:path";
-import { resolveOpenSCAD } from "../lib/resolve";
 
 /**
  * Default OpenSCAD install locations
@@ -44,27 +43,11 @@ export const SCAD_BINS = {
 /**
  * Helper: Returns the OpenSCAD binary path for the current platform.
  */
-export function autoBinPath(): string;
-export function autoBinPath(opts: {
-	nightly?: boolean;
-	noThrow?: false;
-}): string;
-export function autoBinPath(opts: {
-	nightly?: boolean;
-	noThrow?: true;
-}): string | null;
-export function autoBinPath(opts?: { nightly?: boolean; noThrow?: boolean }) {
+export function autoBinPath(which: null | "auto" | "nightly" = "auto") {
 	const p = platform();
-	const map = opts?.nightly ? SCAD_BIN_NIGHTLY : SCAD_BIN;
+	const map = which === "nightly" ? SCAD_BIN_NIGHTLY : SCAD_BIN;
 	const bin = map[p as keyof PlatformMap];
-	if (!bin) {
-		if (opts?.noThrow) {
-			return null;
-		} else {
-			throw new Error(`Unsupported platform: ${p}`);
-		}
-	}
-	return resolveOpenSCAD(bin);
+	return typeof bin === "string" ? bin : null;
 }
 
 /**

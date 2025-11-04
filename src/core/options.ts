@@ -9,18 +9,12 @@ const OptBoolSchema = z.boolean().optional();
 const envvar = (e: string) => String(env[e]);
 
 export const PluginOptionsSchema = z.object({
-	launchPath: z
-		.union([z.literal("auto"), z.literal("nightly"), z.string()])
-		.nullish()
-		.prefault("auto")
-		.transform((val) => {
-			const isAuto = val === "auto";
-			const isNightly = val === "nightly";
-			if (!val || isAuto || isNightly) {
-				return autoBinPath({ nightly: isNightly, noThrow: true });
-			}
-			return val;
-		}),
+	launchPath: z.preprocess((val) => {
+		if (val === null || val === "auto" || val === "nightly") {
+			return autoBinPath(val);
+		}
+		return val;
+	}, z.string()),
 	layout: z.string().nullish(),
 	theme: z
 		.enum(THEMES)
@@ -53,17 +47,6 @@ export const PluginOptionsSchema = z.object({
 		])
 		.default(true),
 });
-
-export type PluginOptionsInput = Omit<
-	z.input<typeof PluginOptionsSchema>,
-	"launchPath"
-> & {
-	launchPath: "auto" | "nightly" | string;
-};
-
-export type ParsedPluginOptions = z.output<typeof PluginOptionsSchema>;
-
-export type PluginOptions = z.infer<typeof PluginOptionsSchema>;
 
 function parseStringEnv<T>(envvar: string): T | null {
 	const val = env[envvar];

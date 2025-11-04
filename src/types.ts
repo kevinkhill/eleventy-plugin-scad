@@ -1,7 +1,20 @@
 import type { EleventyScope, EleventySuppliedData } from "11ty.ts";
-import type { PluginOptions } from "./core/options";
+import type z from "zod";
+import type { PluginOptionsSchema } from "./core";
 
 export type * from "11ty.ts";
+
+export type PluginOptionsInput = Omit<
+	z.input<typeof PluginOptionsSchema>,
+	"launchPath"
+> & {
+	launchPath: "auto" | "nightly" | string;
+};
+
+export type ParsedPluginOptions = z.output<typeof PluginOptionsSchema>;
+
+export type PluginOptions = z.infer<typeof PluginOptionsSchema>;
+
 export type StlViewerThemes = PluginOptions["theme"];
 
 export type ScadTemplateData = {

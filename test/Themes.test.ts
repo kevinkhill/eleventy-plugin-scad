@@ -16,6 +16,7 @@ const THEMES: StlViewerThemes[][] = [
 
 describe.for(THEMES)("Theme: %s", ([theme]) => {
 	const escad = createTestInstance({
+		launchPath: "nightly",
 		theme,
 		silent: true,
 		...DISABLE_OPENSCAD,
