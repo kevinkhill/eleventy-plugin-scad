@@ -1,5 +1,5 @@
 import he from "he";
-import type { EleventyConfig } from "../lib/types";
+import type { EleventyConfig } from "../types";
 
 export function addScadMarkdownHighlighter(eleventyConfig: EleventyConfig) {
 	eleventyConfig.addMarkdownHighlighter((content: string, language: string) => {

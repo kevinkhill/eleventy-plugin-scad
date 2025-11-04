@@ -2,7 +2,7 @@ import { join } from "node:path";
 import { getLogger } from "../lib/logger";
 import { DOT_SCAD, DOT_STL } from "./const";
 import { scad2stl } from "./scad2stl";
-import type { EleventyConfig, EleventyScope } from "../lib/types";
+import type { EleventyConfig, EleventyScope } from "../types";
 
 /**
  * Rendering STLs as a transformer

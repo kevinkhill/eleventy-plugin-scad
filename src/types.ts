@@ -1,21 +1,14 @@
-import type {
-	EleventyConfig,
-	EleventyScope,
-	EleventySuppliedData,
-} from "11ty.ts";
-import type z from "zod";
-import type { PluginOptionsSchema } from "../core/options";
+import type { EleventyScope, EleventySuppliedData } from "11ty.ts";
+import type { PluginOptions } from "./core/options";
 
-export type { EleventyConfig };
-
-export type MaybePluginOptions = z.input<typeof PluginOptionsSchema>;
-export type PluginOptions = z.infer<typeof PluginOptionsSchema>;
+export type * from "11ty.ts";
 export type StlViewerThemes = PluginOptions["theme"];
 
 export type ScadTemplateData = {
 	layout: string;
 	title: string;
 	tags: string[];
+	theme: string;
 	slug: string;
 	scadFile: string;
 	stlFile: string;

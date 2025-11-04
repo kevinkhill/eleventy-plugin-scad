@@ -1,13 +1,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
-import path, { join } from "node:path";
+import path from "node:path";
 import { blue, bold, gray, green, red, yellow } from "yoctocolors";
 import z, { prettifyError } from "zod";
 import { findUpSync } from "find-up";
 import Debug from "debug";
 import "he";
 import { env } from "node:process";
-import { homedir, platform } from "node:os";
+import { platform } from "node:os";
 import { spawn } from "node:child_process";
 
 //#region package.json
@@ -22,11 +22,11 @@ const DOT_SCAD = `.${SCAD_EXT}`;
 
 //#endregion
 //#region src/lib/debug.ts
-const debug$3 = Debug("eleventy:scad");
+const debug$2 = Debug("eleventy:scad");
 
 //#endregion
 //#region src/lib/assets.ts
-const debug$2 = debug$3.extend("assets");
+const debug$1 = debug$2.extend("assets");
 let assetPath = "";
 /**
 * Load an asset file from the bundle
@@ -34,7 +34,7 @@ let assetPath = "";
 function getAssetFileContent(file) {
 	const resPath = path.join(getAssetPath(), file);
 	const content = readFileSync(resPath, "utf8");
-	debug$2(`read from disk "%s"`, file);
+	debug$1(`read from disk "%s"`, file);
 	return content;
 }
 function getAssetPath() {
@@ -42,16 +42,16 @@ function getAssetPath() {
 	return assetPath;
 }
 function ensureAssetPath() {
-	debug$2(`ensuring asset path is set`);
-	if (assetPath) debug$2(`assetPath = "%s"`, assetPath);
+	debug$1(`ensuring asset path is set`);
+	if (assetPath) debug$1(`assetPath = "%s"`, assetPath);
 	else {
-		debug$2(`searching "%s"`, import.meta.dirname);
+		debug$1(`searching "%s"`, import.meta.dirname);
 		const found = findUpSync("assets", {
 			cwd: import.meta.dirname,
 			type: "directory"
 		});
 		if (!found) throw new Error(`"assets/" was not found!`);
-		debug$2(`found "%s"`, found);
+		debug$1(`found "%s"`, found);
 		assetPath = found;
 	}
 }
@@ -87,9 +87,58 @@ function startTimer() {
 }
 
 //#endregion
-//#region src/core/options.ts
-const OptBoolSchema = z.boolean().optional();
-const ThemeSchema = z.enum([
+//#region src/core/scad-bin.ts
+/**
+* Default OpenSCAD install locations
+*
+* @TODO: Need to verify this since I have nightly installed
+*/
+const SCAD_BIN = {
+	linux: "openscad",
+	darwin: "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD",
+	win32: "C:/Program Files/Openscad/openscad.exe"
+};
+/**
+* Default OpenSCAD Nightly install locations
+*/
+const SCAD_BIN_NIGHTLY = {
+	linux: "openscad-nightly",
+	darwin: "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD",
+	win32: "C:/Program Files/Openscad/openscad-nightly.exe"
+};
+/**
+* Alias mappings to use when installing the plugin into an eleventy project.
+*
+* @example ```
+* import Eleventy from "@11ty/eleventy";
+* import { EleventyPluginOpenSCAD, SCAD_BINS } from "eleventy-plugin-scad";
+*
+* const launchPath = SCAD_BINS.MACOS;
+*```
+*/
+const SCAD_BINS = {
+	LINUX: SCAD_BIN.linux,
+	LINUX_NIGHTLY: SCAD_BIN_NIGHTLY.linux,
+	MACOS: SCAD_BIN.darwin,
+	MACOS_NIGHTLY: SCAD_BIN_NIGHTLY.darwin,
+	WINDOWS: SCAD_BIN.win32,
+	WINDOWS_NIGHTLY: SCAD_BIN_NIGHTLY.win32
+};
+/**
+* Helper: Returns the OpenSCAD binary path for the current platform.
+* @param nightly - Whether to use the nightly build
+*/
+function autoBinPath(opts) {
+	const p = platform();
+	const map = opts?.nightly ? SCAD_BIN_NIGHTLY : SCAD_BIN;
+	const bin = map[p];
+	if (!bin) throw new Error(`Unsupported platform: ${p}`);
+	return bin;
+}
+
+//#endregion
+//#region src/core/themes.ts
+const THEMES = [
 	"Traditional",
 	"Modernist",
 	"Midnight",
@@ -98,67 +147,44 @@ const ThemeSchema = z.enum([
 	"Steely",
 	"Swiss",
 	"Ultramarine"
-]);
+];
+const BUILD_TIME_DEFAULT_THEME = "Midnight";
+
+//#endregion
+//#region src/core/options.ts
+const OptBoolSchema = z.boolean().optional();
+const envvar = (e) => String(env[e]);
 const PluginOptionsSchema = z.object({
-	launchPath: z.string().refine((val) => {
-		if (!existsSync(val)) return `Does Not Exist: ${val}`;
-		return true;
+	launchPath: z.union([
+		z.literal("auto"),
+		z.literal("nightly"),
+		z.string()
+	]).nullish().prefault("auto").transform((val) => {
+		if (!val || val === "auto" || val === "nightly") return autoBinPath();
+		return val;
 	}),
 	layout: z.string().nullish(),
-	theme: ThemeSchema.optional().default(parseStringEnv("ELEVENTY_SCAD_THEME", "Midnight")),
-	collectionPage: OptBoolSchema.default(parseBooleanEnv("ELEVENTY_SCAD_COLLECTION_PAGE", true)),
-	verbose: OptBoolSchema.default(parseBooleanEnv("ELEVENTY_SCAD_VERBOSE", false)),
-	silent: OptBoolSchema.default(parseBooleanEnv("ELEVENTY_SCAD_VERBOSE", false)),
-	noSTL: OptBoolSchema.default(parseBooleanEnv("ELEVENTY_SCAD_NO_STL", false))
+	theme: z.enum(THEMES).optional().default(parseStringEnv("ELEVENTY_SCAD_THEME") ?? BUILD_TIME_DEFAULT_THEME),
+	collectionPage: OptBoolSchema.default(parseBooleanEnv("ELEVENTY_SCAD_COLLECTION_PAGE") ?? true),
+	verbose: OptBoolSchema.default(parseBooleanEnv("ELEVENTY_SCAD_VERBOSE") ?? false),
+	silent: OptBoolSchema.default(parseBooleanEnv("ELEVENTY_SCAD_VERBOSE") ?? false),
+	noSTL: OptBoolSchema.default(parseBooleanEnv("ELEVENTY_SCAD_NO_STL") ?? false),
+	checkLaunchPath: z.union([z.boolean(), z.stringbool().prefault(envvar("ELEVENTY_SCAD_CHECK_LAUNCH_PATH"))]).default(true)
 });
-function parseStringEnv(envvar, defaultVal) {
-	const val = env[envvar];
-	if (typeof val === "string") {
-		if (val.length > 0) return val;
-		return defaultVal;
-	}
-	return defaultVal;
+function parseStringEnv(envvar$1) {
+	const val = env[envvar$1];
+	if (typeof val === "string" && val.length > 0) return val;
+	return null;
 }
-function parseBooleanEnv(envvar, defaultVal) {
-	const val = env[envvar];
+function parseBooleanEnv(envvar$1) {
+	const val = env[envvar$1];
 	if (typeof val === "boolean") return val;
 	if (typeof val === "string") {
 		const v = val.trim().toLowerCase();
 		if (["true", "1"].includes(v)) return true;
 		if (["false", "0"].includes(v)) return false;
 	}
-	return defaultVal;
-}
-
-//#endregion
-//#region src/core/scad-bin.ts
-const SCAD_BIN = {
-	LINUX: "openscad",
-	LINUX_NIGHTLY: "openscad-nightly",
-	MACOS: "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD",
-	WINDOWS: "C:/Program Files/Openscad/openscad.exe",
-	WINDOWS_NIGHTLY: "C:/Program Files/Openscad/openscad-nightly.exe"
-};
-const PLATFORM_MAP_SCAD_BIN = {
-	linux: SCAD_BIN.LINUX,
-	darwin: SCAD_BIN.MACOS,
-	win32: SCAD_BIN.WINDOWS
-};
-/**
-* Helper function that attempts to get the bin path based on `os.platform()`
-*/
-function detectBinFromPlatfrom() {
-	const p = platform();
-	const bin = PLATFORM_MAP_SCAD_BIN[p];
-	if (!bin) throw new Error(`Unsupported platform: ${p}`);
-	return bin;
-}
-/**
-* Helper function to return the path to OpenSCAD if you installed
-* it in your user folder `~/Applications/`
-*/
-function macosUserInstalledOpenSCAD() {
-	return join(homedir(), SCAD_BIN.MACOS);
+	return null;
 }
 
 //#endregion
@@ -168,7 +194,7 @@ let workerId = 0;
 * Generate an `.stl` from a given `.scad` file
 */
 async function scad2stl(launchPath, files) {
-	const debugWorker = debug$3.extend(`worker${workerId++}`);
+	const debugWorker = debug$2.extend(`worker${workerId++}`);
 	debugWorker("input: %s", files.in);
 	debugWorker("output: %s", files.out);
 	const { promise, resolve, reject } = Promise.withResolvers();
@@ -204,14 +230,14 @@ async function scad2stl(launchPath, files) {
 //#endregion
 //#region src/core/shortcodes.ts
 const DEFAULT_THREE_JS_VERSION = "0.180.0";
-const debug$1 = debug$3.extend("shortcodes");
+const debug = debug$2.extend("shortcodes");
 /**
 * Helper Shortcodes for generating pages from scad templates
 */
 function addShortcodes(eleventyConfig, { theme }) {
 	const registerShortcode = (shortcodeName, filter) => {
 		eleventyConfig.addShortcode(shortcodeName, filter);
-		debug$1(`added "%s"`, shortcodeName);
+		debug(`added "%s"`, shortcodeName);
 	};
 	/**
 	* Shortcode to produce a script block with the the absolute path to the model stl
@@ -232,8 +258,8 @@ function addShortcodes(eleventyConfig, { theme }) {
 	* {% w3_theme_css %} 👈🏻 Defaults to "Midnight" if no theme defined in the config
 	* {% w3_theme_css "Chocolate" %}
 	*/
-	registerShortcode("w3_theme_css", () => {
-		return `<link rel="stylesheet" href="https://www.w3.org/StyleSheets/Core/${theme}" type="text/css">`;
+	registerShortcode("w3_theme_css", (theme$1) => {
+		return `<link rel="stylesheet" href="https://www.w3.org/StyleSheets/Core/${theme$1}" type="text/css">`;
 	});
 	/**
 	* Shortcode to produce the importmaps for three.js
@@ -259,21 +285,21 @@ function addShortcodes(eleventyConfig, { theme }) {
 //#region src/core/templates.ts
 const DEFAULT_SCAD_LAYOUT = "scad.viewer.njk";
 const DEFAULT_COLLECTION_LAYOUT = "scad.collection.njk";
-const debug = debug$3.extend("templates");
+const log = debug$2.extend("templates");
 function addBuiltinScadLayoutVirtualTemplate(eleventyConfig) {
 	eleventyConfig.addTemplate(`_includes/${DEFAULT_SCAD_LAYOUT}`, getAssetFileContent(DEFAULT_SCAD_LAYOUT), {});
-	debug(`(virtual) added "%s"`, DEFAULT_SCAD_LAYOUT);
+	log(`(virtual) added "%s"`, DEFAULT_SCAD_LAYOUT);
 }
 function addScadCollectionVirtualTemplate(eleventyConfig) {
 	eleventyConfig.addTemplate(`_includes/${DEFAULT_COLLECTION_LAYOUT}`, getAssetFileContent(DEFAULT_COLLECTION_LAYOUT), {});
-	debug(`(virtual) added "%s"`, DEFAULT_COLLECTION_LAYOUT);
+	log(`(virtual) added "%s"`, DEFAULT_COLLECTION_LAYOUT);
 	const DEFAULT_COLLECTION_TEMPLATE = "index.njk";
 	eleventyConfig.addTemplate(DEFAULT_COLLECTION_TEMPLATE, `<ul>
 			{% for item in collections.scad %}
           		<li><a href="/{{ item.data.slug }}">{{ item.data.title }}</a></li>
         	{% endfor %}
 		</ul>`, { layout: DEFAULT_COLLECTION_LAYOUT });
-	debug(`(virtual) added "%s"`, DEFAULT_COLLECTION_TEMPLATE);
+	log(`(virtual) added "%s"`, DEFAULT_COLLECTION_TEMPLATE);
 }
 
 //#endregion
@@ -299,16 +325,22 @@ function plugin_default(eleventyConfig, options) {
 		console.log(`[${name}] WARN Eleventy plugin compatibility: ${e.message}`);
 	}
 	ensureAssetPath();
-	const log = createScadLogger(eleventyConfig);
+	const log$1 = createScadLogger(eleventyConfig);
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
-	debug$3.extend("zod")("parsed options = %O", parsedOptions);
+	debug$2.extend("zod")("parsed options = %O", parsedOptions);
 	if (parsedOptions.error) {
-		log(red("Options Error"));
-		log(prettifyError(parsedOptions.error));
+		log$1(red("Options Error"));
+		log$1(prettifyError(parsedOptions.error));
 		return;
 	}
-	const { launchPath, layout, collectionPage, noSTL, verbose, silent, theme } = parsedOptions.data;
-	if (!existsSync(launchPath)) throw new Error(`${launchPath} is not a valid launchPath`);
+	const { theme, noSTL, layout, silent, verbose, launchPath, collectionPage, checkLaunchPath } = parsedOptions.data;
+	/**
+	* This is hacky, but I want an escape hatch for testing
+	*/
+	if (checkLaunchPath && !existsSync(launchPath)) {
+		log$1(red(`The launchPath "${launchPath}" does not exist.`));
+		return;
+	}
 	if (!silent) logPluginReadyMessage(parsedOptions.data);
 	/**
 	* Global data for templates
@@ -344,6 +376,7 @@ function plugin_default(eleventyConfig, options) {
 				layout: layout ?? DEFAULT_SCAD_LAYOUT,
 				tags: ["scad"],
 				slug: filename.replace(DOT_SCAD, ""),
+				theme,
 				title: filename,
 				scadFile: inputPath,
 				stlFile: filename.replace(DOT_SCAD, DOT_STL)
@@ -352,11 +385,11 @@ function plugin_default(eleventyConfig, options) {
 		async compile(inputContent, inputPath) {
 			if (noSTL) return () => inputContent;
 			return async (data) => {
-				const dirs = data.eleventy?.directories;
+				const dirs = data.eleventy.directories;
 				const writeDir = path.join(dirs.output, data.page.fileSlug);
 				await mkdir(writeDir, { recursive: true });
 				const action = noSTL ? blue("Would write") : "Writing";
-				log(`${action} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
+				log$1(`${action} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
 				/**
 				* Begin STL Compilation
 				*/
@@ -367,18 +400,18 @@ function plugin_default(eleventyConfig, options) {
 				});
 				const duration = stopTimer();
 				if (!ok) {
-					log(red("OpenSCAD encountered an issue"));
+					log$1(red("OpenSCAD encountered an issue"));
 					for (const line of output) {
 						const cleanLine = line.replaceAll("\n", "");
-						log(red(cleanLine));
+						log$1(red(cleanLine));
 					}
 					return inputContent;
 				}
 				if (verbose) {
 					const lines = output.flatMap((line) => line.split("\n"));
-					for (const line of lines) log(gray(`\t${line}`));
+					for (const line of lines) log$1(gray(`\t${line}`));
 				}
-				log(green(`Wrote ${bold(data.stlFile)} in ${bold(duration.toFixed(2))} seconds`));
+				log$1(green(`Wrote ${bold(data.stlFile)} in ${bold(duration.toFixed(2))} seconds`));
 				return inputContent;
 			};
 		}
@@ -386,13 +419,14 @@ function plugin_default(eleventyConfig, options) {
 	/**
 	* Helper to de-clutter the top of the plugin
 	*/
-	function logPluginReadyMessage({ silent: silent$1, theme: theme$1, verbose: verbose$1, noSTL: noSTL$1, collectionPage: collectionPage$1 }) {
-		log(`${gray("Theme:")} ${theme$1}`);
-		log([
+	function logPluginReadyMessage({ silent: silent$1, theme: theme$1, verbose: verbose$1, noSTL: noSTL$1, collectionPage: collectionPage$1, checkLaunchPath: checkLaunchPath$1 }) {
+		log$1(`${gray("Theme:")} ${theme$1}`);
+		log$1([
 			gray(" Opts:"),
 			silent$1 ? green("+silent") : "",
 			verbose$1 ? green("+verbose") : "",
 			noSTL$1 ? red("-noSTL") : "",
+			!checkLaunchPath$1 ? red("-launchPathCheck") : "",
 			!collectionPage$1 ? red("-collectionPage") : ""
 		].join(" ").replaceAll(/\s+/g, " "));
 	}
@@ -403,4 +437,4 @@ function plugin_default(eleventyConfig, options) {
 var src_default = plugin_default;
 
 //#endregion
-export { plugin_default as EleventyPluginOpenSCAD, PLATFORM_MAP_SCAD_BIN, SCAD_BIN, addOpenSCADPlugin, src_default as default, detectBinFromPlatfrom, macosUserInstalledOpenSCAD };
+export { plugin_default as EleventyPluginOpenSCAD, SCAD_BINS, addOpenSCADPlugin, src_default as default };

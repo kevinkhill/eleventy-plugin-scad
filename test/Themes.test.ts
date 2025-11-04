@@ -1,11 +1,9 @@
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { SCAD_BIN } from "../src";
-import { createEleventyScadClient } from "./_setup/11ty-scad";
-import type { EleventyPageJSON } from "./_setup/types";
+import { SCAD_EXT } from "../src/core";
+import { createTestInstance, DISABLE_OPENSCAD } from "./_setup/11ty-scad";
+import type { StlViewerThemes } from "../src";
 
-const THEMES = [
+const THEMES: StlViewerThemes[][] = [
 	["Chocolate"],
 	["Midnight"],
 	["Modernist"],
@@ -17,17 +15,19 @@ const THEMES = [
 ];
 
 describe.for(THEMES)("Theme: %s", ([theme]) => {
-	const escad = createEleventyScadClient({
-		launchPath: join(homedir(), SCAD_BIN.MACOS),
-		// biome-ignore lint/suspicious/noExplicitAny: its fine
-		theme: theme as any,
+	const escad = createTestInstance({
+		theme,
 		silent: true,
+		...DISABLE_OPENSCAD,
 	});
 
 	it("has the correct theme css", async () => {
-		const pages = (await escad.toJSON()) as EleventyPageJSON[];
-		for (const page of pages) {
-			expect(page.content).includes(theme);
+		const pages = await escad.toJSON();
+		const scadPages = pages.filter((p) => p.inputPath.endsWith(SCAD_EXT));
+
+		expect(scadPages).toHaveLength(3);
+		for (const page of scadPages) {
+			expect(page.content.includes(theme)).toBeTruthy();
 		}
 	});
 });

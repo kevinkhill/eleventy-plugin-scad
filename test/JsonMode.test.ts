@@ -1,28 +1,22 @@
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { SCAD_BIN } from "../src";
-import { createEleventyScadClient } from "./_setup/11ty-scad";
-import type { EleventyPageJSON } from "./_setup/types";
+import { createTestInstance } from "./_setup/11ty-scad";
 
-const escad = createEleventyScadClient({
-	launchPath: join(homedir(), SCAD_BIN.MACOS),
-	silent: true,
+const escad = createTestInstance({
+	launchPath: "nightly",
 });
 
 const pages: EleventyPageJSON[] = [];
 
-beforeAll(async () => {
-	const generated = (await escad.toJSON()) as EleventyPageJSON[];
-	pages.push(...generated);
-});
-
 describe.for([["cube"], ["sphere"], ["cylinder"]])("%s.scad", ([name]) => {
-	let page: EleventyPageJSON;
+	let page: EleventyPageJSON | undefined;
+
+	beforeAll(async () => {
+		const generated = await escad.toJSON();
+		pages.push(...generated);
+	});
 
 	beforeEach(() => {
-		page = pages.find((p) => p.url.includes(name)) as EleventyPageJSON;
-		console.log(page);
+		page = pages.find((p) => p.url.includes(name));
 	});
 
 	it("has the correct URL", () => {
@@ -34,7 +28,7 @@ describe.for([["cube"], ["sphere"], ["cylinder"]])("%s.scad", ([name]) => {
 	});
 
 	it("has the correct output path", () => {
-		expect(page.outputPath).toEndWithString(`output/${name}/index.html`);
+		expect(page?.outputPath).toEndWithString(`output/${name}/index.html`);
 	});
 
 	it("has valid HTML content", () => {
@@ -49,9 +43,7 @@ describe("(virtual) index.html", () => {
 	beforeAll(() => {
 		const _page = pages.find((p) => p.url === "/");
 		if (!_page) {
-			throw new Error(
-				"This should never throw unless the page didn't generate",
-			);
+			throw new Error("This will never throw unless the page didn't generate");
 		}
 		page = _page;
 	});
@@ -72,3 +64,5 @@ describe("(virtual) index.html", () => {
 		expect(page.outputPath).toEndWithString(`output/index.html`);
 	});
 });
+
+type EleventyPageJSON = Awaited<ReturnType<typeof escad.toJSON>>[number];

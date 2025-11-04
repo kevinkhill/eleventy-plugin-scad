@@ -1,6 +1,6 @@
 import { debug as $debug } from "../lib";
 import { DOT_STL } from "./const";
-import type { EleventyConfig, PluginOptions } from "../lib/types";
+import type { EleventyConfig, PluginOptions } from "../types";
 
 export const DEFAULT_THREE_JS_VERSION = "0.180.0";
 
@@ -43,7 +43,7 @@ export function addShortcodes(
 	 * {% w3_theme_css %} 👈🏻 Defaults to "__DEFAULT_THEME__" if no theme defined in the config
 	 * {% w3_theme_css "Chocolate" %}
 	 */
-	registerShortcode("w3_theme_css", () => {
+	registerShortcode("w3_theme_css", (theme: string) => {
 		return `<link rel="stylesheet" href="https://www.w3.org/StyleSheets/Core/${theme}" type="text/css">`;
 	});
 

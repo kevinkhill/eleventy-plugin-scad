@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { blue, bold, gray, green, red } from "yoctocolors";
@@ -16,25 +15,30 @@ import {
 	scad2stl,
 } from "./core";
 import { addScadGlobalData } from "./core/global-data";
-import { createScadLogger, debug, ensureAssetPath, startTimer } from "./lib";
+import {
+	createScadLogger,
+	debug,
+	ensureAssetPath,
+	resolveOpenSCAD,
+	startTimer,
+} from "./lib";
+import type { PluginOptions, PluginOptionsInput } from "./core";
 import type {
 	EleventyConfig,
 	EleventyDirs,
 	FullPageData,
-	MaybePluginOptions,
-	PluginOptions,
 	ScadTemplateData,
-} from "./lib/types";
+} from "./types";
 
 /**
  * Eleventy Plugin for OpenSCAD
  *
  * @param {EleventyConfig} eleventyConfig
- * @param {MaybePluginOptions} options
+ * @param {PluginOptionsInput} options
  */
 export default function (
 	eleventyConfig: EleventyConfig,
-	options: MaybePluginOptions,
+	options: PluginOptionsInput,
 ) {
 	try {
 		if (!("addTemplate" in eleventyConfig)) {
@@ -53,6 +57,7 @@ export default function (
 
 	const log = createScadLogger(eleventyConfig);
 
+	// #region Parse Options
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
 	debug.extend("zod")("parsed options = %O", parsedOptions);
 
@@ -62,17 +67,34 @@ export default function (
 		return;
 	}
 
-	const { launchPath, layout, collectionPage, noSTL, verbose, silent, theme } =
-		parsedOptions.data;
+	const {
+		theme,
+		noSTL,
+		layout,
+		silent,
+		verbose,
+		launchPath,
+		collectionPage,
+		checkLaunchPath,
+	} = parsedOptions.data;
 
-	if (!existsSync(launchPath)) {
-		throw new Error(`${launchPath} is not a valid launchPath`);
+	/**
+	 * This is hacky, but I want an escape hatch for testing
+	 */
+	let resolvedScadBinary: string;
+	if (checkLaunchPath && !launchPath) {
+		resolvedScadBinary = resolveOpenSCAD(launchPath);
+		const message = `The launchPath "${launchPath}" does not exist.`;
+		log(red(message));
+		throw new Error(message);
 	}
 
 	if (!silent) {
 		logPluginReadyMessage(parsedOptions.data);
 	}
+	// #endregion
 
+	// #region Plugin Body
 	/**
 	 * Global data for templates
 	 */
@@ -109,6 +131,7 @@ export default function (
 	 * Register `.scad` files as virtual template files and
 	 * define they are to be compiled into html & stl files.
 	 */
+	// #region Compilation
 	eleventyConfig.addTemplateFormats(SCAD_EXT);
 	eleventyConfig.addExtension(SCAD_EXT, {
 		/**
@@ -120,6 +143,7 @@ export default function (
 				layout: layout ?? DEFAULT_SCAD_LAYOUT,
 				tags: ["scad"],
 				slug: filename.replace(DOT_SCAD, ""),
+				theme: theme,
 				title: filename,
 				scadFile: inputPath,
 				stlFile: filename.replace(DOT_SCAD, DOT_STL),
@@ -132,7 +156,8 @@ export default function (
 			if (noSTL) return () => inputContent;
 
 			return async (data: FullPageData) => {
-				const dirs = data.eleventy?.directories as EleventyDirs;
+				// biome-ignore lint/suspicious/noExplicitAny: its fine
+				const dirs = (data.eleventy as any).directories as EleventyDirs;
 				const writeDir = path.join(dirs.output, data.page.fileSlug);
 
 				// This was added because writing of the template actually creates the dir
@@ -146,7 +171,7 @@ export default function (
 				 * Begin STL Compilation
 				 */
 				const stopTimer = startTimer();
-				const { output, ok } = await scad2stl(launchPath, {
+				const { output, ok } = await scad2stl(resolvedScadBinary, {
 					in: data.scadFile,
 					out: path.join(writeDir, data.stlFile),
 				});
@@ -177,7 +202,9 @@ export default function (
 			};
 		},
 	});
+	// #endregion
 
+	// #region Helpers
 	/**
 	 * Helper to de-clutter the top of the plugin
 	 */
@@ -187,6 +214,7 @@ export default function (
 		verbose,
 		noSTL,
 		collectionPage,
+		checkLaunchPath,
 	}: PluginOptions) {
 		log(`${gray("Theme:")} ${theme}`);
 		log(
@@ -195,10 +223,12 @@ export default function (
 				silent ? green("+silent") : "",
 				verbose ? green("+verbose") : "",
 				noSTL ? red("-noSTL") : "",
+				!checkLaunchPath ? red("-launchPathCheck") : "",
 				!collectionPage ? red("-collectionPage") : "",
 			]
 				.join(" ")
 				.replaceAll(/\s+/g, " "),
 		);
 	}
+	// #endregion
 }

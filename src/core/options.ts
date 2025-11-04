@@ -1,55 +1,77 @@
-import { existsSync } from "node:fs";
 import { env } from "node:process";
 import z from "zod";
+import { autoBinPath } from "./scad-bin";
+import { BUILD_TIME_DEFAULT_THEME, THEMES } from "./themes";
+import type { PluginTheme } from "./themes";
 
 const OptBoolSchema = z.boolean().optional();
 
-export const ThemeSchema = z.enum([
-	"Traditional",
-	"Modernist",
-	"Midnight",
-	"Chocolate",
-	"Oldstyle",
-	"Steely",
-	"Swiss",
-	"Ultramarine",
-]);
+const envvar = (e: string) => String(env[e]);
 
 export const PluginOptionsSchema = z.object({
-	launchPath: z.string().refine((val) => {
-		if (!existsSync(val)) return `Does Not Exist: ${val}`;
-		return true;
-	}),
+	launchPath: z
+		.union([z.literal("auto"), z.literal("nightly"), z.string()])
+		.nullish()
+		.prefault("auto")
+		.transform((val) => {
+			const isAuto = val === "auto";
+			const isNightly = val === "nightly";
+			if (!val || isAuto || isNightly) {
+				return autoBinPath({ nightly: isNightly, noThrow: true });
+			}
+			return val;
+		}),
 	layout: z.string().nullish(),
-	theme: ThemeSchema.optional().default(
-		parseStringEnv<z.infer<typeof ThemeSchema>>(
-			"ELEVENTY_SCAD_THEME",
-			// @ts-expect-error ↙ This will be replaced at build time
-			"__DEFAULT_THEME__",
+	theme: z
+		.enum(THEMES)
+		// .prefault(env.ELEVENTY_SCAD_THEME)
+		.optional()
+		.default(
+			parseStringEnv<PluginTheme>("ELEVENTY_SCAD_THEME") ??
+				BUILD_TIME_DEFAULT_THEME,
 		),
-	),
+	// @TODO: Replace with z.stringbool
 	collectionPage: OptBoolSchema.default(
-		parseBooleanEnv("ELEVENTY_SCAD_COLLECTION_PAGE", true),
+		parseBooleanEnv("ELEVENTY_SCAD_COLLECTION_PAGE") ?? true,
 	),
+	// @TODO: Replace with z.stringbool
 	verbose: OptBoolSchema.default(
-		parseBooleanEnv("ELEVENTY_SCAD_VERBOSE", false),
+		parseBooleanEnv("ELEVENTY_SCAD_VERBOSE") ?? false,
 	),
+	// @TODO: Replace with z.stringbool
 	silent: OptBoolSchema.default(
-		parseBooleanEnv("ELEVENTY_SCAD_VERBOSE", false),
+		parseBooleanEnv("ELEVENTY_SCAD_VERBOSE") ?? false,
 	),
-	noSTL: OptBoolSchema.default(parseBooleanEnv("ELEVENTY_SCAD_NO_STL", false)),
+	// @TODO: Replace with z.stringbool
+	noSTL: OptBoolSchema.default(
+		parseBooleanEnv("ELEVENTY_SCAD_NO_STL") ?? false,
+	),
+	checkLaunchPath: z
+		.union([
+			z.boolean(),
+			z.stringbool().prefault(envvar("ELEVENTY_SCAD_CHECK_LAUNCH_PATH")),
+		])
+		.default(true),
 });
 
-function parseStringEnv<T>(envvar: string, defaultVal: T): T {
+export type PluginOptionsInput = Omit<
+	z.input<typeof PluginOptionsSchema>,
+	"launchPath"
+> & {
+	launchPath: "auto" | "nightly" | string;
+};
+
+export type ParsedPluginOptions = z.output<typeof PluginOptionsSchema>;
+
+export type PluginOptions = z.infer<typeof PluginOptionsSchema>;
+
+function parseStringEnv<T>(envvar: string): T | null {
 	const val = env[envvar];
-	if (typeof val === "string") {
-		if (val.length > 0) return val as T;
-		return defaultVal;
-	}
-	return defaultVal;
+	if (typeof val === "string" && val.length > 0) return val as T;
+	return null;
 }
 
-function parseBooleanEnv(envvar: string, defaultVal: boolean): boolean {
+function parseBooleanEnv(envvar: string): boolean | null {
 	const val = env[envvar];
 	if (typeof val === "boolean") return val;
 	if (typeof val === "string") {
@@ -57,5 +79,5 @@ function parseBooleanEnv(envvar: string, defaultVal: boolean): boolean {
 		if (["true", "1"].includes(v)) return true;
 		if (["false", "0"].includes(v)) return false;
 	}
-	return defaultVal;
+	return null;
 }

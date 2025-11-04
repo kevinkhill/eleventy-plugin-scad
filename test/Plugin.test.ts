@@ -1,35 +1,31 @@
 import { describe, expect, it, test } from "vitest";
-import { SCAD_BIN } from "../src";
-import { createEleventyScadClient } from "./_setup/11ty-scad";
+import { createTestInstance } from "./_setup/11ty-scad";
 
 describe("Eleventy OpenSCAD Plugin", () => {
 	it("throws an error with bad launch path", async () => {
 		expect(() => {
-			const escad = createEleventyScadClient({
-				launchPath: SCAD_BIN.MACOS,
-				silent: true,
+			const escad = createTestInstance({
+				launchPath: "TACO_BELL",
 			});
-			expect(escad.getVersion()).toBe("3.1.5");
+			expect(escad.getVersion()).toBe("3.1.2");
 		}).toThrowError();
 	});
 
-	it("works as expected", async () => {
+	test('launchPath = "auto"', async () => {
 		expect(() => {
-			const escad = createEleventyScadClient({
-				launchPath: SCAD_BIN.LINUX_NIGHTLY,
-				silent: true,
+			const escad = createTestInstance({
+				launchPath: "auto",
 			});
-			expect(escad.getVersion()).toBe("3.1.5");
+			expect(escad.getVersion()).toBe("3.1.2");
 		}).not.toThrowError();
 	});
 
-	it("works as expected", async () => {
+	test('launchPath = "nightly"', async () => {
 		expect(() => {
-			const escad = createEleventyScadClient({
-				launchPath: SCAD_BIN.LINUX_NIGHTLY,
-				silent: true,
+			const escad = createTestInstance({
+				launchPath: "",
 			});
-			expect(escad.getVersion()).toBe("3.1.5");
+			expect(escad.getVersion()).toBe("3.1.2");
 		}).not.toThrowError();
 	});
 });

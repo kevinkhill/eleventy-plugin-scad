@@ -1,13 +1,9 @@
-import { homedir } from "node:os";
 import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { SCAD_BIN } from "../src";
-import { createEleventyScadClient } from "./_setup/11ty-scad";
-import { ELEVENTY_TEST_OUTPUT } from "./_setup/paths";
+import { createTestInstance, TEST_SITE_OUTPUT } from "./_setup/11ty-scad";
 
-const escad = createEleventyScadClient({
-	launchPath: path.join(homedir(), SCAD_BIN.MACOS),
-	silent: true,
+const escad = createTestInstance({
+	launchPath: "nightly",
 });
 
 describe("WRITE Mode", () => {
@@ -17,7 +13,7 @@ describe("WRITE Mode", () => {
 	});
 
 	describe("cube.scad", () => {
-		const generatedDir = path.join(ELEVENTY_TEST_OUTPUT, "cube");
+		const generatedDir = path.join(TEST_SITE_OUTPUT, "cube");
 
 		it(`generated "cube/index.html"`, () => {
 			const index = path.join(generatedDir, "index.html");

@@ -1,5 +1,5 @@
 import { debug, getAssetFileContent } from "../lib";
-import type { EleventyConfig } from "../lib/types";
+import type { EleventyConfig } from "../types";
 
 export const DEFAULT_SCAD_LAYOUT = "scad.viewer.njk";
 

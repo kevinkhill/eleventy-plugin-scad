@@ -1,5 +1,5 @@
 import { getLogger } from "../lib";
-import type { EleventyConfig } from "../lib/types";
+import type { EleventyConfig } from "../types";
 
 export function registerEventHandlers(eleventyConfig: EleventyConfig) {
 	const logger = getLogger(eleventyConfig);
