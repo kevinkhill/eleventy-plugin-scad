@@ -11,9 +11,6 @@ importers:
       11ty.ts:
         specifier: 0.0.6
         version: 0.0.6(@11ty/eleventy@3.1.2)
-      '@types/which':
-        specifier: 3.0.4
-        version: 3.0.4
       debug:
         specifier: 4.4.3
         version: 4.4.3
@@ -51,6 +48,9 @@ importers:
       '@types/node':
         specifier: ^24.7.1
         version: 24.7.1
+      '@types/which':
+        specifier: 3.0.4
+        version: 3.0.4
       bumpp:
         specifier: 10.3.1
         version: 10.3.1
