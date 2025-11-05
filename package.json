@@ -74,5 +74,6 @@
   },
   "peerDependencies": {
     "@11ty/eleventy": "^3"
-  }
+  },
+  "packageManager": "pnpm@10.19.0"
 }
