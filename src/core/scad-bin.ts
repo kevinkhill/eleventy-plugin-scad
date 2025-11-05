@@ -1,5 +1,3 @@
-import { homedir, platform } from "node:os";
-import { join } from "node:path";
 import debug from "../lib/debug";
 import type { PlatformMap } from "../types";
 
@@ -43,27 +41,18 @@ export const SCAD_BINS = {
 } as const;
 
 /**
- * Helper: Returns the OpenSCAD binary path for the current platform.
+ * Returns the OpenSCAD binary path for the current platform.
  */
-export function autoBinPath(binType: null | "auto" | "nightly" = "auto") {
+export function autoBinPath(
+	platform: NodeJS.Platform,
+	binType: null | "auto" | "nightly" = "auto",
+) {
 	const log = debug.extend("bin");
-	const p = platform();
 	const binMap = binType === "nightly" ? SCAD_BIN_NIGHTLY : SCAD_BIN;
-	const bin = binMap[p as keyof PlatformMap];
+	const bin = binMap[platform as keyof PlatformMap];
 	const retVal = typeof bin === "string" ? bin : null;
-	log("platform: %s", p);
+	log("platform: %s", platform);
 	log("binType: %s", binType);
 	log("output: %s", retVal);
 	return retVal;
-}
-
-/**
- * Helper function to return the path to OpenSCAD if you installed it
- * in your user folder `/Users/YOU/Applications/OpenSCAD.app`
- */
-export function macosUserInstalledOpenSCAD() {
-	if (platform() !== "darwin") {
-		throw new Error("This helper funciton only works on MacOS systems.");
-	}
-	return join(homedir(), ...SCAD_BIN.darwin.split("/"));
 }

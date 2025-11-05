@@ -1,4 +1,4 @@
-import { env } from "node:process";
+import { env, platform } from "node:process";
 import z from "zod";
 import { THEMES } from "./const";
 import { autoBinPath } from "./scad-bin";
@@ -15,7 +15,7 @@ const createStringBoolSchema = (opts: { envvar: string; default: boolean }) => {
 export const PluginOptionsSchema = z.object({
 	launchPath: z.preprocess((val) => {
 		if (val === null || val === "auto" || val === "nightly") {
-			return autoBinPath(val ?? "auto");
+			return autoBinPath(platform, val ?? "auto");
 		}
 		return val;
 	}, z.string().optional()),

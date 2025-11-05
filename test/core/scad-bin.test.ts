@@ -1,7 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { autoBinPath, SCAD_BINS } from "../../src/core/scad-bin";
-
-const PLATFORMS: [NodeJS.Platform][] = [["linux"], ["darwin"], ["win32"]];
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { SCAD_BINS } from "../../src/core/scad-bin";
 
 const CASES = {
 	linux: [
@@ -18,21 +16,26 @@ const CASES = {
 	],
 } as Record<NodeJS.Platform, [undefined | "auto" | "nightly", string][]>;
 
+const PLATFORMS = (Object.keys(CASES) as NodeJS.Platform[]).map((k) => [k]);
+
 describe.for(PLATFORMS)(`on %s platforms`, ([testPlatform]) => {
-	beforeEach(() => {
-		vi.spyOn(process, "platform", "get").mockReturnValue(testPlatform);
+	const _platform = process.platform;
+
+	beforeAll(() => {
+		Object.defineProperty(process, "platform", { value: testPlatform });
+	});
+
+	afterAll(() => {
+		Object.defineProperty(process, "platform", { value: _platform });
 	});
 
 	describe.for(CASES[testPlatform])(
 		`autoBinPath("%s")`,
 		([binType, binPath]) => {
-			it("returns a path", () => {
-				expect(autoBinPath(binType)).toBe(binPath);
+			it("returns a path", async () => {
+				const { autoBinPath } = await import("../../src/core/scad-bin");
+				expect(autoBinPath(testPlatform, binType)).toBe(binPath);
 			});
 		},
 	);
-
-	afterEach(() => {
-		vi.restoreAllMocks();
-	});
 });
