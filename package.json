@@ -1,6 +1,6 @@
 {
   "name": "eleventy-plugin-scad",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Eleventy plugin to treat SCAD files as templates that need rendering to STL and showcased",
   "keywords": [
     "eleventy",
@@ -19,14 +19,8 @@
   },
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./register": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
+    "types": "./dist/index.d.ts",
+    "default": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "files": [
@@ -75,5 +69,5 @@
   "peerDependencies": {
     "@11ty/eleventy": "^3"
   },
-  "packageManager": "pnpm@10.19.0"
+  "packageManager": "pnpm@10.20.0"
 }

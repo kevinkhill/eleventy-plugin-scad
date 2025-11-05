@@ -2,6 +2,7 @@ name: Release
 
 permissions:
   contents: write
+  id-token: write  # needed for npm publish with provenance
 
 on:
   push:
@@ -11,16 +12,31 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Set node
         uses: actions/setup-node@v6
         with:
+          registry-url: 'https://registry.npmjs.org/'
           node-version: lts/*
+          cache: pnpm
+
+      - run: pnpm install
+
+      - run: pnpm build
 
       - run: npx changelogithub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
