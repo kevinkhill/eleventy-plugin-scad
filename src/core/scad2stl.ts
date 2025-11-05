@@ -1,12 +1,7 @@
 import { spawn } from "node:child_process";
-import { debug } from "../lib";
+import Debug from "../lib/debug";
 
-type ScadExportResult = {
-	output: string[];
-	ok: boolean;
-};
-
-let workerId = 0;
+const debug = Debug.extend("scad2stl");
 
 /**
  * Generate an `.stl` from a given `.scad` file
@@ -15,11 +10,8 @@ export async function scad2stl(
 	launchPath: string,
 	files: { in: string; out: string },
 ): Promise<ScadExportResult> {
-	const debugWorker = debug.extend(`worker${workerId++}`);
-
-	// debugWorker("spawned %s", launchPath);
-	debugWorker("input: %s", files.in);
-	debugWorker("output: %s", files.out);
+	debug("input: %s", files.in);
+	debug("output: %s", files.out);
 
 	const { promise, resolve, reject } =
 		Promise.withResolvers<ScadExportResult>();
@@ -28,12 +20,12 @@ export async function scad2stl(
 	const output: string[] = [];
 
 	scad.stdout.on("data", (data) => {
-		debugWorker("[stdout] %s", data.toString());
+		debug("[stdout] %s", data.toString());
 	});
 
 	scad.stderr.on("data", (data) => {
-		const lines = String(data).split("\n");
-		// lines.forEach((line) => void debugWorker("[stderr] %s", line));
+		// const lines = String(data).split("\n");
+		// lines.forEach((line) => void debug("[stderr] %s", line));
 		output.push(data.toString());
 	});
 
@@ -42,9 +34,14 @@ export async function scad2stl(
 	});
 
 	scad.on("close", (exitCode) => {
-		debugWorker("process closed");
+		// debug("done");
 		resolve({ output, ok: exitCode === 0 });
 	});
 
 	return promise;
 }
+
+type ScadExportResult = {
+	output: string[];
+	ok: boolean;
+};

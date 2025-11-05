@@ -35,7 +35,7 @@
     "dev": "pnpm build --watch ./src",
     "bump": "bumpp",
     "release": "bumpp && npm publish",
-    "start": "cd ./test/_11ty && DEBUG=eleventy:scad* pnpx @11ty/eleventy --serve",
+    "start": "DEBUG=eleventy:scad* eleventy --serve",
     "test": "vitest",
     "typecheck": "tsc --noEmit"
   },

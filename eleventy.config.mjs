@@ -1,4 +1,4 @@
-import { addOpenSCADPlugin } from "../../dist/index.js";
+import { addOpenSCADPlugin } from "./dist/index.js";
 
 /**
  * Testing & Development Config
@@ -7,13 +7,12 @@ import { addOpenSCADPlugin } from "../../dist/index.js";
  */
 export default function (eleventyConfig) {
   eleventyConfig.setQuietMode(false);
-  eleventyConfig.setInputDirectory("input");
-  eleventyConfig.setOutputDirectory("output");
-  eleventyConfig.addWatchTarget("../../dist/**/*");
+  eleventyConfig.setInputDirectory("test/_11ty/input");
+  eleventyConfig.setOutputDirectory("test/_11ty/output");
+  eleventyConfig.addWatchTarget("dist/**/*");
 
   addOpenSCADPlugin(eleventyConfig, {
     launchPath: "nightly",
     verbose: true,
-    collectionPage: true,
   });
 }

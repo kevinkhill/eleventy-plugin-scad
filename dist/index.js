@@ -56,12 +56,12 @@ function assertValidLaunchPath(input) {
 
 //#endregion
 //#region src/lib/debug.ts
-const debug$2 = Debug("eleventy:scad");
-var debug_default = debug$2;
+const debug$4 = Debug("eleventy:scad");
+var debug_default = debug$4;
 
 //#endregion
 //#region src/lib/assets.ts
-const debug$1 = debug_default.extend("assets");
+const debug$3 = debug_default.extend("assets");
 let assetPath = "";
 /**
 * Load an asset file from the bundle
@@ -69,7 +69,7 @@ let assetPath = "";
 function getAssetFileContent(file) {
 	const resPath = path.join(getAssetPath(), file);
 	const content = readFileSync(resPath, "utf8");
-	debug$1(`read from disk "%s"`, file);
+	debug$3(`read from disk "%s"`, file);
 	return content;
 }
 function getAssetPath() {
@@ -77,16 +77,16 @@ function getAssetPath() {
 	return assetPath;
 }
 function ensureAssetPath() {
-	debug$1(`ensuring asset path is set`);
-	if (assetPath) debug$1(`assetPath = "%s"`, assetPath);
+	debug$3(`ensuring asset path is set`);
+	if (assetPath) debug$3(`assetPath = "%s"`, assetPath);
 	else {
-		debug$1(`searching "%s"`, import.meta.dirname);
+		debug$3(`searching "%s"`, import.meta.dirname);
 		const found = findUpSync("assets", {
 			cwd: import.meta.dirname,
 			type: "directory"
 		});
 		if (!found) throw new Error(`"assets/" was not found!`);
-		debug$1(`found "%s"`, found);
+		debug$3(`found "%s"`, found);
 		assetPath = found;
 	}
 }
@@ -131,6 +131,7 @@ function addScadGlobalData(eleventyConfig) {
 
 //#endregion
 //#region src/core/scad-bin.ts
+const debug$2 = debug_default.extend("bin");
 /**
 * Default OpenSCAD install locations
 *
@@ -171,13 +172,12 @@ const SCAD_BINS = {
 * Returns the OpenSCAD binary path for the current platform.
 */
 function autoBinPath(platform$1, binType = "auto") {
-	const log$1 = debug_default.extend("bin");
 	const binMap = binType === "nightly" ? SCAD_BIN_NIGHTLY : SCAD_BIN;
 	const bin = binMap[platform$1];
 	const retVal = typeof bin === "string" ? bin : null;
-	log$1("platform: %s", platform$1);
-	log$1("binType: %s", binType);
-	log$1("output: %s", retVal);
+	debug$2("platform: %s", platform$1);
+	debug$2("binType: %s", binType);
+	debug$2("output: %s", retVal);
 	return retVal;
 }
 
@@ -223,14 +223,13 @@ function parseStringEnv(envvar) {
 
 //#endregion
 //#region src/core/scad2stl.ts
-let workerId = 0;
+const debug$1 = debug_default.extend("scad2stl");
 /**
 * Generate an `.stl` from a given `.scad` file
 */
 async function scad2stl(launchPath, files) {
-	const debugWorker = debug$2.extend(`worker${workerId++}`);
-	debugWorker("input: %s", files.in);
-	debugWorker("output: %s", files.out);
+	debug$1("input: %s", files.in);
+	debug$1("output: %s", files.out);
 	const { promise, resolve, reject } = Promise.withResolvers();
 	const scad = spawn(launchPath, [
 		"--o",
@@ -239,10 +238,9 @@ async function scad2stl(launchPath, files) {
 	]);
 	const output = [];
 	scad.stdout.on("data", (data) => {
-		debugWorker("[stdout] %s", data.toString());
+		debug$1("[stdout] %s", data.toString());
 	});
 	scad.stderr.on("data", (data) => {
-		const lines = String(data).split("\n");
 		output.push(data.toString());
 	});
 	scad.on("error", (err) => {
@@ -252,7 +250,6 @@ async function scad2stl(launchPath, files) {
 		});
 	});
 	scad.on("close", (exitCode) => {
-		debugWorker("process closed");
 		resolve({
 			output,
 			ok: exitCode === 0
@@ -318,7 +315,7 @@ function addShortcodes(eleventyConfig) {
 //#region src/core/templates.ts
 const DEFAULT_SCAD_LAYOUT = "scad.viewer.njk";
 const DEFAULT_COLLECTION_LAYOUT = "scad.collection.njk";
-const log = debug$2.extend("templates");
+const log = debug$4.extend("templates");
 function addBuiltinScadLayoutVirtualTemplate(eleventyConfig) {
 	log(`(virtual) adding "%s"`, DEFAULT_SCAD_LAYOUT);
 	eleventyConfig.addTemplate(`_includes/${DEFAULT_SCAD_LAYOUT}`, getAssetFileContent(DEFAULT_SCAD_LAYOUT), {});
@@ -352,7 +349,7 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 	ensureAssetPath();
 	const log$1 = createScadLogger(eleventyConfig);
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
-	debug$2.extend("zod")("parsed options = %O", parsedOptions);
+	debug$4.extend("zod")("parsed options = %O", parsedOptions);
 	if (parsedOptions.error) {
 		const message = prettifyError(parsedOptions.error);
 		log$1(red("Options Error"));

@@ -1,5 +1,7 @@
-import debug from "../lib/debug";
+import Debug from "../lib/debug";
 import type { PlatformMap } from "../types";
+
+const debug = Debug.extend("bin");
 
 /**
  * Default OpenSCAD install locations
@@ -47,12 +49,11 @@ export function autoBinPath(
 	platform: NodeJS.Platform,
 	binType: null | "auto" | "nightly" = "auto",
 ) {
-	const log = debug.extend("bin");
 	const binMap = binType === "nightly" ? SCAD_BIN_NIGHTLY : SCAD_BIN;
 	const bin = binMap[platform as keyof PlatformMap];
 	const retVal = typeof bin === "string" ? bin : null;
-	log("platform: %s", platform);
-	log("binType: %s", binType);
-	log("output: %s", retVal);
+	debug("platform: %s", platform);
+	debug("binType: %s", binType);
+	debug("output: %s", retVal);
 	return retVal;
 }
