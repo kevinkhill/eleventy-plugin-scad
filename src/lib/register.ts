@@ -1,9 +1,9 @@
 import EleventyPluginOpenSCAD from "../plugin";
-import type { EleventyConfig, MaybePluginOptions } from "../types";
+import type { EleventyConfig, PluginOptionsInput } from "../types";
 
 export function addOpenSCADPlugin(
 	eleventyConfig: EleventyConfig,
-	options: MaybePluginOptions,
+	options: PluginOptionsInput,
 ) {
 	eleventyConfig.addPlugin(EleventyPluginOpenSCAD, options);
 }

@@ -86,7 +86,7 @@ export default function EleventyPluginOpenSCAD(
 	 * This is hacky, but I want an escape hatch for testing
 	 */
 	const resolvedScadBin = resolveOpenSCAD(launchPath);
-
+	console.error(resolvedScadBin);
 	if (checkLaunchPath && resolvedScadBin === null) {
 		const message = `The launchPath "${launchPath}" does not exist.`;
 		log(red(message));
