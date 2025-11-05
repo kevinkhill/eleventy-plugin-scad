@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { SCAD_BINS } from "../../src/core/scad-bin";
 
 const CASES = {
@@ -19,16 +19,6 @@ const CASES = {
 const PLATFORMS = (Object.keys(CASES) as NodeJS.Platform[]).map((k) => [k]);
 
 describe.for(PLATFORMS)(`on %s platforms`, ([testPlatform]) => {
-	const _platform = process.platform;
-
-	beforeAll(() => {
-		Object.defineProperty(process, "platform", { value: testPlatform });
-	});
-
-	afterAll(() => {
-		Object.defineProperty(process, "platform", { value: _platform });
-	});
-
 	describe.for(CASES[testPlatform])(
 		`autoBinPath("%s")`,
 		([binType, binPath]) => {
