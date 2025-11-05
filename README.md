@@ -5,7 +5,7 @@ A plugin for Eleventy to showcase your SCAD files.
 ## Add to Eleventy Site
 
 ```bash
-npm install 11ty-plugin-scad
+npm install eleventy-plugin-scad
 ```
 
 ## Plugin Options
