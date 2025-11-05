@@ -15,8 +15,6 @@ export type ParsedPluginOptions = z.output<typeof PluginOptionsSchema>;
 
 export type PluginOptions = z.infer<typeof PluginOptionsSchema>;
 
-export type StlViewerThemes = PluginOptions["theme"];
-
 export type ScadTemplateData = {
 	layout: string;
 	title: string;

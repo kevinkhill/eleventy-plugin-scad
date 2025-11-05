@@ -9,7 +9,6 @@ export const THEMES = [
 	"Ultramarine",
 ] as const;
 
-export type PluginTheme = (typeof THEMES)[number];
+export const theme = (t: PluginTheme) => t;
 
-// This is defined in `tsdown.config.js` and will be replaced during build
-export const BUILD_TIME_DEFAULT_THEME = "__DEFAULT_THEME__" as PluginTheme;
+export type PluginTheme = (typeof THEMES)[number];
