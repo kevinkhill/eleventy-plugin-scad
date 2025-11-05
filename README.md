@@ -1,4 +1,4 @@
-# 11ty-plugin-openscad
+# eleventy-plugin-openscad
 
 A plugin for Eleventy to showcase your SCAD files.
 
