@@ -14,7 +14,9 @@ export type PluginOptionsInput = Omit<
 	z.input<typeof PluginOptionsSchema>,
 	"launchPath"
 > & {
-	launchPath: "auto" | "nightly" | string;
+	// https://stackoverflow.com/a/69793265
+	// reason for the weird type here 👇🏻
+	launchPath: "auto" | "nightly" | (string & {});
 };
 
 export type ScadTemplateData = {

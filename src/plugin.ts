@@ -102,14 +102,14 @@ export default function EleventyPluginOpenSCAD(
 
 	// #region Plugin Body
 	/**
-	 * Global data for templates
-	 */
-	addScadGlobalData(eleventyConfig);
-
-	/**
 	 * Highlight markdown blocks with "```scad"
 	 */
 	// addScadMarkdownHighlighter(eleventyConfig);
+
+	/**
+	 * Global data for templates
+	 */
+	addScadGlobalData(eleventyConfig);
 
 	/**
 	 * Handy shortcodes for building STL renderers
@@ -131,7 +131,9 @@ export default function EleventyPluginOpenSCAD(
 	/**
 	 * Copy all `.scad` files over with the renders
 	 */
-	// eleventyConfig.addPassthroughCopy(`**/*${DOT_SCAD}`);
+	// if (copySCAD) {
+	// 	eleventyConfig.addPassthroughCopy(`**/*${DOT_SCAD}`);
+	// }
 
 	/**
 	 * Register `.scad` files as virtual template files and

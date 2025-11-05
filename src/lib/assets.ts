@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { findUpSync } from "find-up";
-import { debug as $debug } from "./debug";
+import Debug from "./debug";
 
-const debug = $debug.extend("assets");
+const debug = Debug.extend("assets");
 
 let assetPath: string = "";
 

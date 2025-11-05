@@ -1,4 +1,4 @@
-import { debug as $debug } from "../lib";
+import Debug from "../lib/debug";
 import { DOT_STL } from "./const";
 import type { EleventyConfig } from "../types";
 
@@ -6,7 +6,7 @@ export const DEFAULT_THREE_JS_VERSION = "0.180.0";
 
 export const DEFAULT_LIL_GUI_VERSION = "0.21";
 
-const debug = $debug.extend("shortcodes");
+const debug = Debug.extend("shortcodes");
 
 /**
  * Helper Shortcodes for generating pages from scad templates

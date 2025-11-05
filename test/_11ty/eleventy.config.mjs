@@ -1,4 +1,4 @@
-import { addOpenSCADPlugin, SCAD_BIN } from "../../dist/index.js";
+import { addOpenSCADPlugin } from "../../dist/index.js";
 
 /**
  * Testing & Development Config
@@ -12,7 +12,7 @@ export default function (eleventyConfig) {
   eleventyConfig.addWatchTarget("../../dist/**/*");
 
   addOpenSCADPlugin(eleventyConfig, {
-    launchPath: SCAD_BIN.LINUX_NIGHTLY,
+    launchPath: "nightly",
     verbose: true,
     collectionPage: true,
   });

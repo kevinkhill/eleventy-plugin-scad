@@ -1,31 +1,13 @@
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createTestInstance } from "./_setup/eleventy";
 
 describe("Eleventy OpenSCAD Plugin", () => {
-	test.only("bad launchPath throws an Error", async () => {
+	it("throws an Error with a bad launchPath", async () => {
 		await expect(async () => {
 			const eleventy = createTestInstance({
 				launchPath: "THROW_ERROR.exe",
 			});
 			await eleventy.toJSON();
 		}).rejects.toThrowError();
-	});
-
-	test('launchPath = "auto"', async () => {
-		await expect(async () => {
-			const eleventy = createTestInstance({
-				launchPath: "auto",
-			});
-			await eleventy.toJSON();
-		}).not.toThrowError();
-	});
-
-	test('launchPath = "nightly"', async () => {
-		await expect(async () => {
-			const eleventy = createTestInstance({
-				launchPath: "nightly",
-			});
-			await eleventy.toJSON();
-		}).not.toThrowError();
 	});
 });

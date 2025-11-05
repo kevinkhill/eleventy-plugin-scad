@@ -10,23 +10,23 @@ const log = debug.extend("templates");
 export function addBuiltinScadLayoutVirtualTemplate(
 	eleventyConfig: EleventyConfig,
 ) {
+	log(`(virtual) adding "%s"`, DEFAULT_SCAD_LAYOUT);
 	eleventyConfig.addTemplate(
 		`_includes/${DEFAULT_SCAD_LAYOUT}`,
 		getAssetFileContent(DEFAULT_SCAD_LAYOUT),
 		{},
 	);
-	log(`(virtual) added "%s"`, DEFAULT_SCAD_LAYOUT);
 }
 
 export function addScadCollectionVirtualTemplate(
 	eleventyConfig: EleventyConfig,
 ) {
+	log(`(virtual) adding "%s"`, DEFAULT_COLLECTION_LAYOUT);
 	eleventyConfig.addTemplate(
 		`_includes/${DEFAULT_COLLECTION_LAYOUT}`,
 		getAssetFileContent(DEFAULT_COLLECTION_LAYOUT),
 		{},
 	);
-	log(`(virtual) added "%s"`, DEFAULT_COLLECTION_LAYOUT);
 
 	const DEFAULT_COLLECTION_TEMPLATE = "index.njk";
 
