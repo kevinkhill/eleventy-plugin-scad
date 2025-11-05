@@ -1,0 +1,38 @@
+name: Testing
+
+on:
+  push:
+    branches: [main, devel]
+  pull_request:
+    branches: [main, devel]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set node LTS
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install
+
+      # - name: Build
+      #   run: pnpm run build
+
+      # - name: Lint
+      #   run: pnpm run lint
+
+      # - name: Typecheck
+      #   run: pnpm run typecheck
+
+      - name: Test
+        run: pnpm run test
