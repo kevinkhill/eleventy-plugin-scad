@@ -1,8 +1,8 @@
 import { env } from "node:process";
 import z from "zod";
+import { THEMES } from "./const";
 import { autoBinPath } from "./scad-bin";
-import { THEMES, theme } from "./themes";
-import type { PluginTheme } from "./themes";
+import type { ModelViewerTheme } from "../types";
 
 const StringBoolSchema = z.union([z.boolean(), z.stringbool()]);
 
@@ -23,8 +23,8 @@ export const PluginOptionsSchema = z.object({
 	theme: z
 		.enum(THEMES)
 		.optional()
-		.prefault(parseStringEnv<PluginTheme>("ELEVENTY_SCAD_THEME"))
-		.default(theme("Midnight")),
+		.prefault(parseStringEnv<ModelViewerTheme>("ELEVENTY_SCAD_THEME"))
+		.default("Midnight"),
 	collectionPage: createStringBoolSchema({
 		envvar: "ELEVENTY_SCAD_COLLECTION_PAGE",
 		default: true,

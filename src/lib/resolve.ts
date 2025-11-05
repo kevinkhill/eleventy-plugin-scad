@@ -12,20 +12,3 @@ export function resolveOpenSCAD(launchPath?: PathLike | null) {
 	if (existsSync(pathStr)) return pathStr;
 	return which.sync(pathStr, { nothrow: true });
 }
-
-/**
- * Assert that the given launch path is valid.
- */
-export function assertValidLaunchPath(
-	launchPath?: PathLike | null,
-): asserts launchPath is string {
-	if (!launchPath) {
-		throw new Error(`launchPath cannot be null or undefined.`);
-	}
-	const resolved = resolveOpenSCAD(launchPath);
-	if (!resolved) {
-		throw new Error(
-			`The launchPath "${launchPath}" does not exist and could not be found on PATH.`,
-		);
-	}
-}

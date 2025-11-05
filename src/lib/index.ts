@@ -1,3 +1,4 @@
+export * from "./assert";
 export * from "./assets";
 export * from "./debug";
 export * from "./logger";

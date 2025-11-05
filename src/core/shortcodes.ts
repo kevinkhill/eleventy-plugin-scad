@@ -1,6 +1,6 @@
 import { debug as $debug } from "../lib";
 import { DOT_STL } from "./const";
-import type { EleventyConfig, PluginOptions } from "../types";
+import type { EleventyConfig } from "../types";
 
 export const DEFAULT_THREE_JS_VERSION = "0.180.0";
 
@@ -11,10 +11,7 @@ const debug = $debug.extend("shortcodes");
 /**
  * Helper Shortcodes for generating pages from scad templates
  */
-export function addShortcodes(
-	eleventyConfig: EleventyConfig,
-	{ theme }: { theme: PluginOptions["theme"] },
-) {
+export function addShortcodes(eleventyConfig: EleventyConfig) {
 	const registerShortcode: EleventyConfig["addShortcode"] = (
 		shortcodeName,
 		filter,
@@ -38,8 +35,7 @@ export function addShortcodes(
 	/**
 	 * Shortcode to produce a style block with themes created by w3.org
 	 *
-	 * Choices: Chocolate, Midnight, Modernist, Oldstyle, Steely, Swiss, Traditional, and Ultramarine
-	 *
+	 * Choices: "./themes.ts"
 	 * {% w3_theme_css %} 👈🏻 Defaults to "__DEFAULT_THEME__" if no theme defined in the config
 	 * {% w3_theme_css "Chocolate" %}
 	 */

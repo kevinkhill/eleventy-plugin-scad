@@ -1,8 +1,8 @@
 import { yellow } from "yoctocolors";
 import type { EleventyConfig } from "11ty.ts";
 
-export function getLogger(eleventyConfig: EleventyConfig) {
-	return eleventyConfig.logger as EleventyLogger;
+export function getLogger(eleventyConfig: EleventyConfig): EleventyLogger {
+	return eleventyConfig.logger;
 }
 
 export function createScadLogger(eleventyConfig: EleventyConfig) {
@@ -14,14 +14,6 @@ export function createScadLogger(eleventyConfig: EleventyConfig) {
 			prefix: `[11ty/${yellow("scad")}]`,
 		});
 }
-
-type LogOptions = {
-	message: string;
-	prefix?: string;
-	type?: "error" | "log" | "warn" | "info";
-	color?: string;
-	force?: boolean;
-};
 
 interface EleventyLogger {
 	/**
@@ -92,3 +84,11 @@ interface EleventyLogger {
 		prefix?: string,
 	): void;
 }
+
+type LogOptions = {
+	message: string;
+	prefix?: string;
+	type?: "error" | "log" | "warn" | "info";
+	color?: string;
+	force?: boolean;
+};

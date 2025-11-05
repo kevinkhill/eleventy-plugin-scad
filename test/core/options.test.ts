@@ -1,7 +1,5 @@
-import { platform } from "node:process";
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, it } from "vitest";
 import { ZodError } from "zod";
-import { autoBinPath, SCAD_BINS } from "../../src/core";
 import { PluginOptionsSchema } from "../../src/core/options";
 
 describe("PluginOptionsSchema", () => {

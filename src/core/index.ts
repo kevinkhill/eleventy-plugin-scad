@@ -7,5 +7,4 @@ export * from "./scad-bin";
 export * from "./scad2stl";
 export * from "./shortcodes";
 export * from "./templates";
-export * from "./themes";
 export * from "./transformer";

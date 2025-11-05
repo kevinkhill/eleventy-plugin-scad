@@ -112,9 +112,9 @@ export default function EleventyPluginOpenSCAD(
 	// addScadMarkdownHighlighter(eleventyConfig);
 
 	/**
-	 * Handy shortcodes for building up STL renderers
+	 * Handy shortcodes for building STL renderers
 	 */
-	addShortcodes(eleventyConfig, { theme });
+	addShortcodes(eleventyConfig);
 
 	/**
 	 * Default renderer for `.scad` files once turned into HTML
