@@ -1,29 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { SCAD_BINS } from "../../src/core/scad-bin";
+import { autoBinPath } from "../../src/core/scad-bin";
 
 const CASES = {
 	linux: [
-		["auto", SCAD_BINS.LINUX],
-		["nightly", SCAD_BINS.LINUX_NIGHTLY],
+		["auto", "openscad"],
+		["nightly", "openscad-nightly"],
 	],
 	darwin: [
-		["auto", SCAD_BINS.MACOS],
-		["nightly", SCAD_BINS.MACOS_NIGHTLY],
+		["auto", "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD"],
+		["nightly", "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD"],
 	],
 	win32: [
-		["auto", SCAD_BINS.WINDOWS],
-		["nightly", SCAD_BINS.WINDOWS_NIGHTLY],
+		["auto", "C:/Program Files/Openscad/openscad.exe"],
+		["nightly", "C:/Program Files/Openscad/openscad-nightly.exe"],
 	],
 } as Record<NodeJS.Platform, [undefined | "auto" | "nightly", string][]>;
 
+// Derive the platform strings
 const PLATFORMS = (Object.keys(CASES) as NodeJS.Platform[]).map((k) => [k]);
 
+// run the tests
 describe.for(PLATFORMS)(`on %s platforms`, ([testPlatform]) => {
 	describe.for(CASES[testPlatform])(
 		`autoBinPath("%s")`,
 		([binType, binPath]) => {
 			it("returns a path", async () => {
-				const { autoBinPath } = await import("../../src/core/scad-bin");
 				expect(autoBinPath(testPlatform, binType)).toBe(binPath);
 			});
 		},
