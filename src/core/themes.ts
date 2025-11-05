@@ -9,6 +9,4 @@ export const THEMES = [
 	"Ultramarine",
 ] as const;
 
-export const theme = (t: PluginTheme) => t;
-
-export type PluginTheme = (typeof THEMES)[number];
+export const theme = (t: (typeof THEMES)[number]) => t;

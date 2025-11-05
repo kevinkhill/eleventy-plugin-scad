@@ -14,7 +14,7 @@ export const DISABLE_OPENSCAD = {
 	checkLaunchPath: false,
 };
 
-export const TEST_SACD_PAGES = [["cube"], ["sphere"], ["cylinder"]] as const;
+export const TEST_SCAD_PAGES = [["cube"], ["sphere"], ["cylinder"]] as const;
 
 export function createTestInstance(options: PluginOptionsInput): Eleventy {
 	return new Eleventy(TEST_SITE_INPUT, TEST_SITE_OUTPUT, {

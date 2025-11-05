@@ -1,19 +1,19 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { createTestInstance } from "./_setup/11ty-scad";
+import { createTestInstance, TEST_SCAD_PAGES } from "./_setup/eleventy";
 
-const escad = createTestInstance({
+const eleventy = createTestInstance({
 	launchPath: "nightly",
 });
 
 const pages: EleventyPageJSON[] = [];
 
-describe.for([["cube"], ["sphere"], ["cylinder"]])("%s.scad", ([name]) => {
-	let page: EleventyPageJSON | undefined;
+beforeAll(async () => {
+	const generated = await eleventy.toJSON();
+	pages.push(...generated);
+});
 
-	beforeAll(async () => {
-		const generated = await escad.toJSON();
-		pages.push(...generated);
-	});
+describe.for(TEST_SCAD_PAGES)("%s.scad", ([name]) => {
+	let page: EleventyPageJSON | undefined;
 
 	beforeEach(() => {
 		page = pages.find((p) => p.url.includes(name));
@@ -38,18 +38,14 @@ describe.for([["cube"], ["sphere"], ["cylinder"]])("%s.scad", ([name]) => {
 });
 
 describe("(virtual) index.html", () => {
-	let page: EleventyPageJSON;
+	let page: EleventyPageJSON | undefined;
 
 	beforeAll(() => {
-		const _page = pages.find((p) => p.url === "/");
-		if (!_page) {
-			throw new Error("This will never throw unless the page didn't generate");
-		}
-		page = _page;
+		page = pages.find((p) => p.url === "/");
 	});
 
 	it("has the correct URL", () => {
-		expect(page.url).toBe("/");
+		expect(page?.url).toBe("/");
 	});
 
 	it("has valid HTML content", () => {
@@ -57,12 +53,12 @@ describe("(virtual) index.html", () => {
 	});
 
 	it("has the correct input path", () => {
-		expect(page.inputPath).toEndWithString(`input/index.njk`);
+		expect(page?.inputPath).toEndWithString(`input/index.njk`);
 	});
 
 	it("generated the correct output HTML file", () => {
-		expect(page.outputPath).toEndWithString(`output/index.html`);
+		expect(page?.outputPath).toEndWithString(`output/index.html`);
 	});
 });
 
-type EleventyPageJSON = Awaited<ReturnType<typeof escad.toJSON>>[number];
+type EleventyPageJSON = Awaited<ReturnType<typeof eleventy.toJSON>>[number];

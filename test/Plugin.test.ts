@@ -1,5 +1,5 @@
 import { describe, expect, it, test } from "vitest";
-import { createTestInstance } from "./_setup/11ty-scad";
+import { createTestInstance } from "./_setup/eleventy";
 
 describe("Eleventy OpenSCAD Plugin", () => {
 	test.only("bad launchPath throws an Error", async () => {

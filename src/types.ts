@@ -1,8 +1,14 @@
 import type { EleventyScope, EleventySuppliedData } from "11ty.ts";
 import type z from "zod";
-import type { PluginOptionsSchema } from "./core";
+import type { PluginOptionsSchema, THEMES } from "./core";
 
 export type * from "11ty.ts";
+
+export type ModelViewerTheme = (typeof THEMES)[number];
+
+export type PluginOptions = z.infer<typeof PluginOptionsSchema>;
+
+export type ParsedPluginOptions = z.output<typeof PluginOptionsSchema>;
 
 export type PluginOptionsInput = Omit<
 	z.input<typeof PluginOptionsSchema>,
@@ -10,10 +16,6 @@ export type PluginOptionsInput = Omit<
 > & {
 	launchPath: "auto" | "nightly" | string;
 };
-
-export type ParsedPluginOptions = z.output<typeof PluginOptionsSchema>;
-
-export type PluginOptions = z.infer<typeof PluginOptionsSchema>;
 
 export type ScadTemplateData = {
 	layout: string;
@@ -42,3 +44,10 @@ export type EleventyDirs = {
 	layouts?: string;
 	output: string;
 };
+
+export type MainPlatforms = Extract<
+	"linux" | "darwin" | "win32",
+	NodeJS.Platform
+>;
+
+export type PlatformMap = Record<MainPlatforms, string>;

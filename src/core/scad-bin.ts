@@ -1,5 +1,7 @@
 import { homedir, platform } from "node:os";
 import { join } from "node:path";
+import debug from "../lib/debug";
+import type { PlatformMap } from "../types";
 
 /**
  * Default OpenSCAD install locations
@@ -43,11 +45,16 @@ export const SCAD_BINS = {
 /**
  * Helper: Returns the OpenSCAD binary path for the current platform.
  */
-export function autoBinPath(which: null | "auto" | "nightly" = "auto") {
+export function autoBinPath(binType: null | "auto" | "nightly" = "auto") {
+	const log = debug.extend("bin");
 	const p = platform();
-	const map = which === "nightly" ? SCAD_BIN_NIGHTLY : SCAD_BIN;
-	const bin = map[p as keyof PlatformMap];
-	return typeof bin === "string" ? bin : null;
+	const binMap = binType === "nightly" ? SCAD_BIN_NIGHTLY : SCAD_BIN;
+	const bin = binMap[p as keyof PlatformMap];
+	const retVal = typeof bin === "string" ? bin : null;
+	log("platform: %s", p);
+	log("binType: %s", binType);
+	log("output: %s", retVal);
+	return retVal;
 }
 
 /**
@@ -60,9 +67,3 @@ export function macosUserInstalledOpenSCAD() {
 	}
 	return join(homedir(), ...SCAD_BIN.darwin.split("/"));
 }
-
-type PlatformMap = {
-	darwin: string;
-	linux: string;
-	win32: string;
-};

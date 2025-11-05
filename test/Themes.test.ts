@@ -1,34 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { SCAD_EXT } from "../src/core";
-import { createTestInstance, DISABLE_OPENSCAD } from "./_setup/11ty-scad";
-import type { StlViewerThemes } from "../src";
+import { SCAD_EXT, THEMES } from "../src/core";
+import { createTestInstance, DISABLE_OPENSCAD } from "./_setup/eleventy";
 
-const THEMES: StlViewerThemes[][] = [
-	["Chocolate"],
-	["Midnight"],
-	["Modernist"],
-	["Oldstyle"],
-	["Steely"],
-	["Swiss"],
-	["Traditional"],
-	["Ultramarine"],
-];
+const cases = THEMES.map((t) => [t]);
 
-describe.for(THEMES)("Theme: %s", ([theme]) => {
-	const escad = createTestInstance({
+describe.for(cases)("%s", ([theme]) => {
+	const themeURL = `https://www.w3.org/StyleSheets/Core/${theme}`;
+
+	const eleventy = createTestInstance({
 		launchPath: "nightly",
 		theme,
 		silent: true,
 		...DISABLE_OPENSCAD,
 	});
 
-	it("has the correct theme css", async () => {
-		const pages = await escad.toJSON();
+	it("has the CSS URL in page", async () => {
+		const pages = await eleventy.toJSON();
 		const scadPages = pages.filter((p) => p.inputPath.endsWith(SCAD_EXT));
 
 		expect(scadPages).toHaveLength(3);
 		for (const page of scadPages) {
-			expect(page.content.includes(theme)).toBeTruthy();
+			expect(page.content.includes(themeURL)).toBeTruthy();
 		}
 	});
 });
