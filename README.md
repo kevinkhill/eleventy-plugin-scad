@@ -2,7 +2,9 @@
 
 A plugin for Eleventy to showcase your SCAD files.
 
-## Install into Eleventy Site
+![NPM Version](https://img.shields.io/npm/v/eleventy-plugin-scad)
+
+## Install into Project
 
 ```bash
 npm install eleventy-plugin-scad
@@ -21,7 +23,7 @@ npm install eleventy-plugin-scad
 - **noSTL**: Set `true` to skip generating STLs
 - **silent**: Set `true` to disable all logging from the plugin
 
-## Add Plugin to Eleventy Config
+## Add Plugin to Eleventy
 
 There are two methods to add the plugin to Eleventy.
 
