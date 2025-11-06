@@ -194,13 +194,17 @@ const PluginOptionsSchema = z.object({
 	}, z.string().optional()),
 	layout: z.string().nullish(),
 	theme: z.enum(THEMES).optional().prefault(parseStringEnv("ELEVENTY_SCAD_THEME")).default("Midnight"),
+	checkLaunchPath: createStringBoolSchema({
+		envvar: "ELEVENTY_SCAD_CHECK_LAUNCH_PATH",
+		default: true
+	}),
 	collectionPage: createStringBoolSchema({
 		envvar: "ELEVENTY_SCAD_COLLECTION_PAGE",
 		default: true
 	}),
 	verbose: createStringBoolSchema({
 		envvar: "ELEVENTY_SCAD_VERBOSE",
-		default: false
+		default: true
 	}),
 	silent: createStringBoolSchema({
 		envvar: "ELEVENTY_SCAD_SILENT",
@@ -209,10 +213,6 @@ const PluginOptionsSchema = z.object({
 	noSTL: createStringBoolSchema({
 		envvar: "ELEVENTY_SCAD_NO_STL",
 		default: false
-	}),
-	checkLaunchPath: createStringBoolSchema({
-		envvar: "ELEVENTY_SCAD_CHECK_LAUNCH_PATH",
-		default: true
 	})
 });
 function parseStringEnv(envvar) {
@@ -223,39 +223,44 @@ function parseStringEnv(envvar) {
 
 //#endregion
 //#region src/core/scad2stl.ts
-const debug$1 = debug_default.extend("scad2stl");
+const debug$1 = debug_default.extend("stl");
 /**
 * Generate an `.stl` from a given `.scad` file
 */
 async function scad2stl(launchPath, files) {
-	debug$1("input: %s", files.in);
-	debug$1("output: %s", files.out);
-	const { promise, resolve, reject } = Promise.withResolvers();
+	const result = Promise.withResolvers();
+	const lines = [];
+	const input = normalPath(files.in);
+	const output = normalPath(files.out);
+	debug$1("input: %s", input);
+	debug$1("output: %s", output);
 	const scad = spawn(launchPath, [
 		"--o",
-		files.out,
-		files.in
+		output,
+		input
 	]);
-	const output = [];
 	scad.stdout.on("data", (data) => {
 		debug$1("[stdout] %s", data.toString());
 	});
 	scad.stderr.on("data", (data) => {
-		output.push(data.toString());
+		lines.push(data.toString());
 	});
 	scad.on("error", (err) => {
-		reject({
+		result.reject({
 			output: err,
 			ok: false
 		});
 	});
 	scad.on("close", (exitCode) => {
-		resolve({
-			output,
+		result.resolve({
+			output: lines,
 			ok: exitCode === 0
 		});
 	});
-	return promise;
+	return result.promise;
+}
+function normalPath(path$1) {
+	return `./${path$1.replace(/^\.?\/?/, "")}`;
 }
 
 //#endregion
@@ -265,31 +270,20 @@ const debug = debug_default.extend("shortcodes");
 /**
 * Helper Shortcodes for generating pages from scad templates
 */
-function addShortcodes(eleventyConfig) {
-	const registerShortcode = (shortcodeName, filter) => {
-		eleventyConfig.addShortcode(shortcodeName, filter);
-		debug(`added "%s"`, shortcodeName);
+function addShortcodes(eleventyConfig, opts) {
+	const registerShortcode = (name$1, filter) => {
+		eleventyConfig.addShortcode(name$1, filter);
+		debug(`added "%s"`, name$1);
 	};
-	/**
-	* Shortcode to produce a script block with the the absolute path to the model stl
-	*
-	* {% stl_url "TACO" %} would produce /TACO/TACO.stl
-	*  so do this 👇🏻
-	* {% stl_url page.fileSlug %}
-	*/
-	registerShortcode("stl_url", (fileSlug) => {
-		const stlPath = `${fileSlug}/${fileSlug}${DOT_STL}`;
-		return `new URL("${stlPath}", window.location.origin)`;
-	});
 	/**
 	* Shortcode to produce a style block with themes created by w3.org
 	*
 	* Choices: "./themes.ts"
-	* {% w3_theme_css %} 👈🏻 Defaults to "__DEFAULT_THEME__" if no theme defined in the config
 	* {% w3_theme_css "Chocolate" %}
 	*/
 	registerShortcode("w3_theme_css", (theme) => {
-		return `<link rel="stylesheet" href="https://www.w3.org/StyleSheets/Core/${theme}" type="text/css">`;
+		const pluginTheme = theme?.trim() || opts.defaultTheme;
+		return `<link rel="stylesheet" href="https://www.w3.org/StyleSheets/Core/${pluginTheme}" type="text/css">`;
 	});
 	/**
 	* Shortcode to produce the importmaps for three.js
@@ -298,16 +292,12 @@ function addShortcodes(eleventyConfig) {
 	* {% threejs_importmap "1.2.3" %}
 	*/
 	registerShortcode("threejs_importmap", (version) => {
-		const v = version.length > 0 ? version : DEFAULT_THREE_JS_VERSION;
-		return `\
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "https://cdn.jsdelivr.net/npm/three@${v}/build/three.module.js",
-					"three/addons/": "https://cdn.jsdelivr.net/npm/three@${v}/examples/jsm/"
-				}
-			}
-		</script>`;
+		const v = version?.trim() || DEFAULT_THREE_JS_VERSION;
+		const importmap = { imports: {
+			three: `https://cdn.jsdelivr.net/npm/three@${v}/build/three.module.js`,
+			"three/addons/": `https://cdn.jsdelivr.net/npm/three@${v}/examples/jsm/`
+		} };
+		return `<script type="importmap">${JSON.stringify(importmap)}</script>`;
 	});
 }
 
@@ -379,7 +369,7 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 	/**
 	* Handy shortcodes for building STL renderers
 	*/
-	addShortcodes(eleventyConfig);
+	addShortcodes(eleventyConfig, { defaultTheme: theme });
 	/**
 	* Default renderer for `.scad` files once turned into HTML
 	*/
@@ -400,13 +390,13 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 		getData(inputPath) {
 			const filename = path.basename(inputPath);
 			return {
-				layout: layout ?? DEFAULT_SCAD_LAYOUT,
-				tags: ["scad"],
-				slug: filename.replace(DOT_SCAD, ""),
-				theme,
 				title: filename,
+				layout: layout ?? DEFAULT_SCAD_LAYOUT,
+				theme,
+				tags: ["scad"],
 				scadFile: inputPath,
-				stlFile: filename.replace(DOT_SCAD, DOT_STL)
+				stlFile: filename.replace(DOT_SCAD, DOT_STL),
+				slug: filename.replace(DOT_SCAD, "")
 			};
 		},
 		async compile(inputContent, inputPath) {

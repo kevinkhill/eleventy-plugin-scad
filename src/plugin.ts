@@ -114,7 +114,7 @@ export default function EleventyPluginOpenSCAD(
 	/**
 	 * Handy shortcodes for building STL renderers
 	 */
-	addShortcodes(eleventyConfig);
+	addShortcodes(eleventyConfig, { defaultTheme: theme });
 
 	/**
 	 * Default renderer for `.scad` files once turned into HTML
@@ -145,17 +145,17 @@ export default function EleventyPluginOpenSCAD(
 		/**
 		 * Data provided to the layout & page of a `.scad` file template
 		 */
-		getData(inputPath: string) {
+		getData(inputPath: string): ScadTemplateData {
 			const filename = path.basename(inputPath);
 			return {
-				layout: layout ?? DEFAULT_SCAD_LAYOUT,
-				tags: ["scad"],
-				slug: filename.replace(DOT_SCAD, ""),
-				theme: theme,
 				title: filename,
+				layout: layout ?? DEFAULT_SCAD_LAYOUT,
+				theme: theme,
+				tags: ["scad"],
 				scadFile: inputPath,
 				stlFile: filename.replace(DOT_SCAD, DOT_STL),
-			} satisfies ScadTemplateData;
+				slug: filename.replace(DOT_SCAD, ""),
+			};
 		},
 		/**
 		 * Compile `.scad` files into `.stl`
