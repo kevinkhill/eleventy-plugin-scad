@@ -1,6 +1,6 @@
 import Debug from "../lib/debug";
 import { DOT_STL } from "./const";
-import type { EleventyConfig } from "../types";
+import type { EleventyConfig, ModelViewerTheme } from "../types";
 
 export const DEFAULT_THREE_JS_VERSION = "0.180.0";
 
@@ -11,36 +11,24 @@ const debug = Debug.extend("shortcodes");
 /**
  * Helper Shortcodes for generating pages from scad templates
  */
-export function addShortcodes(eleventyConfig: EleventyConfig) {
-	const registerShortcode: EleventyConfig["addShortcode"] = (
-		shortcodeName,
-		filter,
-	) => {
-		eleventyConfig.addShortcode(shortcodeName, filter);
-		debug(`added "%s"`, shortcodeName);
+export function addShortcodes(
+	eleventyConfig: EleventyConfig,
+	opts: { defaultTheme: ModelViewerTheme },
+) {
+	const registerShortcode: EleventyConfig["addShortcode"] = (name, filter) => {
+		eleventyConfig.addShortcode(name, filter);
+		debug(`added "%s"`, name);
 	};
-
-	/**
-	 * Shortcode to produce a script block with the the absolute path to the model stl
-	 *
-	 * {% stl_url "TACO" %} would produce /TACO/TACO.stl
-	 *  so do this 👇🏻
-	 * {% stl_url page.fileSlug %}
-	 */
-	registerShortcode("stl_url", (fileSlug: string) => {
-		const stlPath = `${fileSlug}/${fileSlug}${DOT_STL}`;
-		return `new URL("${stlPath}", window.location.origin)`;
-	});
 
 	/**
 	 * Shortcode to produce a style block with themes created by w3.org
 	 *
 	 * Choices: "./themes.ts"
-	 * {% w3_theme_css %} 👈🏻 Defaults to "__DEFAULT_THEME__" if no theme defined in the config
 	 * {% w3_theme_css "Chocolate" %}
 	 */
 	registerShortcode("w3_theme_css", (theme: string) => {
-		return `<link rel="stylesheet" href="https://www.w3.org/StyleSheets/Core/${theme}" type="text/css">`;
+		const pluginTheme = theme?.trim() || opts.defaultTheme;
+		return `<link rel="stylesheet" href="https://www.w3.org/StyleSheets/Core/${pluginTheme}" type="text/css">`;
 	});
 
 	/**
@@ -49,17 +37,17 @@ export function addShortcodes(eleventyConfig: EleventyConfig) {
 	 * {% threejs_importmap %}
 	 * {% threejs_importmap "1.2.3" %}
 	 */
-	registerShortcode("threejs_importmap", (version: string) => {
-		const v = version.length > 0 ? version : DEFAULT_THREE_JS_VERSION;
-		return `\
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "https://cdn.jsdelivr.net/npm/three@${v}/build/three.module.js",
-					"three/addons/": "https://cdn.jsdelivr.net/npm/three@${v}/examples/jsm/"
-				}
-			}
-		</script>`;
+	registerShortcode("threejs_importmap", (version?: string) => {
+		const v = version?.trim() || DEFAULT_THREE_JS_VERSION;
+
+		const importmap = {
+			imports: {
+				three: `https://cdn.jsdelivr.net/npm/three@${v}/build/three.module.js`,
+				"three/addons/": `https://cdn.jsdelivr.net/npm/three@${v}/examples/jsm/`,
+			},
+		};
+
+		return `<script type="importmap">${JSON.stringify(importmap)}</script>`;
 	});
 }
 

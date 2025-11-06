@@ -37,9 +37,7 @@ export function addScadCollectionVirtualTemplate(
           		<li><a href="{{ item.data.slug | url }}">{{ item.data.title }}</a></li>
         	{% endfor %}
 		</ul>`,
-		{
-			layout: DEFAULT_COLLECTION_LAYOUT,
-		},
+		{ layout: DEFAULT_COLLECTION_LAYOUT },
 	);
 	log(`(virtual) added "%s"`, DEFAULT_COLLECTION_TEMPLATE);
 }

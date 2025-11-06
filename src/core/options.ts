@@ -25,13 +25,17 @@ export const PluginOptionsSchema = z.object({
 		.optional()
 		.prefault(parseStringEnv<ModelViewerTheme>("ELEVENTY_SCAD_THEME"))
 		.default("Midnight"),
+	checkLaunchPath: createStringBoolSchema({
+		envvar: "ELEVENTY_SCAD_CHECK_LAUNCH_PATH",
+		default: true,
+	}),
 	collectionPage: createStringBoolSchema({
 		envvar: "ELEVENTY_SCAD_COLLECTION_PAGE",
 		default: true,
 	}),
 	verbose: createStringBoolSchema({
 		envvar: "ELEVENTY_SCAD_VERBOSE",
-		default: false,
+		default: true,
 	}),
 	silent: createStringBoolSchema({
 		envvar: "ELEVENTY_SCAD_SILENT",
@@ -40,10 +44,6 @@ export const PluginOptionsSchema = z.object({
 	noSTL: createStringBoolSchema({
 		envvar: "ELEVENTY_SCAD_NO_STL",
 		default: false,
-	}),
-	checkLaunchPath: createStringBoolSchema({
-		envvar: "ELEVENTY_SCAD_CHECK_LAUNCH_PATH",
-		default: true,
 	}),
 });
 
