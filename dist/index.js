@@ -326,7 +326,7 @@ function addScadCollectionVirtualTemplate(eleventyConfig) {
 	const DEFAULT_COLLECTION_TEMPLATE = "index.njk";
 	eleventyConfig.addTemplate(DEFAULT_COLLECTION_TEMPLATE, `<ul>
 			{% for item in collections.scad %}
-          		<li><a href="/{{ item.data.slug }}">{{ item.data.title }}</a></li>
+          		<li><a href="{{ item.data.slug | url }}">{{ item.data.title }}</a></li>
         	{% endfor %}
 		</ul>`, { layout: DEFAULT_COLLECTION_LAYOUT });
 	log(`(virtual) added "%s"`, DEFAULT_COLLECTION_TEMPLATE);
