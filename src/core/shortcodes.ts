@@ -1,10 +1,6 @@
 import Debug from "../lib/debug";
-import { DOT_STL } from "./const";
+import { THREE_JS_VERSION } from "./const";
 import type { EleventyConfig, ModelViewerTheme } from "../types";
-
-export const DEFAULT_THREE_JS_VERSION = "0.180.0";
-
-export const DEFAULT_LIL_GUI_VERSION = "0.21";
 
 const debug = Debug.extend("shortcodes");
 
@@ -21,32 +17,29 @@ export function addShortcodes(
 	};
 
 	/**
-	 * Shortcode to produce a style block with themes created by w3.org
+	 * Link tag with url for themes created by w3.org
 	 *
-	 * Choices: "./themes.ts"
-	 * {% w3_theme_css "Chocolate" %}
+	 * @example {% w3_theme_css %}
+	 * @link https://www.w3.org/StyleSheets/Core/preview
 	 */
-	registerShortcode("w3_theme_css", (theme: string) => {
-		const pluginTheme = theme?.trim() || opts.defaultTheme;
-		return `<link rel="stylesheet" href="https://www.w3.org/StyleSheets/Core/${pluginTheme}" type="text/css">`;
+	registerShortcode("w3_theme_css", () => {
+		const url = `https://www.w3.org/StyleSheets/Core/${opts.defaultTheme}`;
+		return `<link rel="stylesheet" href="${url}">`;
 	});
 
 	/**
-	 * Shortcode to produce the importmaps for three.js
+	 * Import Maps for three.js
 	 *
-	 * {% threejs_importmap %}
-	 * {% threejs_importmap "1.2.3" %}
+	 * @example {% threejs_importmap %}
 	 */
-	registerShortcode("threejs_importmap", (version?: string) => {
-		const v = version?.trim() || DEFAULT_THREE_JS_VERSION;
-
+	registerShortcode("threejs_importmap", () => {
+		const v = THREE_JS_VERSION;
 		const importmap = {
 			imports: {
 				three: `https://cdn.jsdelivr.net/npm/three@${v}/build/three.module.js`,
 				"three/addons/": `https://cdn.jsdelivr.net/npm/three@${v}/examples/jsm/`,
 			},
 		};
-
 		return `<script type="importmap">${JSON.stringify(importmap)}</script>`;
 	});
 }

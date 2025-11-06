@@ -15,6 +15,7 @@ var name = "eleventy-plugin-scad";
 
 //#endregion
 //#region src/core/const.ts
+const THREE_JS_VERSION = "0.180.0";
 const STL_EXT = "stl";
 const DOT_STL = `.${STL_EXT}`;
 const SCAD_EXT = "scad";
@@ -265,7 +266,6 @@ function normalPath(path$1) {
 
 //#endregion
 //#region src/core/shortcodes.ts
-const DEFAULT_THREE_JS_VERSION = "0.180.0";
 const debug = debug_default.extend("shortcodes");
 /**
 * Helper Shortcodes for generating pages from scad templates
@@ -276,23 +276,22 @@ function addShortcodes(eleventyConfig, opts) {
 		debug(`added "%s"`, name$1);
 	};
 	/**
-	* Shortcode to produce a style block with themes created by w3.org
+	* Link tag with url for themes created by w3.org
 	*
-	* Choices: "./themes.ts"
-	* {% w3_theme_css "Chocolate" %}
+	* @example {% w3_theme_css %}
+	* @link https://www.w3.org/StyleSheets/Core/preview
 	*/
-	registerShortcode("w3_theme_css", (theme) => {
-		const pluginTheme = theme?.trim() || opts.defaultTheme;
-		return `<link rel="stylesheet" href="https://www.w3.org/StyleSheets/Core/${pluginTheme}" type="text/css">`;
+	registerShortcode("w3_theme_css", () => {
+		const url = `https://www.w3.org/StyleSheets/Core/${opts.defaultTheme}`;
+		return `<link rel="stylesheet" href="${url}">`;
 	});
 	/**
-	* Shortcode to produce the importmaps for three.js
+	* Import Maps for three.js
 	*
-	* {% threejs_importmap %}
-	* {% threejs_importmap "1.2.3" %}
+	* @example {% threejs_importmap %}
 	*/
-	registerShortcode("threejs_importmap", (version) => {
-		const v = version?.trim() || DEFAULT_THREE_JS_VERSION;
+	registerShortcode("threejs_importmap", () => {
+		const v = THREE_JS_VERSION;
 		const importmap = { imports: {
 			three: `https://cdn.jsdelivr.net/npm/three@${v}/build/three.module.js`,
 			"three/addons/": `https://cdn.jsdelivr.net/npm/three@${v}/examples/jsm/`

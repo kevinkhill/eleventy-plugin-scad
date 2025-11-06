@@ -1,3 +1,7 @@
+export const THREE_JS_VERSION = "0.180.0";
+
+export const LIL_GUI_VERSION = "0.21";
+
 export const STL_EXT = "stl";
 
 export const DOT_STL = `.${STL_EXT}`;

@@ -136,11 +136,7 @@
 			const loader = new STLLoader();
 			const container = document.getElementById('viewer');
 
-			let renderer,
-				camera,
-				spotLight,
-				scene,
-				controls;
+			let renderer, camera, spotLight, scene, controls;
 
 			function setupRenderer() {
 				renderer = new THREE.WebGLRenderer({alpha: true, antialias: true});
@@ -173,9 +169,7 @@
 				scene.add(roomLight);
 
 				spotLight = new THREE.DirectionalLight(0xffffff, 1);
-				spotLight
-					.position
-					.set(x, y, z);
+				spotLight.position.set(x, y, z);
 				scene.add(spotLight);
 			}
 
