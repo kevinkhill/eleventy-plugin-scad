@@ -1,3 +1,4 @@
+export * as cache from "./cache";
 export * from "./const";
 export * from "./events";
 export * from "./global-data";

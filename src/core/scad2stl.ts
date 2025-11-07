@@ -1,6 +1,8 @@
 import { spawn } from "node:child_process";
 import Debug from "../lib/debug";
+import Timer from "../lib/timer";
 
+const timer = new Timer();
 const debug = Debug.extend("stl");
 
 /**
@@ -15,10 +17,12 @@ export async function scad2stl(
 	const input = normalPath(files.in);
 	const output = normalPath(files.out);
 
-	debug("input: %s", input);
-	debug("output: %s", output);
+	debug("input: %o", input);
+	debug("output: %o", output);
 
 	const scad = spawn(launchPath, ["--o", output, input]);
+
+	scad.on("spawn", () => timer.start());
 
 	scad.stdout.on("data", (data) => {
 		debug("[stdout] %s", data.toString());
@@ -35,16 +39,20 @@ export async function scad2stl(
 	});
 
 	scad.on("close", (exitCode) => {
-		// debug("done");
-		result.resolve({ output: lines, ok: exitCode === 0 });
+		result.resolve({
+			ok: exitCode === 0,
+			output: lines,
+			duration: timer.duration,
+		});
 	});
 
 	return result.promise;
 }
 
 type ScadExportResult = {
-	output: string[];
 	ok: boolean;
+	output: string[];
+	duration: number;
 };
 
 function normalPath(path: string) {
