@@ -16,14 +16,19 @@ npm install eleventy-plugin-scad
 - **launchPath** _(string)_: Location of the OpenSCAD executable (required)
   - `auto` - Attempts to use `process.platform` to find OpenSCAD in the default install locations
   - `nightly` - Works the same as above for the `nightly` version of OpenSCAD
-  - `"C:/openscad.exe"` - Absolute paths work too.
-  - `osc` - Maybe you aliased OpenSCAD and have it on your `$PATH`
+  - `C:/openscad.exe` - Absolute paths work too
+  - `openscad` - or in a bin folder and available on your `$PATH`
 - **layout**: Use a custom layout for the scad files
-- **collectionPage**: Set `true` to generate a listing page from `collections.scad`
+  - This is an escape hatch to make and use your own STL viewer layout. _(needs docs)_
+- **collectionPage**: Set `false` to disable the generation of a listing page with links from the `scad` tagged files _(uses Collections API)_ 
 - **verbose**: Set `true` to view the compilation output from OpenSCAD
-- **noSTL**: Set `true` to skip generating STLs
+  - If your model uses `echo()` this is how to see the output
 - **silent**: Set `true` to disable all logging from the plugin
-
+- **noSTL**: Set `true` to skip generating STLs
+  - Useful when models do not change frequently. Generate once, then disable STLs.
+- **checkLaunchPath**: Set `false` to disable the validity check of `launchPath`
+  - Disable checking if the given `launchPath` exists _(added for testing)_
+     
 ## Add Plugin to Eleventy
 
 There are two methods to add the plugin to Eleventy.
