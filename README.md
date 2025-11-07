@@ -2,10 +2,10 @@
 
 A plugin for Eleventy to showcase your SCAD files.
 
+![NPM Version](https://img.shields.io/npm/v/eleventy-plugin-scad)
+
 ## Purpose
 Use Eleventy to generate a site to showcase your OpenSCAD models. This plugin adds `.scad` as a template and will use your system's OpenSCAD to render the file into an STL. An additional HTML file with Three.js STL viewer is gererated as well.
-
-![NPM Version](https://img.shields.io/npm/v/eleventy-plugin-scad)
 
 ## Install into Project
 
