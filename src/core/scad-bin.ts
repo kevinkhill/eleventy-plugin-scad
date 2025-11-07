@@ -54,6 +54,6 @@ export function autoBinPath(
 	const retVal = typeof bin === "string" ? bin : null;
 	debug("platform: %s", platform);
 	debug("binType: %s", binType);
-	debug("output: %s", retVal);
+	debug("using: %s", retVal);
 	return retVal;
 }

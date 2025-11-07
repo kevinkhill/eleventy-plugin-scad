@@ -1,1 +1,1 @@
-cube(PI);
+cube(4);
