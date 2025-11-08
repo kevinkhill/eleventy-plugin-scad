@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
+import { md5 } from "../lib";
 import Debug from "../lib/debug";
-import { md5 } from "../lib/hash";
 
 const debug = Debug.extend("cache");
 const cache = new Map<string, string>();
@@ -11,8 +11,7 @@ export function getFileHash(key: string) {
 
 export function isFileRegistered(file: string) {
 	const status = cache.has(file);
-	debug("file: %o", file);
-	debug("registered: %o", status);
+	debug({ file, registered: status });
 	return status;
 }
 
@@ -21,21 +20,29 @@ export function fileNeedsRegistration(file: string) {
 }
 
 export async function fileHashesMatch(key: string) {
-	const currHash = getFileHash(key);
+	const cachedHash = getFileHash(key);
 	const scadContent = await readFile(key, "utf8");
 	const newHash = md5(scadContent);
-	return newHash === currHash;
+	const hashMatch = newHash === cachedHash;
+	// debug("comparing hashes: %O", { cached: cachedHash, current: newHash });
+	debug("fileHashesMatch: %o", hashMatch);
+	return hashMatch;
 }
 
 export async function fileHashesDiffer(key: string) {
 	return (await fileHashesMatch(key)) !== true;
 }
 
-export async function registerFile(key: string) {
+export async function updateHash(key: string) {
 	const scadContent = await readFile(key, "utf8");
 	const hash = md5(scadContent);
 	cache.set(key, hash);
-	isFileRegistered(key);
+	debug("hashed %o", key);
+}
+
+export async function registerFile(key: string) {
+	updateHash(key);
+	debug({ registered: key });
 }
 
 export async function ensureFileRegistered(file: string) {

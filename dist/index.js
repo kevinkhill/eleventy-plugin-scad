@@ -1,85 +1,18 @@
 import path from "node:path";
-import { blue, bold, gray, green, red, yellow } from "yoctocolors";
+import { blue, bold, gray, green, red, reset, yellow } from "yoctocolors";
 import z, { prettifyError } from "zod";
 import { mkdir, readFile } from "node:fs/promises";
-import Debug from "debug";
-import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import which from "which";
 import { findUpSync } from "find-up";
+import Debug from "debug";
+import { createHash } from "node:crypto";
+import { spawn } from "node:child_process";
 import "he";
 import { env, platform } from "node:process";
-import { spawn } from "node:child_process";
 
 //#region package.json
 var name = "eleventy-plugin-scad";
-
-//#endregion
-//#region src/lib/debug.ts
-const debug$7 = Debug("eleventy:scad");
-var debug_default = debug$7;
-
-//#endregion
-//#region src/lib/hash.ts
-const debug$6 = debug_default.extend("hash");
-function md5(input) {
-	const hash = createHash("md5").update(input).digest("hex");
-	debug$6(hash);
-	return hash;
-}
-
-//#endregion
-//#region src/core/cache.ts
-const debug$5 = debug_default.extend("cache");
-const cache = new Map();
-function getFileHash(key) {
-	return cache.get(key);
-}
-function isFileRegistered(file) {
-	const status = cache.has(file);
-	debug$5("file: %o", file);
-	debug$5("registered: %o", status);
-	return status;
-}
-function fileNeedsRegistration(file) {
-	return isFileRegistered(file) === false;
-}
-async function fileHashesMatch(key) {
-	const currHash = getFileHash(key);
-	const scadContent = await readFile(key, "utf8");
-	const newHash = md5(scadContent);
-	return newHash === currHash;
-}
-async function fileHashesDiffer(key) {
-	return await fileHashesMatch(key) !== true;
-}
-async function registerFile(key) {
-	const scadContent = await readFile(key, "utf8");
-	const hash = md5(scadContent);
-	cache.set(key, hash);
-	isFileRegistered(key);
-}
-async function ensureFileRegistered(file) {
-	if (fileNeedsRegistration(file)) await registerFile(file);
-}
-
-//#endregion
-//#region src/core/const.ts
-const THREE_JS_VERSION = "0.180.0";
-const STL_EXT = "stl";
-const DOT_STL = `.${STL_EXT}`;
-const SCAD_EXT = "scad";
-const DOT_SCAD = `.${SCAD_EXT}`;
-const THEMES = [
-	"Traditional",
-	"Modernist",
-	"Midnight",
-	"Chocolate",
-	"Oldstyle",
-	"Steely",
-	"Swiss",
-	"Ultramarine"
-];
 
 //#endregion
 //#region src/lib/resolve.ts
@@ -106,8 +39,13 @@ function assertValidLaunchPath(input) {
 }
 
 //#endregion
+//#region src/lib/debug.ts
+const debug$6 = Debug("eleventy:scad");
+var debug_default = debug$6;
+
+//#endregion
 //#region src/lib/assets.ts
-const debug$4 = debug_default.extend("assets");
+const debug$5 = debug_default.extend("assets");
 let assetPath = "";
 /**
 * Load an asset file from the bundle
@@ -115,7 +53,7 @@ let assetPath = "";
 function getAssetFileContent(file) {
 	const resPath = path.join(getAssetPath(), file);
 	const content = readFileSync(resPath, "utf8");
-	debug$4(`read from disk "%s"`, file);
+	debug$5(`read from disk "%s"`, file);
 	return content;
 }
 function getAssetPath() {
@@ -123,27 +61,29 @@ function getAssetPath() {
 	return assetPath;
 }
 function ensureAssetPath() {
-	debug$4(`ensuring asset path is set`);
-	if (assetPath) debug$4(`assetPath = "%s"`, assetPath);
+	debug$5(`ensuring asset path is set`);
+	if (assetPath) debug$5(`assetPath = "%s"`, assetPath);
 	else {
-		debug$4(`searching "%s"`, import.meta.dirname);
+		debug$5(`searching "%s"`, import.meta.dirname);
 		const found = findUpSync("assets", {
 			cwd: import.meta.dirname,
 			type: "directory"
 		});
 		if (!found) throw new Error(`"assets/" was not found!`);
-		debug$4(`found "%s"`, found);
+		debug$5(`found "%s"`, found);
 		assetPath = found;
 	}
 }
 
 //#endregion
 //#region src/lib/fs.ts
-const debug$3 = debug_default.extend("fs");
+const debug$4 = debug_default.extend("fs");
 function fileExist(file) {
 	const state = existsSync(file);
-	debug$3("file: %o", file);
-	debug$3("exists: %o", state);
+	debug$4({
+		file,
+		exists: state
+	});
 	return state;
 }
 async function ensureDirectoryExists(dir) {
@@ -162,6 +102,12 @@ function createScadLogger(eleventyConfig) {
 		type: "log",
 		prefix: `[11ty/${yellow("scad")}]`
 	});
+}
+
+//#endregion
+//#region src/lib/md5.ts
+function md5(input) {
+	return createHash("md5").update(input).digest("hex");
 }
 
 //#endregion
@@ -198,6 +144,115 @@ var Timer = class {
 var timer_default = Timer;
 
 //#endregion
+//#region src/core/cache.ts
+const debug$3 = debug_default.extend("cache");
+const cache = new Map();
+function getFileHash(key) {
+	return cache.get(key);
+}
+function isFileRegistered(file) {
+	const status = cache.has(file);
+	debug$3({
+		file,
+		registered: status
+	});
+	return status;
+}
+function fileNeedsRegistration(file) {
+	return isFileRegistered(file) === false;
+}
+async function fileHashesMatch(key) {
+	const cachedHash = getFileHash(key);
+	const scadContent = await readFile(key, "utf8");
+	const newHash = md5(scadContent);
+	const hashMatch = newHash === cachedHash;
+	debug$3("fileHashesMatch: %o", hashMatch);
+	return hashMatch;
+}
+async function fileHashesDiffer(key) {
+	return await fileHashesMatch(key) !== true;
+}
+async function updateHash(key) {
+	const scadContent = await readFile(key, "utf8");
+	const hash = md5(scadContent);
+	cache.set(key, hash);
+	debug$3("hashed %o", key);
+}
+async function registerFile(key) {
+	updateHash(key);
+	debug$3({ registered: key });
+}
+async function ensureFileRegistered(file) {
+	if (fileNeedsRegistration(file)) await registerFile(file);
+}
+
+//#endregion
+//#region src/core/const.ts
+const THREE_JS_VERSION = "0.180.0";
+const STL_EXT = "stl";
+const DOT_STL = `.${STL_EXT}`;
+const SCAD_EXT = "scad";
+const DOT_SCAD = `.${SCAD_EXT}`;
+const THEMES = [
+	"Traditional",
+	"Modernist",
+	"Midnight",
+	"Chocolate",
+	"Oldstyle",
+	"Steely",
+	"Swiss",
+	"Ultramarine"
+];
+
+//#endregion
+//#region src/core/generator.ts
+const timer = new timer_default();
+const debug$2 = debug_default.extend("generator");
+/**
+* Generate an `.stl` from a given `.scad` file
+*/
+async function scad2stl(launchPath, files) {
+	return new Promise((resolve, reject) => {
+		const lines = [];
+		const input = normalPath(files.in);
+		const output = normalPath(files.out);
+		debug$2("input: %o", input);
+		debug$2("output: %o", output);
+		const scad = spawn(launchPath, [
+			"--o",
+			output,
+			input
+		]);
+		scad.on("spawn", () => timer.start());
+		scad.stdout.on("data", (data) => {
+			debug$2("[stdout] %s", data.toString());
+		});
+		scad.stderr.on("data", (data) => {
+			lines.push(data.toString());
+		});
+		scad.on("error", (err) => {
+			reject({
+				output: err,
+				ok: false
+			});
+		});
+		scad.on("close", (exitCode) => {
+			const result = {
+				ok: exitCode === 0,
+				output: lines,
+				duration: timer.duration,
+				exitCode
+			};
+			debug$2("result: %O", result);
+			resolve(result);
+		});
+	});
+}
+function normalPath(path$1) {
+	return `./${path$1.replace(/^\.?\/?/, "")}`;
+}
+
+//#endregion
 //#region src/core/global-data.ts
 function addScadGlobalData(eleventyConfig) {
 	eleventyConfig.addGlobalData("scad_plugin.retro_background", () => {
@@ -207,7 +262,7 @@ function addScadGlobalData(eleventyConfig) {
 
 //#endregion
 //#region src/core/scad-bin.ts
-const debug$2 = debug_default.extend("bin");
+const debug$1 = debug_default.extend("bin");
 /**
 * Default OpenSCAD install locations
 *
@@ -251,9 +306,9 @@ function autoBinPath(platform$1, binType = "auto") {
 	const binMap = binType === "nightly" ? SCAD_BIN_NIGHTLY : SCAD_BIN;
 	const bin = binMap[platform$1];
 	const retVal = typeof bin === "string" ? bin : null;
-	debug$2("platform: %s", platform$1);
-	debug$2("binType: %s", binType);
-	debug$2("using: %s", retVal);
+	debug$1("platform: %s", platform$1);
+	debug$1("binType: %s", binType);
+	debug$1("using: %s", retVal);
 	return retVal;
 }
 
@@ -298,51 +353,6 @@ function parseStringEnv(envvar) {
 }
 
 //#endregion
-//#region src/core/scad2stl.ts
-const timer = new timer_default();
-const debug$1 = debug_default.extend("stl");
-/**
-* Generate an `.stl` from a given `.scad` file
-*/
-async function scad2stl(launchPath, files) {
-	const result = Promise.withResolvers();
-	const lines = [];
-	const input = normalPath(files.in);
-	const output = normalPath(files.out);
-	debug$1("input: %o", input);
-	debug$1("output: %o", output);
-	const scad = spawn(launchPath, [
-		"--o",
-		output,
-		input
-	]);
-	scad.on("spawn", () => timer.start());
-	scad.stdout.on("data", (data) => {
-		debug$1("[stdout] %s", data.toString());
-	});
-	scad.stderr.on("data", (data) => {
-		lines.push(data.toString());
-	});
-	scad.on("error", (err) => {
-		result.reject({
-			output: err,
-			ok: false
-		});
-	});
-	scad.on("close", (exitCode) => {
-		result.resolve({
-			ok: exitCode === 0,
-			output: lines,
-			duration: timer.duration
-		});
-	});
-	return result.promise;
-}
-function normalPath(path$1) {
-	return `./${path$1.replace(/^\.?\/?/, "")}`;
-}
-
-//#endregion
 //#region src/core/shortcodes.ts
 const debug = debug_default.extend("shortcodes");
 /**
@@ -382,7 +392,7 @@ function addShortcodes(eleventyConfig, opts) {
 //#region src/core/templates.ts
 const DEFAULT_SCAD_LAYOUT = "scad.viewer.njk";
 const DEFAULT_COLLECTION_LAYOUT = "scad.collection.njk";
-const log = debug$7.extend("templates");
+const log = debug$6.extend("templates");
 function addBuiltinScadLayoutVirtualTemplate(eleventyConfig) {
 	log(`(virtual) adding "%o"`, DEFAULT_SCAD_LAYOUT);
 	eleventyConfig.addTemplate(`_includes/${DEFAULT_SCAD_LAYOUT}`, getAssetFileContent(DEFAULT_SCAD_LAYOUT), {});
@@ -413,10 +423,9 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 	} catch (e) {
 		console.log(`[${name}] WARN Eleventy plugin compatibility: ${e.message}`);
 	}
-	ensureAssetPath();
 	const log$1 = createScadLogger(eleventyConfig);
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
-	debug$7.extend("zod")("parsed options = %O", parsedOptions);
+	debug$6.extend("zod")("parsed options = %O", parsedOptions);
 	if (parsedOptions.error) {
 		const message = prettifyError(parsedOptions.error);
 		log$1(red("Options Error"));
@@ -430,30 +439,13 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 		log$1(red(message));
 		throw new Error(message);
 	}
+	ensureAssetPath();
 	assertValidLaunchPath(resolvedScadBin);
 	if (!silent) logPluginReady(parsedOptions.data);
-	/**
-	* Global data for templates
-	*/
 	addScadGlobalData(eleventyConfig);
-	/**
-	* Handy shortcodes for building STL renderers
-	*/
 	addShortcodes(eleventyConfig, { defaultTheme: theme });
-	/**
-	* Default renderer for `.scad` files once turned into HTML
-	*/
 	addBuiltinScadLayoutVirtualTemplate(eleventyConfig);
-	/**
-	* Add template file that lists all the collected `.scad` files
-	*/
 	if (collectionPage) addScadCollectionVirtualTemplate(eleventyConfig);
-	/**
-	* Copy all `.scad` files over with the renders
-	*/
-	/**
-	* Highlight markdown blocks with "```scad"
-	*/
 	/**
 	* Register `.scad` files as virtual template files and
 	* define they are to be compiled into html & stl files.
@@ -477,38 +469,42 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 			return async (data) => {
 				const dirs = data.eleventy.directories;
 				const writeDir = path.join(dirs.output, data.page.fileSlug);
-				const inFile = data.scadFile;
-				const outFile = path.join(writeDir, data.stlFile);
 				await ensureDirectoryExists(writeDir);
-				const action = noSTL ? blue("Would write") : "Writing";
-				log$1(`${action} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
+				/** `.scad` source */
+				const inFile = data.scadFile;
+				/** `.stl` target */
+				const outFile = path.join(writeDir, data.stlFile);
+				this.addDependencies(inputPath, [outFile]);
 				await ensureFileRegistered(inFile);
-				log$1(`Registered ${path.basename(inFile)}`);
-				const stlExist = fileExist(outFile);
-				if (await fileHashesDiffer(inFile)) console.log(`NEEDS REGEN, does STL exist?`, stlExist);
-				else console.log(`NO CHANGES`);
-				/**
-				* Begin STL Compilation
-				*/
-				const scadResult = await scad2stl(resolvedScadBin, {
-					in: inFile,
-					out: outFile
+				debug$6("cached: %o", path.basename(inFile));
+				const stlExists = fileExist(outFile);
+				const hashesDiffer = await fileHashesDiffer(inFile);
+				debug$6({
+					stlExists,
+					hashesDiffer
 				});
-				debug$7("result: %O", scadResult);
-				if (!scadResult.ok) {
-					log$1(red("OpenSCAD encountered an issue"));
-					for (const line of scadResult.output) {
-						const cleanLine = line.replaceAll("\n", "");
-						log$1(red(cleanLine));
+				if (!stlExists || hashesDiffer) {
+					log$1(`${noSTL ? blue("Would write") : reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
+					const scadResult = await scad2stl(resolvedScadBin, {
+						in: inFile,
+						out: outFile
+					});
+					if (!scadResult.ok) {
+						log$1(red("OpenSCAD encountered an issue"));
+						for (const line of scadResult.output) {
+							const cleanLine = line.replaceAll("\n", "");
+							log$1(red(cleanLine));
+						}
+						return inputContent;
 					}
-					return inputContent;
-				}
-				if (verbose) {
-					const lines = scadResult.output.flatMap((l) => l.split("\n"));
-					for (const line of lines) log$1(gray(`\t${line}`));
-				}
-				const duration = scadResult.duration.toFixed(2);
-				log$1(green(`Wrote ${bold(data.stlFile)} in ${bold(duration)} seconds`));
+					updateHash(inFile);
+					if (verbose) {
+						const lines = scadResult.output.flatMap((l) => l.split("\n"));
+						for (const line of lines) log$1(gray(`\t${line}`));
+					}
+					const duration = scadResult.duration.toFixed(2);
+					log$1(green(`Wrote ${bold(data.stlFile)} in ${bold(duration)} seconds`));
+				} else debug$6("%o is up to date; skipped", path.basename(outFile));
 				return inputContent;
 			};
 		}

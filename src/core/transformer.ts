@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { getLogger } from "../lib/logger";
 import { DOT_SCAD, DOT_STL } from "./const";
-import { scad2stl } from "./scad2stl";
+import { scad2stl } from "./generator";
 import type { EleventyConfig, EleventyScope } from "../types";
 
 /**

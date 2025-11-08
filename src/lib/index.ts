@@ -3,6 +3,7 @@ export * from "./assets";
 export * from "./debug";
 export * from "./fs";
 export * from "./logger";
+export * from "./md5";
 export * from "./register";
 export * from "./resolve";
 export * from "./timer";
