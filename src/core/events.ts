@@ -25,4 +25,16 @@ export function registerEventHandlers(eleventyConfig: EleventyConfig) {
 
 		// eleventyConfig.addTemplate;
 	});
+
+	// biome-ignore lint/suspicious/noExplicitAny: merp
+	eleventyConfig.on("eleventy.contentMap", (_event: any) => {
+		logger.logWithOptions({
+			message: "eleventy.after",
+			color: "magenta",
+			prefix: "🪵\n\t",
+			force: true,
+		});
+
+		// eleventyConfig.addTemplate;
+	});
 }

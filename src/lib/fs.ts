@@ -6,8 +6,7 @@ const debug = Debug.extend("fs");
 
 export function fileExist(file: string) {
 	const state = existsSync(file);
-	debug("file: %o", file);
-	debug("exists: %o", state);
+	debug({ file, exists: state });
 	return state;
 }
 
