@@ -78,7 +78,7 @@ import { join } from "node:path";
 import { addOpenSCADPlugin, SCAD_BINS } from "eleventy-plugin-scad";
 
 /** @param {import("@11ty/eleventy/UserConfig").default} eleventyConfig */
-export default async (eleventyConfig) => {
+export default (eleventyConfig) => {
   addOpenSCADPlugin(eleventyConfig, {
     // SCAD_BINS.MACOS => "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD"
     launchPath: join(homedir(), SCAD_BINS.MACOS),
@@ -92,7 +92,7 @@ On my linux machine, I use this instead
 import { addOpenSCADPlugin, SCAD_BINS } from "eleventy-plugin-scad";
 
 /** @param {import("@11ty/eleventy/UserConfig").default} eleventyConfig */
-export default async (eleventyConfig) => {
+export default (eleventyConfig) => {
   addOpenSCADPlugin(eleventyConfig, {
     launchPath: "nightly", // this will find "/usr/bin/openscad-nightly" on my path
   });
