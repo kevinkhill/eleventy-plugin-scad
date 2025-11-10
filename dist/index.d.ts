@@ -2,7 +2,6 @@ import z from "zod";
 import { EleventyScope, EleventySuppliedData } from "11ty.ts";
 
 //#region rolldown:runtime
-
 //#endregion
 //#region src/core/const.d.ts
 declare const THEMES: readonly ["Traditional", "Modernist", "Midnight", "Chocolate", "Oldstyle", "Steely", "Swiss", "Ultramarine"];
@@ -10,8 +9,7 @@ declare const THEMES: readonly ["Traditional", "Modernist", "Midnight", "Chocola
 //#region src/core/options.d.ts
 declare const PluginOptionsSchema: z.ZodObject<{
   launchPath: z.ZodPipe<z.ZodTransform<{} | null | undefined, unknown>, z.ZodOptional<z.ZodString>>;
-  layout: z.ZodOptional<z.ZodNullable<z.ZodString>>;
-  theme: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
+  theme: z.ZodPipe<z.ZodOptional<z.ZodEnum<{
     Traditional: "Traditional";
     Modernist: "Modernist";
     Midnight: "Midnight";
@@ -20,36 +18,14 @@ declare const PluginOptionsSchema: z.ZodObject<{
     Steely: "Steely";
     Swiss: "Swiss";
     Ultramarine: "Ultramarine";
-  }>>>;
+  }>>, z.ZodTransform<"Traditional" | "Modernist" | "Midnight" | "Chocolate" | "Oldstyle" | "Steely" | "Swiss" | "Ultramarine", "Traditional" | "Modernist" | "Midnight" | "Chocolate" | "Oldstyle" | "Steely" | "Swiss" | "Ultramarine" | undefined>>;
+  layout: z.ZodOptional<z.ZodNullable<z.ZodString>>;
   checkLaunchPath: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
   collectionPage: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
   verbose: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
   silent: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
   noSTL: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
 }, z.core.$strip>;
-//#endregion
-//#region src/core/scad-bin.d.ts
-/**
- * Alias mappings to use when installing the plugin into an eleventy project.
- *
- * @example ```
- * import Eleventy from "@11ty/eleventy";
- * import { EleventyPluginOpenSCAD, SCAD_BINS } from "eleventy-plugin-scad";
- *
- * const launchPath = SCAD_BINS.MACOS;
- *```
- */
-declare const SCAD_BINS: {
-  readonly LINUX: string;
-  readonly LINUX_NIGHTLY: string;
-  readonly MACOS: string;
-  readonly MACOS_NIGHTLY: string;
-  readonly WINDOWS: string;
-  readonly WINDOWS_NIGHTLY: string;
-};
-/**
- * Returns the OpenSCAD binary path for the current platform.
- */
 declare namespace types_d_exports {
   export { EleventyDirs, FullPageData, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, ScadTemplateData };
 }
@@ -99,6 +75,29 @@ declare function EleventyPluginOpenSCAD(eleventyConfig: types_d_exports.Eleventy
 //#endregion
 //#region src/lib/register.d.ts
 declare function addOpenSCADPlugin(eleventyConfig: types_d_exports.EleventyConfig, options: PluginOptionsInput): void;
+//#endregion
+//#region src/lib/scad-bin.d.ts
+/**
+ * Alias mappings to use when installing the plugin into an eleventy project.
+ *
+ * @example ```
+ * import Eleventy from "@11ty/eleventy";
+ * import { EleventyPluginOpenSCAD, SCAD_BINS } from "eleventy-plugin-scad";
+ *
+ * const launchPath = SCAD_BINS.MACOS;
+ *```
+ */
+declare const SCAD_BINS: {
+  readonly LINUX: string;
+  readonly LINUX_NIGHTLY: string;
+  readonly MACOS: string;
+  readonly MACOS_NIGHTLY: string;
+  readonly WINDOWS: string;
+  readonly WINDOWS_NIGHTLY: string;
+};
+/**
+ * Returns the OpenSCAD binary path for the current platform.
+ */
 declare namespace index_d_exports {
   export { EleventyDirs, EleventyPluginOpenSCAD, FullPageData, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, SCAD_BINS, ScadTemplateData, addOpenSCADPlugin, EleventyPluginOpenSCAD as default };
 }
