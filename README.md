@@ -1,8 +1,10 @@
-# eleventy-plugin-scad
+# eleventy-plugin-scad ![NPM Version](https://img.shields.io/npm/v/eleventy-plugin-scad)
 
-A plugin for Eleventy to showcase your SCAD files.
+A plugin for [Eleventy](https://www.11ty.dev) to showcase your SCAD files.
 
-![NPM Version](https://img.shields.io/npm/v/eleventy-plugin-scad)
+## Purpose
+
+Use Eleventy to generate a site to showcase your OpenSCAD models. This plugin adds `.scad` as a template and will use your system's OpenSCAD to render the file into an STL. An additional HTML file with Three.js STL viewer is gererated as well.
 
 ## Install into Project
 
@@ -20,10 +22,15 @@ npm install eleventy-plugin-scad
 - **theme**: Use one of the core W3.org themes
   - Traditional, Modernist, Midnight, Chocolate, Oldstyle, Steely, Swiss, Ultramarine
 - **layout**: Use a custom layout for the scad files
-- **collectionPage**: Set `true` to generate a listing page from `collections.scad`
+  - This is an escape hatch to make and use your own STL viewer layout. _(needs docs)_
+- **collectionPage**: Set `false` to disable the generation of a listing page with links from the `scad` tagged files _(uses Collections API)_
 - **verbose**: Set `true` to view the compilation output from OpenSCAD
-- **noSTL**: Set `true` to skip generating STLs
+  - If your model uses `echo()` this is how to see the output
 - **silent**: Set `true` to disable all logging from the plugin
+- **noSTL**: Set `true` to skip generating STLs
+  - Useful when models do not change frequently. Generate once, then disable STLs.
+- **checkLaunchPath**: Set `false` to disable the validity check of `launchPath`
+  - Disable checking if the given `launchPath` exists _(added for testing)_
 
 ## Add Plugin to Eleventy
 
@@ -75,6 +82,19 @@ export default async (eleventyConfig) => {
   addOpenSCADPlugin(eleventyConfig, {
     // SCAD_BINS.MACOS => "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD"
     launchPath: join(homedir(), SCAD_BINS.MACOS),
+  });
+};
+```
+
+On my linux machine, I use this instead
+
+```js
+import { addOpenSCADPlugin, SCAD_BINS } from "eleventy-plugin-scad";
+
+/** @param {import("@11ty/eleventy/UserConfig").default} eleventyConfig */
+export default async (eleventyConfig) => {
+  addOpenSCADPlugin(eleventyConfig, {
+    launchPath: "nightly", // this will find "/usr/bin/openscad-nightly" on my path
   });
 };
 ```
