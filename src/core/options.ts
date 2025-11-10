@@ -22,13 +22,6 @@ export const PluginOptionsSchema = z.object({
 		}
 		return val;
 	}, z.string().optional()),
-	// theme: z.preprocess((val) => {
-	// 	const envTheme = getEnv<ModelViewerTheme>("ELEVENTY_SCAD_THEME") ?? val;
-	// 	if (typeof envTheme !== "string" || envTheme.length === 0) {
-	// 		return "Traditional";
-	// 	}
-	// 	return envTheme;
-	// }, z.enum(THEMES).optional()),
 	theme: z
 		.optional(z.enum(THEMES))
 		.superRefine((val, ctx) => {
@@ -37,7 +30,7 @@ export const PluginOptionsSchema = z.object({
 			if (theme && !THEMES.includes(theme)) {
 				ctx.addIssue({
 					code: "custom",
-					message: `Invalid theme: ${theme}`,
+					message: `Invalid theme: "${theme}". Must be one of [${THEMES.join("|")}]`,
 				});
 			}
 		})
@@ -46,8 +39,8 @@ export const PluginOptionsSchema = z.object({
 			return val ?? envTheme ?? "Traditional";
 		}),
 	layout: z.nullish(z.string()),
-	checkLaunchPath: createStringBoolSchema({
-		envvar: "ELEVENTY_SCAD_CHECK_LAUNCH_PATH",
+	resolveLaunchPath: createStringBoolSchema({
+		envvar: "ELEVENTY_SCAD_RESOLVE_LAUNCH_PATH",
 		default: true,
 	}),
 	collectionPage: createStringBoolSchema({

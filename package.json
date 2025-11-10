@@ -30,14 +30,18 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "clean": "rm -rvf ./dist/*",
-    "clean-test": "rm -rvf ./test/_11ty/output/*",
-    "dev": "pnpm build --watch ./src",
     "bump": "bumpp",
+    "clean": "rm -rvf ./dist/*",
+    "clean:test": "rm -rvf ./test/_11ty/output/*",
+    "debug:start": "DEBUG=eleventy:scad* pnpm start",
+    "debug:test": "DEBUG=eleventy:scad* pnpm test",
+    "demo": "cd test/_11ty && eleventy --config=eleventy-test-config.js --serve",
+    "dev": "pnpm build --watch ./src",
+    "docker:build": "docker build -t openscad-11ty .",
+    "docker:cube": "docker run --rm openscad-11ty -o cube.stl ./test/_11ty/input/cube.scad",
+    "docker:run": "docker run --rm -it --entrypoint /bin/bash openscad-11ty",
     "start": "eleventy --serve",
-    "dstart": "DEBUG=eleventy:scad* pnpm start",
     "test": "vitest",
-    "dtest": "DEBUG=eleventy:scad* pnpm test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,5 +1,5 @@
 import path from "node:path";
-import { blue, bold, gray, green, red, reset, yellow } from "yoctocolors";
+import { blue, bold, cyan, gray, green, red, reset, yellow } from "yoctocolors";
 import z, { prettifyError, z as z$1 } from "zod";
 import { mkdir, readFile } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
@@ -99,14 +99,6 @@ function resolveOpenSCAD(launchPath) {
 	const pathStr = String(launchPath);
 	if (existsSync(pathStr)) return pathStr;
 	return which.sync(pathStr, { nothrow: true });
-}
-/**
-* Assert that the given launch path is valid.
-*/
-function assertValidLaunchPath(input) {
-	if (!input) throw new Error(`launchPath cannot be null or undefined.`);
-	const resolved = resolveOpenSCAD(input);
-	if (!resolved) throw new Error(`The launchPath "${input}" does not exist and could not be found on PATH.`);
 }
 
 //#endregion
@@ -278,27 +270,23 @@ const debug$3 = debug_default.extend("generator");
 async function scad2stl(launchPath, files) {
 	return new Promise((resolve, reject) => {
 		const lines = [];
-		debug$3("input: %o", files.in);
-		debug$3("output: %o", files.out);
-		const scad = spawn(launchPath, [
-			"--o",
-			files.out,
-			files.in
-		]);
-		scad.on("spawn", () => timer.start());
-		scad.stdout.on("data", (data) => {
+		let scadProcess;
+		if (launchPath === "docker") scadProcess = spawnDockerOpenSCAD(files);
+		else scadProcess = spawnOpenSCAD(launchPath, files);
+		scadProcess.on("spawn", () => timer.start());
+		scadProcess.stdout.on("data", (data) => {
 			debug$3("[stdout] %s", data.toString());
 		});
-		scad.stderr.on("data", (data) => {
+		scadProcess.stderr.on("data", (data) => {
 			lines.push(data.toString());
 		});
-		scad.on("error", (err) => {
+		scadProcess.on("error", (err) => {
 			reject({
 				output: err,
 				ok: false
 			});
 		});
-		scad.on("close", (exitCode) => {
+		scadProcess.on("close", (exitCode) => {
 			const result = {
 				ok: exitCode === 0,
 				output: lines,
@@ -309,6 +297,39 @@ async function scad2stl(launchPath, files) {
 			resolve(result);
 		});
 	});
+}
+/**
+* Spawn OpenSCAD using the given launch path
+*/
+function spawnOpenSCAD(launchPath, files) {
+	debug$3("files: %O", files);
+	debug$3("launchPath: %o", launchPath);
+	return spawn(launchPath, [
+		"--o",
+		files.out,
+		files.in
+	]);
+}
+function spawnDockerOpenSCAD(files) {
+	const uid = process.getuid?.() ?? 1e3;
+	const gid = process.getgid?.() ?? 1e3;
+	const pwd = process.cwd();
+	const args = [
+		"run",
+		"--rm",
+		"-v",
+		`${pwd}:/openscad`,
+		"-u",
+		`${uid}:${gid}`,
+		"openscad/openscad:latest",
+		"openscad",
+		"-o",
+		files.out,
+		files.in
+	];
+	debug$3("files: %O", files);
+	debug$3("args: %O", args);
+	return spawn("docker", args);
 }
 
 //#endregion
@@ -336,15 +357,15 @@ const PluginOptionsSchema = z.object({
 		const theme = val ?? envTheme;
 		if (theme && !THEMES.includes(theme)) ctx.addIssue({
 			code: "custom",
-			message: `Invalid theme: ${theme}`
+			message: `Invalid theme: "${theme}". Must be one of [${THEMES.join("|")}]`
 		});
 	}).transform((val) => {
 		const envTheme = getEnv("ELEVENTY_SCAD_THEME");
 		return val ?? envTheme ?? "Traditional";
 	}),
 	layout: z.nullish(z.string()),
-	checkLaunchPath: createStringBoolSchema({
-		envvar: "ELEVENTY_SCAD_CHECK_LAUNCH_PATH",
+	resolveLaunchPath: createStringBoolSchema({
+		envvar: "ELEVENTY_SCAD_RESOLVE_LAUNCH_PATH",
 		default: true
 	}),
 	collectionPage: createStringBoolSchema({
@@ -448,6 +469,7 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 	} catch (e) {
 		console.log(`[${PLUGIN_NAME}] WARN Eleventy plugin compatibility: ${e.message}`);
 	}
+	ensureAssetPath();
 	const log$1 = createScadLogger(eleventyConfig);
 	const parsedOptions = parseOptions(options);
 	if (parsedOptions.error) {
@@ -456,26 +478,28 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 		log$1(message);
 		throw new Error(message);
 	}
-	const { theme, noSTL, layout, silent, verbose, launchPath, collectionPage, checkLaunchPath } = parsedOptions.data;
-	const resolvedScadBin = resolveOpenSCAD(launchPath);
-	if (checkLaunchPath && resolvedScadBin === null) {
-		const message = `The launchPath "${launchPath}" does not exist.`;
-		log$1(red(message));
-		throw new Error(message);
-	}
-	ensureAssetPath();
-	assertValidLaunchPath(resolvedScadBin);
+	const { theme, noSTL, layout, silent, verbose, launchPath, collectionPage, resolveLaunchPath } = parsedOptions.data;
 	/** logger that can be silenced */
 	const _log = (it) => {
 		if (!silent) log$1(it);
 	};
-	_log(`${gray("Theme:")} ${theme}`);
+	let resolvedScadBin = launchPath;
+	if (resolveLaunchPath) {
+		resolvedScadBin = resolveOpenSCAD(launchPath);
+		if (resolvedScadBin === null) {
+			const message = `The launchPath "${launchPath}" does not exist.`;
+			log$1(red(message));
+			throw new Error(message);
+		}
+	}
+	_log(`${gray("Theme:")} ${reset(theme)}`);
+	_log(`${gray("Spawn:")} ${(launchPath === "docker" ? cyan : blue)(String(launchPath))}`);
 	_log([
 		gray(" Opts:"),
 		silent ? green("+silent") : "",
 		verbose ? green("+verbose") : "",
 		noSTL ? red("-noSTL") : "",
-		!checkLaunchPath ? red("-launchPathCheck") : "",
+		!resolveLaunchPath ? red("-resolveLaunchPath") : "",
 		!collectionPage ? red("-collectionPage") : ""
 	].join(" ").replaceAll(/\s+/g, " "));
 	addScadGlobalData(eleventyConfig);
@@ -522,7 +546,7 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 				});
 				if (!stlExists || hashesDiffer) {
 					_log(`${noSTL ? blue("Would write") : reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
-					const scadResult = await scad2stl(resolvedScadBin, {
+					const scadResult = await scad2stl(String(resolvedScadBin), {
 						in: inFile,
 						out: outFile
 					});

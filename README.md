@@ -21,14 +21,15 @@ npm install eleventy-plugin-scad
   - `openscad` - or in a bin folder and available on your `$PATH`
 - **layout**: Use a custom layout for the scad files
   - This is an escape hatch to make and use your own STL viewer layout. _(needs docs)_
-- **collectionPage**: Set `false` to disable the generation of a listing page with links from the `scad` tagged files _(uses Collections API)_
-- **verbose**: Set `true` to view the compilation output from OpenSCAD
+- **collectionPage** _(default: true)_: Set `false` to disable the generation of a listing page with links from the `scad` tagged files _(uses Collections API)_
+- **verbose** _(default: false)_: Set `true` to view the compilation output from OpenSCAD
   - If your model uses `echo()` this is how to see the output
-- **silent**: Set `true` to disable all logging from the plugin
-- **noSTL**: Set `true` to skip generating STLs
+- **silent** _(default: false)_: Set `true` to disable all logging from the plugin
+- **noSTL** _(default: false)_: Set `true` to skip generating STLs
   - Useful when models do not change frequently. Generate once, then disable STLs.
-- **checkLaunchPath**: Set `false` to disable the validity check of `launchPath`
-  - Disable checking if the given `launchPath` exists _(added for testing)_
+- **resolveLaunchPath** _(default: true)_: Set `false` to disable internally resolving `launchPath`
+  - This was added to disable trying to verify if the passed `launchPath` exists and/or is callable.
+  - Whatever is set to `launchPath` will be passed to `spawn(launchPath, ["--o", STL_OUT_FILE, SCAD_INPUT]);`
 
 ## Add Plugin to Eleventy
 

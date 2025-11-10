@@ -20,7 +20,7 @@ declare const PluginOptionsSchema: z.ZodObject<{
     Ultramarine: "Ultramarine";
   }>>, z.ZodTransform<"Traditional" | "Modernist" | "Midnight" | "Chocolate" | "Oldstyle" | "Steely" | "Swiss" | "Ultramarine", "Traditional" | "Modernist" | "Midnight" | "Chocolate" | "Oldstyle" | "Steely" | "Swiss" | "Ultramarine" | undefined>>;
   layout: z.ZodOptional<z.ZodNullable<z.ZodString>>;
-  checkLaunchPath: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
+  resolveLaunchPath: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
   collectionPage: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
   verbose: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
   silent: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
@@ -35,7 +35,7 @@ type ModelViewerTheme = (typeof THEMES)[number];
 type PluginOptions = z.infer<typeof PluginOptionsSchema>;
 type ParsedPluginOptions = z.output<typeof PluginOptionsSchema>;
 type PluginOptionsInput = Omit<z.input<typeof PluginOptionsSchema>, "launchPath"> & {
-  launchPath: "auto" | "nightly" | (string & {});
+  launchPath: "auto" | "nightly" | "docker" | (string & {});
 };
 type ScadTemplateData = {
   layout: string;
