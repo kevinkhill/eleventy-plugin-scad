@@ -1,25 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { ZodError } from "zod";
 import { PluginOptionsSchema } from "../../src/core/options";
+import type { PluginOptions } from "../../src";
+
+const DEFAULT_PLUGIN_OPTIONS: PluginOptions = {
+	theme: "Traditional",
+	checkLaunchPath: true,
+	collectionPage: true,
+	verbose: true,
+	noSTL: false,
+	silent: false,
+};
 
 describe("PluginOptionsSchema", () => {
 	it("has sane defaults with no options set", () => {
-		const o = PluginOptionsSchema.parse({});
-		expect(o).toMatchObject({
-			theme: "Midnight",
-			checkLaunchPath: true,
-			collectionPage: true,
-			noSTL: false,
-			silent: false,
-			verbose: false,
-		});
-	});
-
-	it("errors with an invalid theme", () => {
-		const o = PluginOptionsSchema.safeParse({
-			theme: "TacoBell#324",
-		});
-		expect(o.success).toBeFalsy();
-		expect(o.error).toBeInstanceOf(ZodError);
+		const parsed = PluginOptionsSchema.parse({});
+		expect(parsed).toMatchObject(DEFAULT_PLUGIN_OPTIONS);
 	});
 });

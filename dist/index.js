@@ -1,6 +1,6 @@
 import path from "node:path";
 import { blue, bold, gray, green, red, reset, yellow } from "yoctocolors";
-import z, { prettifyError } from "zod";
+import z, { prettifyError, z as z$1 } from "zod";
 import { mkdir, readFile } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import which from "which";
@@ -144,6 +144,14 @@ var Timer = class {
 var timer_default = Timer;
 
 //#endregion
+//#region src/lib/validation.ts
+const nonEmptyString = z$1.string().min(1);
+function useNonEmptyOrDefault(value, fallback) {
+	const result = nonEmptyString.safeParse(value);
+	return result.success ? result.data : fallback;
+}
+
+//#endregion
 //#region src/core/cache.ts
 const debug$3 = debug_default.extend("cache");
 const cache = new Map();
@@ -166,7 +174,11 @@ async function fileHashesMatch(key) {
 	const scadContent = await readFile(key, "utf8");
 	const newHash = md5(scadContent);
 	const hashMatch = newHash === cachedHash;
-	debug$3("fileHashesMatch: %o", hashMatch);
+	debug$3({
+		key,
+		cached: cachedHash,
+		current: newHash
+	});
 	return hashMatch;
 }
 async function fileHashesDiffer(key) {
@@ -176,7 +188,6 @@ async function updateHash(key) {
 	const scadContent = await readFile(key, "utf8");
 	const hash = md5(scadContent);
 	cache.set(key, hash);
-	debug$3("hashed %o", key);
 }
 async function registerFile(key) {
 	updateHash(key);
@@ -324,7 +335,7 @@ const PluginOptionsSchema = z.object({
 		return val;
 	}, z.string().optional()),
 	layout: z.string().nullish(),
-	theme: z.enum(THEMES).optional().prefault(parseStringEnv("ELEVENTY_SCAD_THEME")).default("Midnight"),
+	theme: z.enum(THEMES).optional().default("Midnight"),
 	checkLaunchPath: createStringBoolSchema({
 		envvar: "ELEVENTY_SCAD_CHECK_LAUNCH_PATH",
 		default: true
@@ -346,11 +357,6 @@ const PluginOptionsSchema = z.object({
 		default: false
 	})
 });
-function parseStringEnv(envvar) {
-	const val = env[envvar];
-	if (typeof val === "string" && val.length > 0) return val;
-	return void 0;
-}
 
 //#endregion
 //#region src/core/shortcodes.ts
@@ -359,18 +365,20 @@ const debug = debug_default.extend("shortcodes");
 * Helper Shortcodes for generating pages from scad templates
 */
 function addShortcodes(eleventyConfig, opts) {
-	const registerShortcode = (name$1, filter) => {
+	function registerShortcode(name$1, filter) {
 		eleventyConfig.addShortcode(name$1, filter);
 		debug(`added "%s"`, name$1);
-	};
+	}
+	debug("defaultTheme: %o", opts.defaultTheme);
 	/**
 	* Link tag with url for themes created by w3.org
 	*
 	* @example {% w3_theme_css %}
 	* @link https://www.w3.org/StyleSheets/Core/preview
 	*/
-	registerShortcode("w3_theme_css", () => {
-		const url = `https://www.w3.org/StyleSheets/Core/${opts.defaultTheme}`;
+	registerShortcode("w3_theme_css", (userTheme) => {
+		const $theme = useNonEmptyOrDefault(userTheme, opts.defaultTheme);
+		const url = `https://www.w3.org/StyleSheets/Core/${$theme}`;
 		return `<link rel="stylesheet" href="${url}">`;
 	});
 	/**
@@ -424,6 +432,7 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 		console.log(`[${name}] WARN Eleventy plugin compatibility: ${e.message}`);
 	}
 	const log$1 = createScadLogger(eleventyConfig);
+	debug$6.extend("zod")("incoming options = %O", options);
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
 	debug$6.extend("zod")("parsed options = %O", parsedOptions);
 	if (parsedOptions.error) {
@@ -441,7 +450,17 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 	}
 	ensureAssetPath();
 	assertValidLaunchPath(resolvedScadBin);
-	if (!silent) logPluginReady(parsedOptions.data);
+	if (!silent) {
+		log$1(`${gray("Theme:")} ${theme}`);
+		log$1([
+			gray(" Opts:"),
+			silent ? green("+silent") : "",
+			verbose ? green("+verbose") : "",
+			noSTL ? red("-noSTL") : "",
+			!checkLaunchPath ? red("-launchPathCheck") : "",
+			!collectionPage ? red("-collectionPage") : ""
+		].join(" ").replaceAll(/\s+/g, " "));
+	}
 	addScadGlobalData(eleventyConfig);
 	addShortcodes(eleventyConfig, { defaultTheme: theme });
 	addBuiltinScadLayoutVirtualTemplate(eleventyConfig);
@@ -476,10 +495,11 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 				const outFile = path.join(writeDir, data.stlFile);
 				this.addDependencies(inputPath, [outFile]);
 				await ensureFileRegistered(inFile);
-				debug$6("cached: %o", path.basename(inFile));
 				const stlExists = fileExist(outFile);
 				const hashesDiffer = await fileHashesDiffer(inFile);
 				debug$6({
+					inFile,
+					outFile,
 					stlExists,
 					hashesDiffer
 				});
@@ -509,20 +529,6 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 			};
 		}
 	});
-	/**
-	* Helper to de-clutter the top of the plugin
-	*/
-	function logPluginReady({ silent: silent$1, theme: theme$1, verbose: verbose$1, noSTL: noSTL$1, collectionPage: collectionPage$1, checkLaunchPath: checkLaunchPath$1 }) {
-		log$1(`${gray("Theme:")} ${theme$1}`);
-		log$1([
-			gray(" Opts:"),
-			silent$1 ? green("+silent") : "",
-			verbose$1 ? green("+verbose") : "",
-			noSTL$1 ? red("-noSTL") : "",
-			!checkLaunchPath$1 ? red("-launchPathCheck") : "",
-			!collectionPage$1 ? red("-collectionPage") : ""
-		].join(" ").replaceAll(/\s+/g, " "));
-	}
 }
 
 //#endregion

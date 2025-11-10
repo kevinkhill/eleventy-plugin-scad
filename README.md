@@ -3,6 +3,7 @@
 A plugin for Eleventy to showcase your SCAD files.
 
 ## Purpose
+
 Use Eleventy to generate a site to showcase your OpenSCAD models. This plugin adds `.scad` as a template and will use your system's OpenSCAD to render the file into an STL. An additional HTML file with Three.js STL viewer is gererated as well.
 
 ## Install into Project
@@ -20,7 +21,7 @@ npm install eleventy-plugin-scad
   - `openscad` - or in a bin folder and available on your `$PATH`
 - **layout**: Use a custom layout for the scad files
   - This is an escape hatch to make and use your own STL viewer layout. _(needs docs)_
-- **collectionPage**: Set `false` to disable the generation of a listing page with links from the `scad` tagged files _(uses Collections API)_ 
+- **collectionPage**: Set `false` to disable the generation of a listing page with links from the `scad` tagged files _(uses Collections API)_
 - **verbose**: Set `true` to view the compilation output from OpenSCAD
   - If your model uses `echo()` this is how to see the output
 - **silent**: Set `true` to disable all logging from the plugin
@@ -28,7 +29,7 @@ npm install eleventy-plugin-scad
   - Useful when models do not change frequently. Generate once, then disable STLs.
 - **checkLaunchPath**: Set `false` to disable the validity check of `launchPath`
   - Disable checking if the given `launchPath` exists _(added for testing)_
-     
+
 ## Add Plugin to Eleventy
 
 There are two methods to add the plugin to Eleventy.

@@ -1,37 +1,37 @@
 import path from "node:path";
 import { blue, bold, gray, green, red, reset } from "yoctocolors";
 import { prettifyError } from "zod";
-import { name } from "../package.json" with { type: "json" };
 import {
 	addBuiltinScadLayoutVirtualTemplate,
 	addScadCollectionVirtualTemplate,
 	addScadGlobalData,
 	addShortcodes,
 	cache,
-	DEFAULT_SCAD_LAYOUT,
-	DOT_SCAD,
-	DOT_STL,
-	PluginOptionsSchema,
-	SCAD_EXT,
+	parseOptions,
 	scad2stl,
 } from "./core";
 import {
-	assertValidLaunchPath,
-	createScadLogger,
-	debug,
-	ensureAssetPath,
-	ensureDirectoryExists,
-	fileExist,
-	resolveOpenSCAD,
-} from "./lib";
+	DEFAULT_PLUGIN_THEME,
+	DEFAULT_SCAD_LAYOUT,
+	DOT_SCAD,
+	DOT_STL,
+	PLUGIN_NAME,
+	SCAD_EXT,
+} from "./core/const";
+import { ensureAssetPath } from "./lib/assets";
+import Debug from "./lib/debug";
+import { ensureDirectoryExists, fileExist } from "./lib/fs";
+import { createScadLogger } from "./lib/logger";
+import { assertValidLaunchPath, resolveOpenSCAD } from "./lib/resolve";
 import type {
 	EleventyConfig,
 	EleventyDirs,
 	FullPageData,
-	PluginOptions,
 	PluginOptionsInput,
 	ScadTemplateData,
 } from "./types";
+
+const debug = Debug.extend("core");
 
 // #region Begin Plugin
 /**
@@ -52,15 +52,14 @@ export default function EleventyPluginOpenSCAD(
 		}
 	} catch (e) {
 		console.log(
-			`[${name}] WARN Eleventy plugin compatibility: ${(e as Error).message}`,
+			`[${PLUGIN_NAME}] WARN Eleventy plugin compatibility: ${(e as Error).message}`,
 		);
 	}
 
 	const log = createScadLogger(eleventyConfig);
 
 	// #region Parse Options
-	const parsedOptions = PluginOptionsSchema.safeParse(options);
-	debug.extend("zod")("parsed options = %O", parsedOptions);
+	const parsedOptions = parseOptions(options);
 
 	if (parsedOptions.error) {
 		const message = prettifyError(parsedOptions.error);
@@ -80,6 +79,7 @@ export default function EleventyPluginOpenSCAD(
 		checkLaunchPath,
 	} = parsedOptions.data;
 
+	// #region Check Bin Path
 	const resolvedScadBin = resolveOpenSCAD(launchPath);
 	if (checkLaunchPath && resolvedScadBin === null) {
 		const message = `The launchPath "${launchPath}" does not exist.`;
@@ -92,15 +92,32 @@ export default function EleventyPluginOpenSCAD(
 
 	// Type assertion function to make typeof resolvedScadBin === string
 	assertValidLaunchPath(resolvedScadBin);
+	// #endregion
 
-	if (!silent) {
-		logPluginReady(parsedOptions.data);
-	}
+	/** logger that can be silenced */
+	const _log = (it: string) => {
+		if (!silent) log(it);
+	};
+
+	// #region Log Set Options
+	_log(`${gray("Theme:")} ${theme}`);
+	_log(
+		[
+			gray(" Opts:"),
+			silent ? green("+silent") : "",
+			verbose ? green("+verbose") : "",
+			noSTL ? red("-noSTL") : "",
+			!checkLaunchPath ? red("-launchPathCheck") : "",
+			!collectionPage ? red("-collectionPage") : "",
+		]
+			.join(" ")
+			.replaceAll(/\s+/g, " "),
+	);
 	// #endregion
 
 	// #region Plugin Body
 	addScadGlobalData(eleventyConfig);
-	addShortcodes(eleventyConfig, { defaultTheme: theme });
+	addShortcodes(eleventyConfig);
 	// registerEventHandlers(eleventyConfig);
 
 	// Default renderer for `.scad` files once turned into HTML
@@ -134,7 +151,7 @@ export default function EleventyPluginOpenSCAD(
 			return {
 				title: filename,
 				layout: layout ?? DEFAULT_SCAD_LAYOUT,
-				theme: theme,
+				theme: theme ?? DEFAULT_PLUGIN_THEME,
 				tags: ["scad"],
 				scadFile: inputPath,
 				stlFile: filename.replace(DOT_SCAD, DOT_STL),
@@ -168,15 +185,14 @@ export default function EleventyPluginOpenSCAD(
 
 				// md5 the contents of the file for caching
 				await cache.ensureFileRegistered(inFile);
-				debug("cached: %o", path.basename(inFile));
 
 				const stlExists = fileExist(outFile);
 				const hashesDiffer = await cache.fileHashesDiffer(inFile);
 
-				debug({ stlExists, hashesDiffer });
+				debug({ inFile, outFile, stlExists, hashesDiffer });
 
 				if (!stlExists || hashesDiffer) {
-					log(
+					_log(
 						`${noSTL ? blue("Would write") : reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
 					);
 
@@ -196,16 +212,16 @@ export default function EleventyPluginOpenSCAD(
 
 					cache.updateHash(inFile);
 
+					// log what OpenSCAD output during rendering
 					if (verbose) {
-						// log what OpenSCAD output during rendering
 						const lines = scadResult.output.flatMap((l) => l.split("\n"));
 						for (const line of lines) {
-							log(gray(`\t${line}`));
+							_log(gray(`\t${line}`));
 						}
 					}
 
 					const duration = scadResult.duration.toFixed(2);
-					log(
+					_log(
 						green(`Wrote ${bold(data.stlFile)} in ${bold(duration)} seconds`),
 					);
 				} else {
@@ -216,33 +232,5 @@ export default function EleventyPluginOpenSCAD(
 			};
 		},
 	});
-	// #endregion
-
-	// #region logPluginReady
-	/**
-	 * Helper to de-clutter the top of the plugin
-	 */
-	function logPluginReady({
-		silent,
-		theme,
-		verbose,
-		noSTL,
-		collectionPage,
-		checkLaunchPath,
-	}: PluginOptions) {
-		log(`${gray("Theme:")} ${theme}`);
-		log(
-			[
-				gray(" Opts:"),
-				silent ? green("+silent") : "",
-				verbose ? green("+verbose") : "",
-				noSTL ? red("-noSTL") : "",
-				!checkLaunchPath ? red("-launchPathCheck") : "",
-				!collectionPage ? red("-collectionPage") : "",
-			]
-				.join(" ")
-				.replaceAll(/\s+/g, " "),
-		);
-	}
 	// #endregion
 }

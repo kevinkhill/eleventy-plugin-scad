@@ -9,11 +9,6 @@ export const TEST_SITE_ROOT = path.join(TEST_DIR, "_11ty");
 export const TEST_SITE_INPUT = path.join(TEST_SITE_ROOT, "input");
 export const TEST_SITE_OUTPUT = path.join(TEST_SITE_ROOT, "output");
 
-export const DISABLE_OPENSCAD = {
-	noSTL: true,
-	checkLaunchPath: false,
-};
-
 export const TEST_SCAD_PAGES = [["cube"], ["sphere"], ["cylinder"]] as const;
 
 export function createTestInstance(options: PluginOptionsInput): Eleventy {

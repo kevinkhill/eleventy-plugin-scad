@@ -34,10 +34,10 @@
     "clean-test": "rm -rvf ./test/_11ty/output/*",
     "dev": "pnpm build --watch ./src",
     "bump": "bumpp",
-    "release": "bumpp && npm publish",
     "start": "eleventy --serve",
-    "debug": "DEBUG=eleventy:scad* pnpm start",
+    "dstart": "DEBUG=eleventy:scad* pnpm start",
     "test": "vitest",
+    "dtest": "DEBUG=eleventy:scad* pnpm test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

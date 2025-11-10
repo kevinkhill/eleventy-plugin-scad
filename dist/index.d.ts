@@ -11,7 +11,7 @@ declare const THEMES: readonly ["Traditional", "Modernist", "Midnight", "Chocola
 declare const PluginOptionsSchema: z.ZodObject<{
   launchPath: z.ZodPipe<z.ZodTransform<{} | null | undefined, unknown>, z.ZodOptional<z.ZodString>>;
   layout: z.ZodOptional<z.ZodNullable<z.ZodString>>;
-  theme: z.ZodDefault<z.ZodPrefault<z.ZodOptional<z.ZodEnum<{
+  theme: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
     Traditional: "Traditional";
     Modernist: "Modernist";
     Midnight: "Midnight";
@@ -20,7 +20,7 @@ declare const PluginOptionsSchema: z.ZodObject<{
     Steely: "Steely";
     Swiss: "Swiss";
     Ultramarine: "Ultramarine";
-  }>>>>;
+  }>>>;
   checkLaunchPath: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
   collectionPage: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
   verbose: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;

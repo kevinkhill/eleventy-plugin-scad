@@ -11,6 +11,7 @@ expect.extend({
 				`${received} does${isNot ? " not" : ""} start with "${expected}"`,
 		};
 	},
+
 	toEndWithString(received: string, expected: string) {
 		const { isNot } = this;
 		return {
@@ -20,6 +21,7 @@ expect.extend({
 				`${received} does${isNot ? " not" : ""} end with "${expected}"`,
 		};
 	},
+
 	toExist(received: string) {
 		const { isNot } = this;
 		return {

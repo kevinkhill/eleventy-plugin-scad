@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { autoBinPath } from "../../src/core/scad-bin";
+import { autoBinPath } from "../../src/lib/scad-bin";
 
 const CASES = {
 	linux: [

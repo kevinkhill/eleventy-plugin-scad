@@ -10,8 +10,9 @@ test.concurrent.for(CASES)("%s", async ([theme]) => {
 	const eleventy = createTestInstance({
 		launchPath: "nightly",
 		theme,
-		noSTL: true,
+		checkLaunchPath: false,
 		silent: true,
+		noSTL: true,
 	});
 
 	const pages = await eleventy.toJSON();
@@ -21,4 +22,12 @@ test.concurrent.for(CASES)("%s", async ([theme]) => {
 	for (const page of scadPages) {
 		expect(page.content).includes(themeURL);
 	}
+});
+
+test("invalid theme throws an error", async () => {
+	await expect(async () => {
+		// @ts-expect-error
+		const eleventy = createTestInstance({ theme: "TacoBell#324" });
+		await eleventy.toJSON();
+	}).rejects.toThrow("Error processing the `EleventyPluginOpenSCAD` plugin");
 });

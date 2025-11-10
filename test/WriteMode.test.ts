@@ -1,5 +1,6 @@
+import { existsSync } from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
-import { rimraf } from "rimraf";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
 	createTestInstance,
@@ -9,10 +10,13 @@ import {
 
 const eleventy = createTestInstance({
 	launchPath: "nightly",
+	silent: true,
 });
 
 beforeAll(async () => {
-	await rimraf(path.join(TEST_SITE_OUTPUT, "*"), { glob: true });
+	if (existsSync(TEST_SITE_OUTPUT)) {
+		await fs.rm(TEST_SITE_OUTPUT, { recursive: true, force: true });
+	}
 	await eleventy.write();
 });
 
@@ -24,15 +28,15 @@ describe("(virtual) index.html", () => {
 });
 
 describe.for(TEST_SCAD_PAGES)("%s.scad", ([name]) => {
-	const generatedDir = path.join(TEST_SITE_OUTPUT, name);
+	const modelDir = path.join(TEST_SITE_OUTPUT, name);
 
 	it(`generated "${name}/index.html"`, () => {
-		const index = path.join(generatedDir, "index.html");
+		const index = path.join(modelDir, "index.html");
 		expect(index).toExist();
 	});
 
 	it(`generated "${name}/${name}.stl"`, () => {
-		const stl = path.join(generatedDir, `${name}.stl`);
+		const stl = path.join(modelDir, `${name}.stl`);
 		expect(stl).toExist();
 	});
 });
