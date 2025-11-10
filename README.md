@@ -1,6 +1,6 @@
 # eleventy-plugin-scad ![NPM Version](https://img.shields.io/npm/v/eleventy-plugin-scad)
 
-A plugin for Eleventy to showcase your SCAD files.
+A plugin for [Eleventy](https://www.11ty.dev) to showcase your SCAD files.
 
 ## Purpose
 
@@ -80,6 +80,19 @@ export default async (eleventyConfig) => {
   addOpenSCADPlugin(eleventyConfig, {
     // SCAD_BINS.MACOS => "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD"
     launchPath: join(homedir(), SCAD_BINS.MACOS),
+  });
+};
+```
+
+On my linux machine, I use this instead
+
+```js
+import { addOpenSCADPlugin, SCAD_BINS } from "eleventy-plugin-scad";
+
+/** @param {import("@11ty/eleventy/UserConfig").default} eleventyConfig */
+export default async (eleventyConfig) => {
+  addOpenSCADPlugin(eleventyConfig, {
+    launchPath: "nightly", // this will find "/usr/bin/openscad-nightly" on my path
   });
 };
 ```
