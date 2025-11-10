@@ -1,5 +1,6 @@
+import { useNonEmptyOrDefault } from "../lib";
 import Debug from "../lib/debug";
-import { THREE_JS_VERSION } from "./const";
+import { DEFAULT_PLUGIN_THEME, THREE_JS_VERSION } from "./const";
 import type { EleventyConfig, ModelViewerTheme } from "../types";
 
 const debug = Debug.extend("shortcodes");
@@ -7,14 +8,12 @@ const debug = Debug.extend("shortcodes");
 /**
  * Helper Shortcodes for generating pages from scad templates
  */
-export function addShortcodes(
-	eleventyConfig: EleventyConfig,
-	opts: { defaultTheme: ModelViewerTheme },
-) {
-	const registerShortcode: EleventyConfig["addShortcode"] = (name, filter) => {
+export function addShortcodes(eleventyConfig: EleventyConfig) {
+	const registerShortcode = (name: string, filter: Filter) => {
 		eleventyConfig.addShortcode(name, filter);
 		debug(`added "%s"`, name);
 	};
+	debug("defaultTheme: %o", DEFAULT_PLUGIN_THEME);
 
 	/**
 	 * Link tag with url for themes created by w3.org
@@ -22,8 +21,9 @@ export function addShortcodes(
 	 * @example {% w3_theme_css %}
 	 * @link https://www.w3.org/StyleSheets/Core/preview
 	 */
-	registerShortcode("w3_theme_css", () => {
-		const url = `https://www.w3.org/StyleSheets/Core/${opts.defaultTheme}`;
+	registerShortcode("w3_theme_css", (userTheme: ModelViewerTheme) => {
+		const $theme = useNonEmptyOrDefault(userTheme, DEFAULT_PLUGIN_THEME);
+		const url = `https://www.w3.org/StyleSheets/Core/${$theme}`;
 		return `<link rel="stylesheet" href="${url}">`;
 	});
 
@@ -33,11 +33,11 @@ export function addShortcodes(
 	 * @example {% threejs_importmap %}
 	 */
 	registerShortcode("threejs_importmap", () => {
-		const v = THREE_JS_VERSION;
+		const cdn_base = `https://cdn.jsdelivr.net/npm/three@${THREE_JS_VERSION}`;
 		const importmap = {
 			imports: {
-				three: `https://cdn.jsdelivr.net/npm/three@${v}/build/three.module.js`,
-				"three/addons/": `https://cdn.jsdelivr.net/npm/three@${v}/examples/jsm/`,
+				three: `${cdn_base}/build/three.module.js`,
+				"three/addons/": `${cdn_base}/examples/jsm/`,
 			},
 		};
 		return `<script type="importmap">${JSON.stringify(importmap)}</script>`;
@@ -56,3 +56,4 @@ export function addShortcodes(
 //       theme: 'vs-dark'
 //     });
 // </script>
+type Filter = Parameters<EleventyConfig["addShortcode"]>[1];

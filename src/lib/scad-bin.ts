@@ -1,4 +1,4 @@
-import Debug from "../lib/debug";
+import Debug from "./debug";
 import type { PlatformMap } from "../types";
 
 const debug = Debug.extend("bin");

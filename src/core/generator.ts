@@ -14,13 +14,11 @@ export async function scad2stl(
 ): Promise<ScadExportResult> {
 	return new Promise<ScadExportResult>((resolve, reject) => {
 		const lines: string[] = [];
-		const input = normalPath(files.in);
-		const output = normalPath(files.out);
 
-		debug("input: %o", input);
-		debug("output: %o", output);
+		debug("input: %o", files.in);
+		debug("output: %o", files.out);
 
-		const scad = spawn(launchPath, ["--o", output, input]);
+		const scad = spawn(launchPath, ["--o", files.out, files.in]);
 
 		scad.on("spawn", () => timer.start());
 
@@ -57,7 +55,3 @@ type ScadExportResult = {
 	exitCode: number | null;
 	duration: number;
 };
-
-function normalPath(path: string) {
-	return `./${path.replace(/^\.?\/?/, "")}`;
-}

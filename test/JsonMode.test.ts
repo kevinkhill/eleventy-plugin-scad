@@ -3,6 +3,7 @@ import { createTestInstance, TEST_SCAD_PAGES } from "./_setup/eleventy";
 
 const eleventy = createTestInstance({
 	launchPath: "nightly",
+	silent: true,
 });
 
 const pages: EleventyPageJSON[] = [];
@@ -32,8 +33,9 @@ describe.for(TEST_SCAD_PAGES)("%s.scad", ([name]) => {
 	});
 
 	it("has valid HTML content", () => {
-		expect(page?.content).toStartWithString("<!DOCTYPE html>");
-		expect(page?.content).toEndWithString("</html>\n");
+		const content = page?.content?.toLowerCase();
+		expect(content).toStartWithString("<!doctype html>");
+		expect(content).toEndWithString("</html>\n");
 	});
 });
 
@@ -49,7 +51,8 @@ describe("(virtual) index.html", () => {
 	});
 
 	it("has valid HTML content", () => {
-		expect(page?.content).toStartWithString("<!DOCTYPE html>");
+		const content = page?.content?.toLowerCase();
+		expect(content).toStartWithString("<!doctype html>");
 	});
 
 	it("has the correct input path", () => {

@@ -5,7 +5,6 @@ export * from "./generator";
 export * from "./global-data";
 export * from "./highlighters";
 export * from "./options";
-export * from "./scad-bin";
 export * from "./shortcodes";
 export * from "./templates";
 export * from "./transformer";

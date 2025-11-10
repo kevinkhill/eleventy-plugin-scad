@@ -17,6 +17,8 @@ npm install eleventy-plugin-scad
   - `nightly` - Works the same as above for the `nightly` version of OpenSCAD
   - `"C:/openscad.exe"` - Absolute paths work too.
   - `osc` - Maybe you aliased OpenSCAD and have it on your `$PATH`
+- **theme**: Use one of the core W3.org themes
+  - Traditional, Modernist, Midnight, Chocolate, Oldstyle, Steely, Swiss, Ultramarine
 - **layout**: Use a custom layout for the scad files
 - **collectionPage**: Set `true` to generate a listing page from `collections.scad`
 - **verbose**: Set `true` to view the compilation output from OpenSCAD

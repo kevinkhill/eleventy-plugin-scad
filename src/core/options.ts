@@ -1,8 +1,11 @@
 import { env, platform } from "node:process";
 import z from "zod";
+import Debug from "../lib/debug";
+import { autoBinPath } from "../lib/scad-bin";
 import { THEMES } from "./const";
-import { autoBinPath } from "./scad-bin";
 import type { ModelViewerTheme } from "../types";
+
+const debug = Debug.extend("zod");
 
 const StringBoolSchema = z.union([z.boolean(), z.stringbool()]);
 
@@ -19,12 +22,30 @@ export const PluginOptionsSchema = z.object({
 		}
 		return val;
 	}, z.string().optional()),
-	layout: z.string().nullish(),
+	// theme: z.preprocess((val) => {
+	// 	const envTheme = getEnv<ModelViewerTheme>("ELEVENTY_SCAD_THEME") ?? val;
+	// 	if (typeof envTheme !== "string" || envTheme.length === 0) {
+	// 		return "Traditional";
+	// 	}
+	// 	return envTheme;
+	// }, z.enum(THEMES).optional()),
 	theme: z
-		.enum(THEMES)
-		.optional()
-		.prefault(parseStringEnv<ModelViewerTheme>("ELEVENTY_SCAD_THEME"))
-		.default("Midnight"),
+		.optional(z.enum(THEMES))
+		.superRefine((val, ctx) => {
+			const envTheme = getEnv<ModelViewerTheme>("ELEVENTY_SCAD_THEME");
+			const theme = val ?? envTheme;
+			if (theme && !THEMES.includes(theme)) {
+				ctx.addIssue({
+					code: "custom",
+					message: `Invalid theme: ${theme}`,
+				});
+			}
+		})
+		.transform((val) => {
+			const envTheme = getEnv<ModelViewerTheme>("ELEVENTY_SCAD_THEME");
+			return val ?? envTheme ?? "Traditional";
+		}),
+	layout: z.nullish(z.string()),
 	checkLaunchPath: createStringBoolSchema({
 		envvar: "ELEVENTY_SCAD_CHECK_LAUNCH_PATH",
 		default: true,
@@ -47,7 +68,14 @@ export const PluginOptionsSchema = z.object({
 	}),
 });
 
-function parseStringEnv<T>(envvar: string): T | undefined {
+export function parseOptions(options: unknown) {
+	debug("incoming options: %O", options);
+	const parsedOptions = PluginOptionsSchema.safeParse(options);
+	debug("parsed options: %O", parsedOptions);
+	return parsedOptions;
+}
+
+function getEnv<T>(envvar: string): T | undefined {
 	const val = env[envvar];
 	if (typeof val === "string" && val.length > 0) return val as T;
 	return undefined;

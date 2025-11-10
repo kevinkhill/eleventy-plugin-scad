@@ -1,9 +1,6 @@
 import { debug, getAssetFileContent } from "../lib";
+import { DEFAULT_COLLECTION_LAYOUT, DEFAULT_SCAD_LAYOUT } from "./const";
 import type { EleventyConfig } from "../types";
-
-export const DEFAULT_SCAD_LAYOUT = "scad.viewer.njk";
-
-export const DEFAULT_COLLECTION_LAYOUT = "scad.collection.njk";
 
 const log = debug.extend("templates");
 
@@ -29,7 +26,6 @@ export function addScadCollectionVirtualTemplate(
 	);
 
 	const DEFAULT_COLLECTION_TEMPLATE = "index.njk";
-
 	eleventyConfig.addTemplate(
 		DEFAULT_COLLECTION_TEMPLATE,
 		`<ul>
