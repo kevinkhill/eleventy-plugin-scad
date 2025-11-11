@@ -1,11 +1,11 @@
 import { env, platform } from "node:process";
 import z from "zod";
+import { autoBinPath, getEnv } from "../lib";
 import Debug from "../lib/debug";
-import { autoBinPath } from "../lib/scad-bin";
 import { THEMES } from "./const";
 import type { ModelViewerTheme } from "../types";
 
-const debug = Debug.extend("zod");
+const debug = Debug.extend("options");
 
 const StringBoolSchema = z.union([z.boolean(), z.stringbool()]);
 
@@ -22,13 +22,6 @@ export const PluginOptionsSchema = z.object({
 		}
 		return val;
 	}, z.string().optional()),
-	// theme: z.preprocess((val) => {
-	// 	const envTheme = getEnv<ModelViewerTheme>("ELEVENTY_SCAD_THEME") ?? val;
-	// 	if (typeof envTheme !== "string" || envTheme.length === 0) {
-	// 		return "Traditional";
-	// 	}
-	// 	return envTheme;
-	// }, z.enum(THEMES).optional()),
 	theme: z
 		.optional(z.enum(THEMES))
 		.superRefine((val, ctx) => {
@@ -37,7 +30,7 @@ export const PluginOptionsSchema = z.object({
 			if (theme && !THEMES.includes(theme)) {
 				ctx.addIssue({
 					code: "custom",
-					message: `Invalid theme: ${theme}`,
+					message: `Invalid theme: "${theme}". Must be one of [${THEMES.join("|")}]`,
 				});
 			}
 		})
@@ -46,8 +39,8 @@ export const PluginOptionsSchema = z.object({
 			return val ?? envTheme ?? "Traditional";
 		}),
 	layout: z.nullish(z.string()),
-	checkLaunchPath: createStringBoolSchema({
-		envvar: "ELEVENTY_SCAD_CHECK_LAUNCH_PATH",
+	resolveLaunchPath: createStringBoolSchema({
+		envvar: "ELEVENTY_SCAD_RESOLVE_LAUNCH_PATH",
 		default: true,
 	}),
 	collectionPage: createStringBoolSchema({
@@ -69,14 +62,8 @@ export const PluginOptionsSchema = z.object({
 });
 
 export function parseOptions(options: unknown) {
-	debug("incoming options: %O", options);
+	debug("incoming: %O", options);
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
-	debug("parsed options: %O", parsedOptions);
+	debug("parsed: %O", parsedOptions);
 	return parsedOptions;
-}
-
-function getEnv<T>(envvar: string): T | undefined {
-	const val = env[envvar];
-	if (typeof val === "string" && val.length > 0) return val as T;
-	return undefined;
 }

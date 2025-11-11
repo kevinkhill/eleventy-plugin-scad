@@ -1,5 +1,6 @@
 export * from "./assets";
 export * from "./debug";
+export * from "./env";
 export * from "./fs";
 export * from "./logger";
 export * from "./md5";

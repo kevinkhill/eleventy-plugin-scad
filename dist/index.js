@@ -1,23 +1,23 @@
 import path from "node:path";
-import { blue, bold, gray, green, red, reset, yellow } from "yoctocolors";
+import { blue, bold, cyan, gray, green, red, reset, yellow } from "yoctocolors";
 import z, { prettifyError, z as z$1 } from "zod";
 import { mkdir, readFile } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { findUpSync } from "find-up";
 import Debug from "debug";
+import { env, platform } from "node:process";
 import { createHash } from "node:crypto";
 import which from "which";
 import { spawn } from "node:child_process";
 import "he";
-import { env, platform } from "node:process";
 
 //#region src/lib/debug.ts
-const debug$8 = Debug("eleventy:scad");
-var debug_default = debug$8;
+const debug$9 = Debug("eleventy:scad");
+var debug_default = debug$9;
 
 //#endregion
 //#region src/lib/assets.ts
-const debug$7 = debug_default.extend("assets");
+const debug$8 = debug_default.extend("assets");
 let assetPath = "";
 /**
 * Load an asset file from the bundle
@@ -25,7 +25,7 @@ let assetPath = "";
 function getAssetFileContent(file) {
 	const resPath = path.join(getAssetPath(), file);
 	const content = readFileSync(resPath, "utf8");
-	debug$7(`read from disk "%s"`, file);
+	debug$8(`read from disk "%s"`, file);
 	return content;
 }
 function getAssetPath() {
@@ -33,18 +33,28 @@ function getAssetPath() {
 	return assetPath;
 }
 function ensureAssetPath() {
-	debug$7(`ensuring asset path is set`);
-	if (assetPath) debug$7(`assetPath = "%s"`, assetPath);
+	debug$8(`ensuring asset path is set`);
+	if (assetPath) debug$8(`assetPath = "%s"`, assetPath);
 	else {
-		debug$7(`searching "%s"`, import.meta.dirname);
+		debug$8(`searching "%s"`, import.meta.dirname);
 		const found = findUpSync("assets", {
 			cwd: import.meta.dirname,
 			type: "directory"
 		});
 		if (!found) throw new Error(`"assets/" was not found!`);
-		debug$7(`found "%s"`, found);
+		debug$8(`found "%s"`, found);
 		assetPath = found;
 	}
+}
+
+//#endregion
+//#region src/lib/env.ts
+const debug$7 = debug_default.extend("env");
+function getEnv(envvar) {
+	const val = env[envvar];
+	debug$7("%o = %o", envvar, val);
+	if (typeof val === "string" && val.length > 0) return val;
+	return void 0;
 }
 
 //#endregion
@@ -99,14 +109,6 @@ function resolveOpenSCAD(launchPath) {
 	const pathStr = String(launchPath);
 	if (existsSync(pathStr)) return pathStr;
 	return which.sync(pathStr, { nothrow: true });
-}
-/**
-* Assert that the given launch path is valid.
-*/
-function assertValidLaunchPath(input) {
-	if (!input) throw new Error(`launchPath cannot be null or undefined.`);
-	const resolved = resolveOpenSCAD(input);
-	if (!resolved) throw new Error(`The launchPath "${input}" does not exist and could not be found on PATH.`);
 }
 
 //#endregion
@@ -174,16 +176,16 @@ var Timer = class {
 		this._stopped = Date.now();
 		return this;
 	}
-	get duration() {
-		this.stop();
-		const duration = (this._stopped - this._started) / 1e3;
-		this.reset();
-		return duration;
-	}
 	reset() {
 		this._started = 0;
 		this._stopped = 0;
 		return this;
+	}
+	readAndReset() {
+		this.stop();
+		const duration = (this._stopped - this._started) / 1e3;
+		this.reset();
+		return duration;
 	}
 };
 var timer_default = Timer;
@@ -236,7 +238,7 @@ async function updateHash(key) {
 }
 async function registerFile(key) {
 	updateHash(key);
-	debug$4({ registered: key });
+	debug$4("registered: %o", key);
 }
 async function ensureFileRegistered(file) {
 	if (fileNeedsRegistration(file)) await registerFile(file);
@@ -250,6 +252,10 @@ var name = "eleventy-plugin-scad";
 //#region src/core/const.ts
 const PLUGIN_NAME = name;
 const THREE_JS_VERSION = "0.180.0";
+const STL_EXT = "stl";
+const DOT_STL = `.${STL_EXT}`;
+const SCAD_EXT = "scad";
+const DOT_SCAD = `.${SCAD_EXT}`;
 const THEMES = [
 	"Traditional",
 	"Modernist",
@@ -263,52 +269,80 @@ const THEMES = [
 const DEFAULT_SCAD_LAYOUT = "scad.viewer.njk";
 const DEFAULT_COLLECTION_LAYOUT = "scad.collection.njk";
 const DEFAULT_PLUGIN_THEME = "Traditional";
-const STL_EXT = "stl";
-const DOT_STL = `.${STL_EXT}`;
-const SCAD_EXT = "scad";
-const DOT_SCAD = `.${SCAD_EXT}`;
+const DEFAULT_DOCKER_TAG = "trixie";
 
 //#endregion
 //#region src/core/generator.ts
-const timer = new timer_default();
 const debug$3 = debug_default.extend("generator");
 /**
 * Generate an `.stl` from a given `.scad` file
 */
 async function scad2stl(launchPath, files) {
+	const timer = new timer_default();
 	return new Promise((resolve, reject) => {
 		const lines = [];
-		debug$3("input: %o", files.in);
-		debug$3("output: %o", files.out);
-		const scad = spawn(launchPath, [
-			"--o",
-			files.out,
-			files.in
-		]);
-		scad.on("spawn", () => timer.start());
-		scad.stdout.on("data", (data) => {
-			debug$3("[stdout] %s", data.toString());
-		});
-		scad.stderr.on("data", (data) => {
+		let scadProcess;
+		if (launchPath.startsWith("docker")) {
+			const dockerTag = launchPath.split(":")[1];
+			scadProcess = spawnDockerOpenSCAD(dockerTag, files);
+		} else scadProcess = spawnOpenSCAD(launchPath, files);
+		scadProcess.on("spawn", () => timer.start());
+		scadProcess.stderr.on("data", (data) => {
+			debug$3.extend("stdout")(data.toString());
 			lines.push(data.toString());
 		});
-		scad.on("error", (err) => {
+		scadProcess.on("error", (err) => {
 			reject({
 				output: err,
 				ok: false
 			});
 		});
-		scad.on("close", (exitCode) => {
-			const result = {
+		scadProcess.on("close", (exitCode) => {
+			const duration = timer.readAndReset();
+			debug$3.extend("close")({
+				exitCode,
+				duration
+			});
+			resolve({
 				ok: exitCode === 0,
 				output: lines,
-				duration: timer.duration,
+				duration,
 				exitCode
-			};
-			debug$3("result: %O", result);
-			resolve(result);
+			});
 		});
 	});
+}
+function spawnOpenSCAD(launchPath, files) {
+	debug$3("launchPath: %o", launchPath);
+	debug$3("files: %O", files);
+	return spawn(launchPath, [
+		"-o",
+		files.out,
+		files.in
+	]);
+}
+function spawnDockerOpenSCAD(tag, files) {
+	const dockerImage = `openscad/openscad:${tag ?? DEFAULT_DOCKER_TAG}`;
+	const uid = process.getuid?.() ?? 1e3;
+	const gid = process.getgid?.() ?? 1e3;
+	const inFile = files.in.replace(files.cwd, ".");
+	const outFile = files.out.replace(files.cwd, ".");
+	const args = [
+		"run",
+		"--rm",
+		"-v",
+		`${files.cwd}:/openscad`,
+		"-u",
+		`${uid}:${gid}`,
+		dockerImage,
+		"openscad",
+		"-o",
+		outFile,
+		inFile
+	];
+	debug$3("docker: %O", args);
+	debug$3("files: %O", files);
+	return spawn("docker", args);
 }
 
 //#endregion
@@ -321,7 +355,7 @@ function addScadGlobalData(eleventyConfig) {
 
 //#endregion
 //#region src/core/options.ts
-const debug$2 = debug_default.extend("zod");
+const debug$2 = debug_default.extend("options");
 const StringBoolSchema = z.union([z.boolean(), z.stringbool()]);
 const createStringBoolSchema = (opts) => {
 	return z.preprocess((val) => val ?? env[opts.envvar], StringBoolSchema).default(opts.default);
@@ -336,15 +370,15 @@ const PluginOptionsSchema = z.object({
 		const theme = val ?? envTheme;
 		if (theme && !THEMES.includes(theme)) ctx.addIssue({
 			code: "custom",
-			message: `Invalid theme: ${theme}`
+			message: `Invalid theme: "${theme}". Must be one of [${THEMES.join("|")}]`
 		});
 	}).transform((val) => {
 		const envTheme = getEnv("ELEVENTY_SCAD_THEME");
 		return val ?? envTheme ?? "Traditional";
 	}),
 	layout: z.nullish(z.string()),
-	checkLaunchPath: createStringBoolSchema({
-		envvar: "ELEVENTY_SCAD_CHECK_LAUNCH_PATH",
+	resolveLaunchPath: createStringBoolSchema({
+		envvar: "ELEVENTY_SCAD_RESOLVE_LAUNCH_PATH",
 		default: true
 	}),
 	collectionPage: createStringBoolSchema({
@@ -365,15 +399,10 @@ const PluginOptionsSchema = z.object({
 	})
 });
 function parseOptions(options) {
-	debug$2("incoming options: %O", options);
+	debug$2("incoming: %O", options);
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
-	debug$2("parsed options: %O", parsedOptions);
+	debug$2("parsed: %O", parsedOptions);
 	return parsedOptions;
-}
-function getEnv(envvar) {
-	const val = env[envvar];
-	if (typeof val === "string" && val.length > 0) return val;
-	return void 0;
 }
 
 //#endregion
@@ -416,7 +445,7 @@ function addShortcodes(eleventyConfig) {
 
 //#endregion
 //#region src/core/templates.ts
-const log = debug$8.extend("templates");
+const log = debug$9.extend("templates");
 function addBuiltinScadLayoutVirtualTemplate(eleventyConfig) {
 	log(`(virtual) adding "%o"`, DEFAULT_SCAD_LAYOUT);
 	eleventyConfig.addTemplate(`_includes/${DEFAULT_SCAD_LAYOUT}`, getAssetFileContent(DEFAULT_SCAD_LAYOUT), {});
@@ -448,6 +477,7 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 	} catch (e) {
 		console.log(`[${PLUGIN_NAME}] WARN Eleventy plugin compatibility: ${e.message}`);
 	}
+	ensureAssetPath();
 	const log$1 = createScadLogger(eleventyConfig);
 	const parsedOptions = parseOptions(options);
 	if (parsedOptions.error) {
@@ -456,26 +486,28 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 		log$1(message);
 		throw new Error(message);
 	}
-	const { theme, noSTL, layout, silent, verbose, launchPath, collectionPage, checkLaunchPath } = parsedOptions.data;
-	const resolvedScadBin = resolveOpenSCAD(launchPath);
-	if (checkLaunchPath && resolvedScadBin === null) {
-		const message = `The launchPath "${launchPath}" does not exist.`;
-		log$1(red(message));
-		throw new Error(message);
-	}
-	ensureAssetPath();
-	assertValidLaunchPath(resolvedScadBin);
+	const { theme, noSTL, layout, silent, verbose, launchPath, collectionPage, resolveLaunchPath } = parsedOptions.data;
 	/** logger that can be silenced */
 	const _log = (it) => {
 		if (!silent) log$1(it);
 	};
-	_log(`${gray("Theme:")} ${theme}`);
+	let resolvedScadBin = launchPath;
+	if (resolveLaunchPath) {
+		resolvedScadBin = resolveOpenSCAD(launchPath);
+		if (resolvedScadBin === null) {
+			const message = `The launchPath "${launchPath}" does not exist.`;
+			log$1(red(message));
+			throw new Error(message);
+		}
+	}
+	_log(`${gray("Theme:")} ${reset(theme)}`);
+	_log(`${gray("Spawn:")} ${(launchPath === "docker" ? cyan : blue)(String(launchPath))}`);
 	_log([
 		gray(" Opts:"),
 		silent ? green("+silent") : "",
 		verbose ? green("+verbose") : "",
 		noSTL ? red("-noSTL") : "",
-		!checkLaunchPath ? red("-launchPathCheck") : "",
+		!resolveLaunchPath ? red("-resolveLaunchPath") : "",
 		!collectionPage ? red("-collectionPage") : ""
 	].join(" ").replaceAll(/\s+/g, " "));
 	addScadGlobalData(eleventyConfig);
@@ -501,28 +533,33 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 			};
 		},
 		async compile(inputContent, inputPath) {
-			if (noSTL) return () => inputContent;
 			return async (data) => {
+				if (noSTL) {
+					_log(`${cyan("Would write")} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
+					return inputContent;
+				}
 				const dirs = data.eleventy.directories;
-				const writeDir = path.join(dirs.output, data.page.fileSlug);
-				await ensureDirectoryExists(writeDir);
+				const projectRoot = path.resolve(dirs.output, "..");
+				const stlOutputDir = path.join(dirs.output, data.page.fileSlug);
+				await ensureDirectoryExists(stlOutputDir);
 				/** `.scad` source */
-				const inFile = data.scadFile;
+				const inFile = path.resolve(data.eleventy.env.root, data.scadFile);
 				/** `.stl` target */
-				const outFile = path.join(writeDir, data.stlFile);
-				this.addDependencies(inputPath, [outFile]);
+				const outFile = path.join(stlOutputDir, data.stlFile);
 				await ensureFileRegistered(inFile);
 				const stlExists = fileExist(outFile);
 				const hashesDiffer = await fileHashesDiffer(inFile);
 				debug({
 					inFile,
 					outFile,
+					projectRoot,
 					stlExists,
 					hashesDiffer
 				});
 				if (!stlExists || hashesDiffer) {
-					_log(`${noSTL ? blue("Would write") : reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
-					const scadResult = await scad2stl(resolvedScadBin, {
+					_log(`${reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
+					const scadResult = await scad2stl(String(resolvedScadBin), {
+						cwd: projectRoot,
 						in: inFile,
 						out: outFile
 					});

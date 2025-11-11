@@ -1,5 +1,5 @@
 import path from "node:path";
-import { blue, bold, gray, green, red, reset } from "yoctocolors";
+import { blue, bold, cyan, gray, green, red, reset } from "yoctocolors";
 import { prettifyError } from "zod";
 import {
 	addBuiltinScadLayoutVirtualTemplate,
@@ -22,7 +22,7 @@ import { ensureAssetPath } from "./lib/assets";
 import Debug from "./lib/debug";
 import { ensureDirectoryExists, fileExist } from "./lib/fs";
 import { createScadLogger } from "./lib/logger";
-import { assertValidLaunchPath, resolveOpenSCAD } from "./lib/resolve";
+import { resolveOpenSCAD } from "./lib/resolve";
 import type {
 	EleventyConfig,
 	EleventyDirs,
@@ -33,7 +33,6 @@ import type {
 
 const debug = Debug.extend("core");
 
-// #region Begin Plugin
 /**
  * Eleventy Plugin for OpenSCAD
  *
@@ -56,6 +55,7 @@ export default function EleventyPluginOpenSCAD(
 		);
 	}
 
+	ensureAssetPath();
 	const log = createScadLogger(eleventyConfig);
 
 	// #region Parse Options
@@ -76,22 +76,8 @@ export default function EleventyPluginOpenSCAD(
 		verbose,
 		launchPath,
 		collectionPage,
-		checkLaunchPath,
+		resolveLaunchPath,
 	} = parsedOptions.data;
-
-	// #region Check Bin Path
-	const resolvedScadBin = resolveOpenSCAD(launchPath);
-	if (checkLaunchPath && resolvedScadBin === null) {
-		const message = `The launchPath "${launchPath}" does not exist.`;
-		log(red(message));
-		throw new Error(message);
-	}
-
-	// Make sure the asset paths exist
-	ensureAssetPath();
-
-	// Type assertion function to make typeof resolvedScadBin === string
-	assertValidLaunchPath(resolvedScadBin);
 	// #endregion
 
 	/** logger that can be silenced */
@@ -99,15 +85,31 @@ export default function EleventyPluginOpenSCAD(
 		if (!silent) log(it);
 	};
 
+	// #region Check Bin Path
+	let resolvedScadBin: string | undefined | null = launchPath;
+
+	if (resolveLaunchPath) {
+		resolvedScadBin = resolveOpenSCAD(launchPath);
+		if (resolvedScadBin === null) {
+			const message = `The launchPath "${launchPath}" does not exist.`;
+			log(red(message));
+			throw new Error(message);
+		}
+	}
+	// #endregion
+
 	// #region Log Set Options
-	_log(`${gray("Theme:")} ${theme}`);
+	_log(`${gray("Theme:")} ${reset(theme)}`);
+	_log(
+		`${gray("Spawn:")} ${(launchPath === "docker" ? cyan : blue)(String(launchPath))}`,
+	);
 	_log(
 		[
 			gray(" Opts:"),
 			silent ? green("+silent") : "",
 			verbose ? green("+verbose") : "",
 			noSTL ? red("-noSTL") : "",
-			!checkLaunchPath ? red("-launchPathCheck") : "",
+			!resolveLaunchPath ? red("-resolveLaunchPath") : "",
 			!collectionPage ? red("-collectionPage") : "",
 		]
 			.join(" ")
@@ -164,24 +166,28 @@ export default function EleventyPluginOpenSCAD(
 		 * Compile `.scad` files into `.stl`
 		 */
 		async compile(inputContent: string, inputPath: string) {
-			if (noSTL) return () => inputContent;
 			return async (data: FullPageData) => {
+				if (noSTL) {
+					_log(
+						`${cyan("Would write")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
+					);
+					return inputContent;
+				}
+
 				// biome-ignore lint/suspicious/noExplicitAny: its fine
 				const dirs = (data.eleventy as any).directories as EleventyDirs;
-				const writeDir = path.join(dirs.output, data.page.fileSlug);
+				const projectRoot = path.resolve(dirs.output, "..");
+				const stlOutputDir = path.join(dirs.output, data.page.fileSlug);
 
 				// Writing of the template actually creates the dir so trying to write
 				// the STL first to the same location before the template was failing
-				await ensureDirectoryExists(writeDir);
+				await ensureDirectoryExists(stlOutputDir);
 
 				/** `.scad` source */
-				const inFile = data.scadFile;
+				const inFile = path.resolve(data.eleventy.env.root, data.scadFile);
 
 				/** `.stl` target */
-				const outFile = path.join(writeDir, data.stlFile);
-
-				// Unsure what this does for me if anything
-				this.addDependencies(inputPath, [outFile]);
+				const outFile = path.join(stlOutputDir, data.stlFile);
 
 				// md5 the contents of the file for caching
 				await cache.ensureFileRegistered(inFile);
@@ -189,14 +195,15 @@ export default function EleventyPluginOpenSCAD(
 				const stlExists = fileExist(outFile);
 				const hashesDiffer = await cache.fileHashesDiffer(inFile);
 
-				debug({ inFile, outFile, stlExists, hashesDiffer });
+				debug({ inFile, outFile, projectRoot, stlExists, hashesDiffer });
 
 				if (!stlExists || hashesDiffer) {
 					_log(
-						`${noSTL ? blue("Would write") : reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
+						`${reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
 					);
 
-					const scadResult = await scad2stl(resolvedScadBin, {
+					const scadResult = await scad2stl(String(resolvedScadBin), {
+						cwd: projectRoot,
 						in: inFile,
 						out: outFile,
 					});

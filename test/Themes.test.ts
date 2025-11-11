@@ -6,11 +6,10 @@ const CASES = THEMES.map((t) => [t]);
 
 test.concurrent.for(CASES)("%s", async ([theme]) => {
 	const themeURL = `https://www.w3.org/StyleSheets/Core/${theme}`;
-
 	const eleventy = createTestInstance({
-		launchPath: "nightly",
-		theme,
-		checkLaunchPath: false,
+		launchPath: "docker",
+		resolveLaunchPath: false,
+		theme: theme,
 		silent: true,
 		noSTL: true,
 	});

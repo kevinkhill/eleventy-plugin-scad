@@ -2,7 +2,8 @@ import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createTestInstance, TEST_SCAD_PAGES } from "./_setup/eleventy";
 
 const eleventy = createTestInstance({
-	launchPath: "nightly",
+	launchPath: "docker",
+	resolveLaunchPath: false,
 	silent: true,
 });
 
