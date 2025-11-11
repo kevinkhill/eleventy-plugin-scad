@@ -14,9 +14,10 @@ export type PluginOptionsInput = Omit<
 	z.input<typeof PluginOptionsSchema>,
 	"launchPath"
 > & {
-	// https://stackoverflow.com/a/69793265 explains this below
 	launchPath: "auto" | "nightly" | "docker" | (string & {});
 };
+
+export type DockerTag = "latest" | "trixie" | "bookworm" | (string & {});
 
 export type ScadTemplateData = {
 	layout: string;

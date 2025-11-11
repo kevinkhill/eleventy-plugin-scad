@@ -166,24 +166,28 @@ export default function EleventyPluginOpenSCAD(
 		 * Compile `.scad` files into `.stl`
 		 */
 		async compile(inputContent: string, inputPath: string) {
-			if (noSTL) return () => inputContent;
 			return async (data: FullPageData) => {
+				if (noSTL) {
+					_log(
+						`${cyan("Would write")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
+					);
+					return inputContent;
+				}
+
 				// biome-ignore lint/suspicious/noExplicitAny: its fine
 				const dirs = (data.eleventy as any).directories as EleventyDirs;
-				const writeDir = path.join(dirs.output, data.page.fileSlug);
+				const projectRoot = path.resolve(dirs.output, "..");
+				const stlOutputDir = path.join(dirs.output, data.page.fileSlug);
 
 				// Writing of the template actually creates the dir so trying to write
 				// the STL first to the same location before the template was failing
-				await ensureDirectoryExists(writeDir);
+				await ensureDirectoryExists(stlOutputDir);
 
 				/** `.scad` source */
-				const inFile = data.scadFile;
+				const inFile = path.resolve(data.eleventy.env.root, data.scadFile);
 
 				/** `.stl` target */
-				const outFile = path.join(writeDir, data.stlFile);
-
-				// does this do anything for me? maybe?... keep it?
-				this.addDependencies(inputPath, [outFile]);
+				const outFile = path.join(stlOutputDir, data.stlFile);
 
 				// md5 the contents of the file for caching
 				await cache.ensureFileRegistered(inFile);
@@ -191,14 +195,15 @@ export default function EleventyPluginOpenSCAD(
 				const stlExists = fileExist(outFile);
 				const hashesDiffer = await cache.fileHashesDiffer(inFile);
 
-				debug({ inFile, outFile, stlExists, hashesDiffer });
+				debug({ inFile, outFile, projectRoot, stlExists, hashesDiffer });
 
 				if (!stlExists || hashesDiffer) {
 					_log(
-						`${noSTL ? blue("Would write") : reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
+						`${reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
 					);
 
 					const scadResult = await scad2stl(String(resolvedScadBin), {
+						cwd: projectRoot,
 						in: inFile,
 						out: outFile,
 					});

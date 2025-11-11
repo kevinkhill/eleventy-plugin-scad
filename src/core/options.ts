@@ -1,11 +1,11 @@
 import { env, platform } from "node:process";
 import z from "zod";
+import { autoBinPath, getEnv } from "../lib";
 import Debug from "../lib/debug";
-import { autoBinPath } from "../lib/scad-bin";
 import { THEMES } from "./const";
 import type { ModelViewerTheme } from "../types";
 
-const debug = Debug.extend("zod");
+const debug = Debug.extend("options");
 
 const StringBoolSchema = z.union([z.boolean(), z.stringbool()]);
 
@@ -62,14 +62,8 @@ export const PluginOptionsSchema = z.object({
 });
 
 export function parseOptions(options: unknown) {
-	debug("incoming options: %O", options);
+	debug("incoming: %O", options);
 	const parsedOptions = PluginOptionsSchema.safeParse(options);
-	debug("parsed options: %O", parsedOptions);
+	debug("parsed: %O", parsedOptions);
 	return parsedOptions;
-}
-
-function getEnv<T>(envvar: string): T | undefined {
-	const val = env[envvar];
-	if (typeof val === "string" && val.length > 0) return val as T;
-	return undefined;
 }

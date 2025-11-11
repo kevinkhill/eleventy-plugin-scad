@@ -4,7 +4,7 @@ import type { PluginOptions } from "../../src";
 
 const DEFAULT_PLUGIN_OPTIONS: PluginOptions = {
 	theme: "Traditional",
-	checkLaunchPath: true,
+	resolveLaunchPath: true,
 	collectionPage: true,
 	verbose: true,
 	noSTL: false,

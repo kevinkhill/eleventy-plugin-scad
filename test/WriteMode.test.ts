@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import fs from "node:fs/promises";
+import { readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
@@ -7,15 +7,25 @@ import {
 	TEST_SCAD_PAGES,
 	TEST_SITE_OUTPUT,
 } from "./_setup/eleventy";
+import type Eleventy from "@11ty/eleventy";
 
-const eleventy = createTestInstance({
-	launchPath: "nightly",
-	silent: true,
-});
+let eleventy: Eleventy;
 
 beforeAll(async () => {
+	eleventy = createTestInstance({
+		launchPath: "docker",
+		resolveLaunchPath: false,
+		silent: true,
+	});
+
 	if (existsSync(TEST_SITE_OUTPUT)) {
-		await fs.rm(TEST_SITE_OUTPUT, { recursive: true, force: true });
+		const files = await readdir(TEST_SITE_OUTPUT);
+		for (const file of files) {
+			await rm(path.join(TEST_SITE_OUTPUT, file), {
+				recursive: true,
+				force: true,
+			});
+		}
 	}
 	await eleventy.write();
 });

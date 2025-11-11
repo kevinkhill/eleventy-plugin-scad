@@ -9,13 +9,13 @@ export default defineConfig([
 		dts: true,
 		plugins: [
 			copy({
+				verbose: true,
 				targets: [
 					{
 						src: "src/assets/**/*",
 						dest: "dist/assets/",
 					},
 				],
-				verbose: true,
 			}),
 		],
 	},

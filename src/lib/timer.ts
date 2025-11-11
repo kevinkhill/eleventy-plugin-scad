@@ -12,17 +12,17 @@ export class Timer {
 		return this;
 	}
 
-	get duration() {
-		this.stop();
-		const duration = (this._stopped - this._started) / 1000;
-		this.reset();
-		return duration;
-	}
-
 	reset() {
 		this._started = 0;
 		this._stopped = 0;
 		return this;
+	}
+
+	readAndReset() {
+		this.stop();
+		const duration = (this._stopped - this._started) / 1000;
+		this.reset();
+		return duration;
 	}
 }
 

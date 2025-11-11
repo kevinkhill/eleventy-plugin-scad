@@ -35,12 +35,11 @@
     "clean:test": "rm -rvf ./test/_11ty/output/*",
     "debug:start": "DEBUG=eleventy:scad* pnpm start",
     "debug:test": "DEBUG=eleventy:scad* pnpm test",
-    "demo": "cd test/_11ty && eleventy --config=eleventy-test-config.js --serve",
     "dev": "pnpm build --watch ./src",
-    "docker:build": "docker build -t openscad-11ty .",
-    "docker:cube": "docker run --rm openscad-11ty -o cube.stl ./test/_11ty/input/cube.scad",
-    "docker:run": "docker run --rm -it --entrypoint /bin/bash openscad-11ty",
-    "start": "eleventy --serve",
+    "dpull:bookworm": "docker pull openscad/openscad:bookworm",
+    "dpull:latest": "docker pull openscad/openscad:latest",
+    "dpull:trixie": "docker pull openscad/openscad:trixie",
+    "start": "cd test/_11ty && eleventy --config=eleventy-test-config.js --serve",
     "test": "vitest",
     "typecheck": "tsc --noEmit"
   },
@@ -49,9 +48,9 @@
     "debug": "4.4.3",
     "find-up": "8.0.0",
     "he": "1.2.0",
-    "which": "5.0.0",
+    "which": "6.0.0",
     "yoctocolors": "2.1.2",
-    "zod": "4.1.11"
+    "zod": "4.1.12"
   },
   "devDependencies": {
     "11ty.ts": "0.0.6",
@@ -60,17 +59,15 @@
     "@rollup/plugin-replace": "6.0.2",
     "@types/debug": "^4.1.12",
     "@types/he": "^1.2.3",
-    "@types/node": "^24.7.1",
+    "@types/node": "^24.10.0",
     "@types/which": "^3.0.4",
     "bumpp": "10.3.1",
     "concurrently": "9.2.1",
-    "np": "10.2.0",
-    "rimraf": "6.0.1",
     "rollup-plugin-copy": "3.5.0",
     "tsdown": "0.11.13",
     "tsx": "4.20.6",
-    "typescript": "^5.9.3",
-    "vitest": "3.2.4"
+    "typescript": "5.9.3",
+    "vitest": "4.0.8"
   },
   "peerDependencies": {
     "@11ty/eleventy": "^3"

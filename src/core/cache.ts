@@ -46,7 +46,7 @@ export async function updateHash(key: string) {
 
 export async function registerFile(key: string) {
 	updateHash(key);
-	debug({ registered: key });
+	debug("registered: %o", key);
 }
 
 export async function ensureFileRegistered(file: string) {

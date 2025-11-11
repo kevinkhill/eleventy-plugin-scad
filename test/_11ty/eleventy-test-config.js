@@ -13,7 +13,7 @@ export default function (eleventyConfig) {
     eleventyConfig.setQuietMode(false);
 
     addOpenSCADPlugin(eleventyConfig, {
-        launchPath: "docker",
+        launchPath: "docker:bookworm",
         resolveLaunchPath: false,
         verbose: true,
     });

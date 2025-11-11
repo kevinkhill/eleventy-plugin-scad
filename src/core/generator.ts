@@ -1,44 +1,35 @@
 import { spawn } from "node:child_process";
 import Debug from "../lib/debug";
 import Timer from "../lib/timer";
+import { DEFAULT_DOCKER_TAG } from "./const";
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
+import type { DockerTag } from "../types";
 
-const timer = new Timer();
 const debug = Debug.extend("generator");
-
-type ScadExportResult = {
-	ok: boolean;
-	output: string[];
-	exitCode: number | null;
-	duration: number;
-};
 
 /**
  * Generate an `.stl` from a given `.scad` file
  */
 export async function scad2stl(
 	launchPath: string,
-	files: { in: string; out: string },
+	files: Files,
 ): Promise<ScadExportResult> {
+	const timer = new Timer();
 	return new Promise<ScadExportResult>((resolve, reject) => {
 		const lines: string[] = [];
 		let scadProcess: ChildProcessWithoutNullStreams;
 
-		if (launchPath === "docker") {
-			scadProcess = spawnDockerOpenSCAD(files);
+		if (launchPath.startsWith("docker")) {
+			const dockerTag = launchPath.split(":")[1];
+			scadProcess = spawnDockerOpenSCAD(dockerTag, files);
 		} else {
 			scadProcess = spawnOpenSCAD(launchPath, files);
 		}
 
 		scadProcess.on("spawn", () => timer.start());
 
-		scadProcess.stdout.on("data", (data) => {
-			debug("[stdout] %s", data.toString());
-		});
-
 		scadProcess.stderr.on("data", (data) => {
-			// const lines = String(data).split("\n");
-			// lines.forEach((line) => void debug("[stderr] %s", line));
+			debug.extend("stdout")(data.toString());
 			lines.push(data.toString());
 		});
 
@@ -47,52 +38,61 @@ export async function scad2stl(
 		});
 
 		scadProcess.on("close", (exitCode) => {
-			const result: ScadExportResult = {
+			const duration = timer.readAndReset();
+			debug.extend("close")({ exitCode, duration });
+			resolve({
 				ok: exitCode === 0,
 				output: lines,
-				duration: timer.duration,
+				duration,
 				exitCode,
-			};
-			debug("result: %O", result);
-			resolve(result);
+			});
 		});
 	});
 }
 
-/**
- * Spawn OpenSCAD using the given launch path
- */
-export function spawnOpenSCAD(
-	launchPath: string,
-	files: { in: string; out: string },
-) {
-	debug("files: %O", files);
+export function spawnOpenSCAD(launchPath: string, files: Files) {
 	debug("launchPath: %o", launchPath);
+	debug("files: %O", files);
 
-	return spawn(launchPath, ["--o", files.out, files.in]);
+	return spawn(launchPath, ["-o", files.out, files.in]);
 }
 
-export function spawnDockerOpenSCAD(files: { in: string; out: string }) {
+export function spawnDockerOpenSCAD(tag: DockerTag | undefined, files: Files) {
+	const dockerImage = `openscad/openscad:${tag ?? DEFAULT_DOCKER_TAG}`;
 	const uid = process.getuid?.() ?? 1000;
 	const gid = process.getgid?.() ?? 1000;
-	const pwd = process.cwd();
+	const inFile = files.in.replace(files.cwd, ".");
+	const outFile = files.out.replace(files.cwd, ".");
 
 	const args = [
 		"run",
 		"--rm",
 		"-v",
-		`${pwd}:/openscad`,
+		`${files.cwd}:/openscad`,
 		"-u",
 		`${uid}:${gid}`,
-		"openscad/openscad:latest",
+		dockerImage,
 		"openscad",
 		"-o",
-		files.out,
-		files.in,
-	] as const;
+		outFile,
+		inFile,
+	];
 
+	debug("docker: %O", args);
 	debug("files: %O", files);
-	debug("args: %O", args);
 
 	return spawn("docker", args);
 }
+
+type ScadExportResult = {
+	ok: boolean;
+	output: string[];
+	exitCode: number | null;
+	duration: number;
+};
+
+type Files = {
+	cwd: string;
+	in: string;
+	out: string;
+};

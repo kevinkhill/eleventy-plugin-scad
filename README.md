@@ -17,6 +17,8 @@ npm install eleventy-plugin-scad
 - **launchPath** _(string)_: Location of the OpenSCAD executable (required)
   - `auto` - Attempts to use `process.platform` to find OpenSCAD in the default install locations
   - `nightly` - Works the same as above for the `nightly` version of OpenSCAD
+  - `docker` - Download and use containerized OpenSCAD to render _(default: trixie)_:
+    - `docker:TAG` - You can append a [container tag](https://hub.docker.com/r/openscad/openscad) to use a specific version.
   - `C:/openscad.exe` - Absolute paths work too
   - `openscad` - or in a bin folder and available on your `$PATH`
 - **layout**: Use a custom layout for the scad files
