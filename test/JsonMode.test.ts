@@ -10,7 +10,7 @@ let eleventy: Eleventy;
 
 beforeAll(async () => {
 	eleventy = createTestInstance({
-		launchPath: "auto",
+		launchPath: "docker",
 		resolveLaunchPath: false,
 		noSTL: true,
 		silent: true,
