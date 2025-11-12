@@ -3,9 +3,16 @@ import Debug from "./debug";
 
 const debug = Debug.extend("env");
 
-export function getEnv<T>(envvar: string): T | undefined {
+const cache = new Map<string, string | undefined>();
+
+export function getEnv<T extends string>(envvar: string): T | undefined {
+	if (cache.has(envvar)) return cache.get(envvar) as T | undefined;
+
 	const val = env[envvar];
-	debug("%o = %o", envvar, val);
-	if (typeof val === "string" && val.length > 0) return val as T;
-	return undefined;
+	debug("%s=%s", envvar, val);
+
+	const result =
+		typeof val === "string" && val.length > 0 ? (val as T) : undefined;
+	cache.set(envvar, result);
+	return result;
 }

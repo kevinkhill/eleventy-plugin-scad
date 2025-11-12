@@ -1,24 +1,38 @@
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { createTestInstance, TEST_SCAD_PAGES } from "./_setup/eleventy";
+import {
+	cleanOutputDir,
+	createTestInstance,
+	TEST_INPUT_PAGES,
+} from "./_setup/eleventy";
+import type Eleventy from "@11ty/eleventy";
 
-const eleventy = createTestInstance({
-	launchPath: "docker",
-	resolveLaunchPath: false,
-	silent: true,
-});
-
-const pages: EleventyPageJSON[] = [];
+let eleventy: Eleventy;
 
 beforeAll(async () => {
-	const generated = await eleventy.toJSON();
-	pages.push(...generated);
+	eleventy = createTestInstance({
+		launchPath: "auto",
+		resolveLaunchPath: false,
+		noSTL: true,
+		silent: true,
+	});
+	await cleanOutputDir();
 });
 
-describe.for(TEST_SCAD_PAGES)("%s.scad", ([name]) => {
+const fixture = {
+	pages: [] as EleventyPageJSON[],
+};
+
+describe.each(TEST_INPUT_PAGES)("%s.scad", (name) => {
 	let page: EleventyPageJSON | undefined;
 
+	beforeAll(async () => {
+		fixture.pages = [];
+		const generated = await eleventy.toJSON();
+		fixture.pages.push(...generated);
+	});
+
 	beforeEach(() => {
-		page = pages.find((p) => p.url.includes(name));
+		page = fixture.pages.find((p) => p.url.includes(name));
 	});
 
 	it("has the correct URL", () => {
@@ -44,7 +58,7 @@ describe("(virtual) index.html", () => {
 	let page: EleventyPageJSON | undefined;
 
 	beforeAll(() => {
-		page = pages.find((p) => p.url === "/");
+		page = fixture.pages.find((p) => p.url === "/");
 	});
 
 	it("has the correct URL", () => {

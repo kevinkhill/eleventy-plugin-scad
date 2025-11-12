@@ -6,6 +6,7 @@ import { EleventyScope, EleventySuppliedData } from "11ty.ts";
 //#endregion
 //#region src/core/const.d.ts
 declare const THEMES: readonly ["Traditional", "Modernist", "Midnight", "Chocolate", "Oldstyle", "Steely", "Swiss", "Ultramarine"];
+declare const DOCKER_TAGS: readonly ["trixie", "dev", "bookworm", "2021.01", "latest"];
 //#endregion
 //#region src/core/options.d.ts
 declare const PluginOptionsSchema: z.ZodObject<{
@@ -28,17 +29,18 @@ declare const PluginOptionsSchema: z.ZodObject<{
   noSTL: z.ZodDefault<z.ZodPipe<z.ZodTransform<{} | undefined, unknown>, z.ZodUnion<readonly [z.ZodBoolean, z.ZodCodec<z.ZodString, z.ZodBoolean>]>>>;
 }, z.core.$strip>;
 declare namespace types_d_exports {
-  export { DockerTag, EleventyDirs, FullPageData, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, ScadTemplateData };
+  export { DockerTag, EleventyDirs, FullPageData, LaunchPath, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, ScadTemplateData };
 }
 import * as import__11ty_ts from "11ty.ts";
 __reExport(types_d_exports, import__11ty_ts);
+type DockerTag = (typeof DOCKER_TAGS)[number];
 type ModelViewerTheme = (typeof THEMES)[number];
 type PluginOptions = z.infer<typeof PluginOptionsSchema>;
 type ParsedPluginOptions = z.output<typeof PluginOptionsSchema>;
+type LaunchPath = "auto" | "nightly" | "docker" | `docker:${DockerTag}`;
 type PluginOptionsInput = Omit<z.input<typeof PluginOptionsSchema>, "launchPath"> & {
-  launchPath: "auto" | "nightly" | "docker" | (string & {});
+  launchPath: LaunchPath | (string & {});
 };
-type DockerTag = "latest" | "trixie" | "bookworm" | (string & {});
 type ScadTemplateData = {
   layout: string;
   title: string;
@@ -101,9 +103,9 @@ declare const SCAD_BINS: {
  * Returns the OpenSCAD binary path for the current platform.
  */
 declare namespace index_d_exports {
-  export { DockerTag, EleventyDirs, EleventyPluginOpenSCAD, FullPageData, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, SCAD_BINS, ScadTemplateData, addOpenSCADPlugin, EleventyPluginOpenSCAD as default };
+  export { DockerTag, EleventyDirs, EleventyPluginOpenSCAD, FullPageData, LaunchPath, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, SCAD_BINS, ScadTemplateData, addOpenSCADPlugin, EleventyPluginOpenSCAD as default };
 }
 __reExport(index_d_exports, types_d_exports);
 
 //#endregion
-export { DockerTag, EleventyDirs, EleventyPluginOpenSCAD, FullPageData, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, SCAD_BINS, ScadTemplateData, addOpenSCADPlugin, EleventyPluginOpenSCAD as default };
+export { DockerTag, EleventyDirs, EleventyPluginOpenSCAD, FullPageData, LaunchPath, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, SCAD_BINS, ScadTemplateData, addOpenSCADPlugin, EleventyPluginOpenSCAD as default };

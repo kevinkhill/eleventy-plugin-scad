@@ -1,3 +1,2 @@
 import Debug from "debug";
-export const debug = Debug("eleventy:scad");
-export default debug;
+export default Debug("eleventy:scad");

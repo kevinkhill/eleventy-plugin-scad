@@ -1,13 +1,8 @@
 import { name, version } from "../../package.json" with { type: "json" };
-import type { DockerTag } from "../types";
 
 export const PLUGIN_NAME = name;
 
 export const PLUGIN_VERSION = version;
-
-export const THREE_JS_VERSION = "0.180.0";
-
-export const LIL_GUI_VERSION = "0.21";
 
 export const STL_EXT = "stl";
 
@@ -28,10 +23,14 @@ export const THEMES = [
 	"Ultramarine",
 ] as const;
 
+export const DOCKER_TAGS = [
+	"trixie",
+	"dev",
+	"bookworm",
+	"2021.01",
+	"latest",
+] as const;
+
 export const DEFAULT_SCAD_LAYOUT = "scad.viewer.njk";
 
 export const DEFAULT_COLLECTION_LAYOUT = "scad.collection.njk";
-
-export const DEFAULT_PLUGIN_THEME: (typeof THEMES)[number] = "Traditional";
-
-export const DEFAULT_DOCKER_TAG: DockerTag = "trixie";

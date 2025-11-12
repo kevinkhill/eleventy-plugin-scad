@@ -1,8 +1,8 @@
-import { debug, getAssetFileContent } from "../lib";
+import { Debug, getAssetFileContent } from "../lib";
 import { DEFAULT_COLLECTION_LAYOUT, DEFAULT_SCAD_LAYOUT } from "./const";
 import type { EleventyConfig } from "../types";
 
-const log = debug.extend("templates");
+const log = Debug.extend("templates");
 
 export function addBuiltinScadLayoutVirtualTemplate(
 	eleventyConfig: EleventyConfig,
