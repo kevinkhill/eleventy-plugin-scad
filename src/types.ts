@@ -1,8 +1,10 @@
 import type { EleventyScope, EleventySuppliedData } from "11ty.ts";
 import type z from "zod";
-import type { PluginOptionsSchema, THEMES } from "./core";
+import type { DOCKER_TAGS, PluginOptionsSchema, THEMES } from "./core";
 
 export type * from "11ty.ts";
+
+export type DockerTag = (typeof DOCKER_TAGS)[number];
 
 export type ModelViewerTheme = (typeof THEMES)[number];
 
@@ -10,14 +12,14 @@ export type PluginOptions = z.infer<typeof PluginOptionsSchema>;
 
 export type ParsedPluginOptions = z.output<typeof PluginOptionsSchema>;
 
+export type LaunchPath = "auto" | "nightly" | "docker" | `docker:${DockerTag}`;
+
 export type PluginOptionsInput = Omit<
 	z.input<typeof PluginOptionsSchema>,
 	"launchPath"
 > & {
-	launchPath: "auto" | "nightly" | "docker" | (string & {});
+	launchPath: LaunchPath | (string & {});
 };
-
-export type DockerTag = "latest" | "trixie" | "bookworm" | (string & {});
 
 export type ScadTemplateData = {
 	layout: string;

@@ -1,6 +1,5 @@
-import { useNonEmptyOrDefault } from "../lib";
-import Debug from "../lib/debug";
-import { DEFAULT_PLUGIN_THEME, THREE_JS_VERSION } from "./const";
+import { DEFAULT_PLUGIN_THEME, THREE_JS_VERSION } from "../config";
+import { Debug, useNonEmptyOrDefault } from "../lib";
 import type { EleventyConfig, ModelViewerTheme } from "../types";
 
 const debug = Debug.extend("shortcodes");

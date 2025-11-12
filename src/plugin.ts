@@ -1,17 +1,16 @@
 import path from "node:path";
 import { blue, bold, cyan, gray, green, red, reset } from "yoctocolors";
 import { prettifyError } from "zod";
+import { DEFAULT_PLUGIN_THEME } from "./config";
 import {
 	addBuiltinScadLayoutVirtualTemplate,
 	addScadCollectionVirtualTemplate,
-	addScadGlobalData,
 	addShortcodes,
 	cache,
 	parseOptions,
 	scad2stl,
 } from "./core";
 import {
-	DEFAULT_PLUGIN_THEME,
 	DEFAULT_SCAD_LAYOUT,
 	DOT_SCAD,
 	DOT_STL,
@@ -20,7 +19,7 @@ import {
 } from "./core/const";
 import { ensureAssetPath } from "./lib/assets";
 import Debug from "./lib/debug";
-import { ensureDirectoryExists, fileExist } from "./lib/fs";
+import { exists } from "./lib/fs";
 import { createScadLogger } from "./lib/logger";
 import { resolveOpenSCAD } from "./lib/resolve";
 import type {
@@ -118,9 +117,7 @@ export default function EleventyPluginOpenSCAD(
 	// #endregion
 
 	// #region Plugin Body
-	addScadGlobalData(eleventyConfig);
 	addShortcodes(eleventyConfig);
-	// registerEventHandlers(eleventyConfig);
 
 	// Default renderer for `.scad` files once turned into HTML
 	addBuiltinScadLayoutVirtualTemplate(eleventyConfig);
@@ -129,14 +126,6 @@ export default function EleventyPluginOpenSCAD(
 	if (collectionPage) {
 		addScadCollectionVirtualTemplate(eleventyConfig);
 	}
-
-	// Copy all `.scad` files over with the renders
-	// if (copySCAD) {
-	// 	eleventyConfig.addPassthroughCopy(`**/*${DOT_SCAD}`);
-	// }
-
-	// Highlight markdown blocks with "```scad"
-	// addScadMarkdownHighlighter(eleventyConfig);
 
 	/**
 	 * Register `.scad` files as virtual template files and
@@ -167,72 +156,73 @@ export default function EleventyPluginOpenSCAD(
 		 */
 		async compile(inputContent: string, inputPath: string) {
 			return async (data: FullPageData) => {
-				if (noSTL) {
-					_log(
-						`${cyan("Would write")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
-					);
-					return inputContent;
-				}
-
-				// biome-ignore lint/suspicious/noExplicitAny: its fine
-				const dirs = (data.eleventy as any).directories as EleventyDirs;
-				const projectRoot = path.resolve(dirs.output, "..");
-				const stlOutputDir = path.join(dirs.output, data.page.fileSlug);
-
-				// Writing of the template actually creates the dir so trying to write
-				// the STL first to the same location before the template was failing
-				await ensureDirectoryExists(stlOutputDir);
-
-				/** `.scad` source */
-				const inFile = path.resolve(data.eleventy.env.root, data.scadFile);
-
-				/** `.stl` target */
-				const outFile = path.join(stlOutputDir, data.stlFile);
-
-				// md5 the contents of the file for caching
-				await cache.ensureFileRegistered(inFile);
-
-				const stlExists = fileExist(outFile);
-				const hashesDiffer = await cache.fileHashesDiffer(inFile);
-
-				debug({ inFile, outFile, projectRoot, stlExists, hashesDiffer });
-
-				if (!stlExists || hashesDiffer) {
-					_log(
-						`${reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
-					);
-
-					const scadResult = await scad2stl(String(resolvedScadBin), {
-						cwd: projectRoot,
-						in: inFile,
-						out: outFile,
-					});
-
-					if (!scadResult.ok) {
-						log(red("OpenSCAD encountered an issue"));
-						for (const line of scadResult.output) {
-							const cleanLine = line.replaceAll("\n", "");
-							log(red(cleanLine));
-						}
+				try {
+					if (noSTL) {
+						_log(
+							`${cyan("Would write")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
+						);
 						return inputContent;
 					}
 
-					cache.updateHash(inFile);
+					// biome-ignore lint/suspicious/noExplicitAny: its fine
+					const dirs = (data.eleventy as any).directories as EleventyDirs;
+					const projectRoot = path.resolve(dirs.output, "..");
+					const stlOutputDir = path.join(dirs.output, data.page.fileSlug);
 
-					// log what OpenSCAD output during rendering
-					if (verbose) {
-						const lines = scadResult.output.flatMap((l) => l.split("\n"));
-						for (const line of lines) {
-							_log(gray(`\t${line}`));
+					/** `.scad` source */
+					const inFile = path.resolve(data.eleventy.env.root, data.scadFile);
+
+					/** `.stl` target */
+					const outFile = path.join(stlOutputDir, data.stlFile);
+
+					// md5 the contents of the file for caching
+					await cache.ensureFileRegistered(inFile);
+
+					const stlExists = exists(outFile);
+					const hashesDiffer = await cache.fileHashesDiffer(inFile);
+
+					debug({ inFile, outFile, projectRoot, stlExists, hashesDiffer });
+
+					if (!stlExists || hashesDiffer) {
+						_log(
+							`${reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
+						);
+
+						const scadResult = await scad2stl(String(resolvedScadBin), {
+							cwd: projectRoot,
+							in: inFile,
+							out: outFile,
+						});
+
+						if (!scadResult.ok) {
+							log(red("OpenSCAD encountered an issue"));
+							for (const line of scadResult.output) {
+								const cleanLine = line.replaceAll("\n", "");
+								log(red(cleanLine));
+							}
+							return inputContent;
 						}
-					}
 
-					const duration = scadResult.duration.toFixed(2);
-					_log(
-						green(`Wrote ${bold(data.stlFile)} in ${bold(duration)} seconds`),
-					);
-				} else {
-					debug("%o is up to date; skipped", path.basename(outFile));
+						cache.updateHash(inFile);
+
+						// log what OpenSCAD output during rendering
+						if (verbose) {
+							const lines = scadResult.output.flatMap((l) => l.split("\n"));
+							for (const line of lines) {
+								_log(gray(`\t${line}`));
+							}
+						}
+
+						const duration = scadResult.duration.toFixed(2);
+						_log(
+							green(`Wrote ${bold(data.stlFile)} in ${bold(duration)} seconds`),
+						);
+					} else {
+						debug("%o is up to date; skipped", path.basename(outFile));
+					}
+				} catch (e) {
+					const err = e as Error;
+					console.error(`[${PLUGIN_NAME}] ERR ${err.message}`);
 				}
 
 				return inputContent;

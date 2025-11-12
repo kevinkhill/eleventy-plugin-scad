@@ -5,12 +5,15 @@ export function getLogger(eleventyConfig: EleventyConfig): EleventyLogger {
 	return eleventyConfig.logger;
 }
 
-export function createScadLogger(eleventyConfig: EleventyConfig) {
+export function createScadLogger(
+	eleventyConfig: EleventyConfig,
+	errorLogger = false,
+) {
 	return (message: string) =>
 		getLogger(eleventyConfig).logWithOptions({
 			message,
-			color: "yellow",
-			type: "log",
+			color: errorLogger ? "red" : "yellow",
+			type: errorLogger ? "error" : "log",
 			prefix: `[11ty/${yellow("scad")}]`,
 		});
 }

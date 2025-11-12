@@ -1,4 +1,4 @@
-export class Timer {
+class Timer {
 	private _started = NaN;
 	private _stopped = NaN;
 

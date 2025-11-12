@@ -1,6 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { md5 } from "../lib";
-import Debug from "../lib/debug";
+import { Debug, md5 } from "../lib";
 
 const debug = Debug.extend("cache");
 const $cache = new Map<string, string>();

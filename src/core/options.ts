@@ -1,7 +1,7 @@
 import { env, platform } from "node:process";
 import z from "zod";
-import { autoBinPath, getEnv } from "../lib";
-import Debug from "../lib/debug";
+import { DEFAULT_PLUGIN_THEME } from "../config";
+import { autoBinPath, Debug, getEnv } from "../lib";
 import { THEMES } from "./const";
 import type { ModelViewerTheme } from "../types";
 
@@ -36,7 +36,7 @@ export const PluginOptionsSchema = z.object({
 		})
 		.transform((val) => {
 			const envTheme = getEnv<ModelViewerTheme>("ELEVENTY_SCAD_THEME");
-			return val ?? envTheme ?? "Traditional";
+			return val ?? envTheme ?? DEFAULT_PLUGIN_THEME;
 		}),
 	layout: z.nullish(z.string()),
 	resolveLaunchPath: createStringBoolSchema({
@@ -67,3 +67,9 @@ export function parseOptions(options: unknown) {
 	debug("parsed: %O", parsedOptions);
 	return parsedOptions;
 }
+
+//   --colorscheme arg                 =colorscheme: *Cornfield | Metallic |
+//                                     Sunset | Starnight | BeforeDawn | Nature |
+//                                     Daylight Gem | Nocturnal Gem | DeepOcean |
+//                                     Solarized | Tomorrow | Tomorrow Night |
+//                                     ClearSky | Monotone
