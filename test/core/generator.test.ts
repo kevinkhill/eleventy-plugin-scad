@@ -3,14 +3,11 @@ import path from "node:path";
 import { temporaryDirectory } from "tempy";
 import { describe, expect, it } from "vitest";
 import { scad2stl } from "../../src/core/generator";
-import type { DockerTag } from "../../src";
+import type { DockerLaunchId } from "../../src";
 
 describe("scad2stl() with docker containers", () => {
-	const engines: Array<string | DockerTag> = [
-		// "openscad-nightly",
-		"docker:dev",
-		"docker:2021.01",
-		"docker:latest",
+	const engines: DockerLaunchId[] = [
+		"docker",
 		"docker:trixie",
 		"docker:bookworm",
 	];
@@ -24,7 +21,7 @@ describe("scad2stl() with docker containers", () => {
 
 			await writeFile(inFile, Buffer.from("cube(1);"));
 
-			await scad2stl("openscad-nightly", {
+			await scad2stl(engine, {
 				cwd: tempDir,
 				in: inFile,
 				out: outFile,
