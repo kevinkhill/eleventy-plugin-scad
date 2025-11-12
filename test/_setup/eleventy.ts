@@ -1,4 +1,4 @@
-import { readdir, rm } from "node:fs/promises";
+import { mkdir, readdir, rm } from "node:fs/promises";
 import path from "node:path";
 import Eleventy from "@11ty/eleventy";
 import { EleventyPluginOpenSCAD } from "../../src";
@@ -24,6 +24,7 @@ export function createTestInstance(options: PluginOptionsInput): Eleventy {
  * Delete all test files in output dir
  */
 export async function cleanOutputDir() {
+	mkdir(TEST_SITE_OUTPUT, { recursive: true });
 	const files = await readdir(TEST_SITE_OUTPUT);
 	for (const file of files) {
 		await rm(path.join(TEST_SITE_OUTPUT, file), {
