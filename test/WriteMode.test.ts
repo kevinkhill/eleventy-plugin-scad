@@ -13,8 +13,8 @@ let eleventy: Eleventy;
 
 beforeAll(async () => {
 	eleventy = createTestInstance({
-		launchPath: "nightly",
-		// resolveLaunchPath: false,
+		launchPath: "docker",
+		resolveLaunchPath: false,
 		silent: true,
 	});
 });
