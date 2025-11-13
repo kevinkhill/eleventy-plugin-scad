@@ -1,69 +1,55 @@
-import { platform } from "node:process";
 import z from "zod";
-import { DEFAULT_PLUGIN_THEME } from "../config";
-import { autoBinPath, Debug, getEnv } from "../lib";
+import { DEFAULT_DOCKER_TAG, DEFAULT_PLUGIN_THEME } from "../config";
+import { autoBinPath, Debug } from "../lib";
+import { getOptionsFromEnv } from "../lib/env";
 import { THEMES } from "./const";
-import type { ModelViewerTheme } from "../types";
+import type { PluginOptions } from "../types";
+
+/**
+ * Default plugin options
+ */
+export const DEFAULT_OPTIONS = {
+	launchPath: `docker:${DEFAULT_DOCKER_TAG}`,
+	theme: DEFAULT_PLUGIN_THEME,
+	layout: undefined,
+	resolveLaunchPath: true,
+	collectionPage: true,
+	verbose: true,
+	noSTL: false,
+	silent: false,
+} satisfies PluginOptions;
 
 const debug = Debug.extend("options");
 
-const StringBoolSchema = z.union([z.boolean(), z.stringbool()]);
-
-const createStringBoolSchema = (opts: { envvar: string; default: boolean }) => {
-	return z
-		.preprocess((val) => val ?? getEnv(opts.envvar), StringBoolSchema)
-		.default(opts.default);
-};
+export const StringBoolSchema = z.union([z.boolean(), z.stringbool()]);
 
 export const PluginOptionsSchema = z.object({
 	launchPath: z.preprocess((val) => {
 		if (val === "auto" || val === "nightly") {
-			return autoBinPath(platform, val ?? "auto");
+			return autoBinPath(process.platform, val ?? "auto");
 		}
 		return val;
-	}, z.string().optional()),
-	theme: z
-		.optional(z.enum(THEMES))
-		.superRefine((val, ctx) => {
-			const envTheme = getEnv<ModelViewerTheme>("ELEVENTY_SCAD_THEME");
-			const theme = val ?? envTheme;
-			if (theme && !THEMES.includes(theme)) {
-				ctx.addIssue({
-					code: "custom",
-					message: `Invalid theme: "${theme}". Must be one of [${THEMES.join("|")}]`,
-				});
-			}
-		})
-		.transform((val) => {
-			const envTheme = getEnv<ModelViewerTheme>("ELEVENTY_SCAD_THEME");
-			return val ?? envTheme ?? DEFAULT_PLUGIN_THEME;
-		}),
+	}, z.string().default(DEFAULT_OPTIONS.launchPath)),
 	layout: z.nullish(z.string()),
-	resolveLaunchPath: createStringBoolSchema({
-		envvar: "ELEVENTY_SCAD_RESOLVE_LAUNCH_PATH",
-		default: true,
-	}),
-	collectionPage: createStringBoolSchema({
-		envvar: "ELEVENTY_SCAD_COLLECTION_PAGE",
-		default: true,
-	}),
-	verbose: createStringBoolSchema({
-		envvar: "ELEVENTY_SCAD_VERBOSE",
-		default: true,
-	}),
-	silent: createStringBoolSchema({
-		envvar: "ELEVENTY_SCAD_SILENT",
-		default: false,
-	}),
-	noSTL: createStringBoolSchema({
-		envvar: "ELEVENTY_SCAD_NO_STL",
-		default: false,
-	}),
+	theme: z.optional(z.enum(THEMES)).default(DEFAULT_PLUGIN_THEME),
+	noSTL: z.optional(StringBoolSchema).default(DEFAULT_OPTIONS.noSTL),
+	silent: z.optional(StringBoolSchema).default(DEFAULT_OPTIONS.silent),
+	verbose: z.optional(StringBoolSchema).default(DEFAULT_OPTIONS.verbose),
+	collectionPage: z
+		.optional(StringBoolSchema)
+		.default(DEFAULT_OPTIONS.collectionPage),
+	resolveLaunchPath: z
+		.optional(StringBoolSchema)
+		.default(DEFAULT_OPTIONS.resolveLaunchPath),
 });
 
-export function parseOptions(options: unknown) {
-	debug("incoming: %O", options);
-	const parsedOptions = PluginOptionsSchema.safeParse(options);
+export function parseOptions(options: unknown, env = process.env) {
+	const envOptions = getOptionsFromEnv(env);
+	debug("environment: %O", envOptions);
+	debug("user: %O", options);
+	const mergedOptions = Object.assign({}, envOptions, options);
+	debug("merged: %O", mergedOptions);
+	const parsedOptions = PluginOptionsSchema.safeParse(mergedOptions);
 	debug("parsed: %O", parsedOptions);
 	return parsedOptions;
 }

@@ -21,19 +21,28 @@ npm install eleventy-plugin-scad
     - `docker:TAG` - You can append a [container tag](https://hub.docker.com/r/openscad/openscad) to use a specific version.
   - `C:/openscad.exe` - Absolute paths work too
   - `openscad` - or in a bin folder and available on your `$PATH`
-- **theme**: Use one of the core W3.org themes
+  - Can also be set with the environment variable `ELEVENTY_SCAD_LAUNCH_PATH`
+- **theme**: Use one of the 8 [W3C Core Styles](https://www.w3.org/StyleSheets/Core/) as a theme
   - Traditional, Modernist, Midnight, Chocolate, Oldstyle, Steely, Swiss, Ultramarine
+  - Preview the themes with the [W3C Core Style Sampler](https://www.w3.org/StyleSheets/Core/preview)
+  - Can also be set with the environment variable `ELEVENTY_SCAD_THEME`
 - **layout**: Use a custom layout for the scad files
   - This is an escape hatch to make and use your own STL viewer layout. _(needs docs)_
+  - Can also be set with the environment variable `ELEVENTY_SCAD_LAYOUT`
 - **collectionPage** _(default: true)_: Set `false` to disable the generation of a listing page with links from the `scad` tagged files _(uses Collections API)_
+  - Can also be set with the environment variable `ELEVENTY_SCAD_COLLECTION_PAGE`
 - **verbose** _(default: false)_: Set `true` to view the compilation output from OpenSCAD
   - If your model uses `echo()` this is how to see the output
+  - Can also be set with the environment variable `ELEVENTY_SCAD_VERBOSE`
 - **silent** _(default: false)_: Set `true` to disable all logging from the plugin
+  - Can also be set with the environment variable `ELEVENTY_SCAD_SILENT`
 - **noSTL** _(default: false)_: Set `true` to skip generating STLs
   - Useful when models do not change frequently. Generate once, then disable STLs.
+  - Can also be set with the environment variable `ELEVENTY_SCAD_NO_STL`
 - **resolveLaunchPath** _(default: true)_: Set `false` to disable internally resolving `launchPath`
   - This was added to disable trying to verify if the passed `launchPath` exists and/or is callable.
   - Whatever is set to `launchPath` will be passed to `spawn(launchPath, ["--o", STL_OUT_FILE, SCAD_INPUT]);`
+  - Can also be set with the environment variable `ELEVENTY_SCAD_RESOLVE_LAUNCH_PATH`
 
 ## Add Plugin to Eleventy
 
