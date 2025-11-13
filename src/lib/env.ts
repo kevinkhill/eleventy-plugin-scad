@@ -1,18 +1,32 @@
-import { env } from "node:process";
+import { stringbool } from "zod";
 import Debug from "./debug";
 
 const debug = Debug.extend("env");
 
-const cache = new Map<string, string | undefined>();
+export function getOptionsFromEnv(env: NodeJS.ProcessEnv) {
+	function getEnv(varName: string) {
+		const value = env[varName];
+		if (typeof value === "undefined") return;
+		debug.extend("string")("%s=%o", varName, value);
+		return value;
+	}
 
-export function getEnv<T extends string>(envvar: string): T | undefined {
-	if (cache.has(envvar)) return cache.get(envvar) as T | undefined;
+	function parseStringBool(varName: string) {
+		const value = env[varName];
+		if (typeof value === "undefined") return;
+		const result = stringbool().optional().parse(value);
+		debug.extend("boolean")("%s=%o", varName, result);
+		return result;
+	}
 
-	const val = env[envvar];
-	debug("%s=%s", envvar, val);
-
-	const result =
-		typeof val === "string" && val.length > 0 ? (val as T) : undefined;
-	cache.set(envvar, result);
-	return result;
+	return {
+		theme: getEnv("ELEVENTY_SCAD_THEME"),
+		layout: getEnv("ELEVENTY_SCAD_LAYOUT"),
+		launchPath: getEnv("ELEVENTY_SCAD_LAUNCH_PATH"),
+		noStl: parseStringBool("ELEVENTY_SCAD_NO_STL"),
+		silent: parseStringBool("ELEVENTY_SCAD_SILENT"),
+		verbose: parseStringBool("ELEVENTY_SCAD_VERBOSE"),
+		collectionPage: parseStringBool("ELEVENTY_SCAD_COLLECTION_PAGE"),
+		resolveLaunchPath: parseStringBool("ELEVENTY_SCAD_RESOLVE_LAUNCH_PATH"),
+	} as const;
 }

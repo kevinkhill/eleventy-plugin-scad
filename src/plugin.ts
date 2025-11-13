@@ -38,7 +38,7 @@ const debug = Debug.extend("core");
  * @param {EleventyConfig} eleventyConfig
  * @param {PluginOptionsInput} options
  */
-export default function EleventyPluginOpenSCAD(
+export function EleventyPluginOpenSCAD(
 	eleventyConfig: EleventyConfig,
 	options: PluginOptionsInput,
 ) {

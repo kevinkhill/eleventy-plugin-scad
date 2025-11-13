@@ -19,8 +19,14 @@
   },
   "type": "module",
   "exports": {
-    "types": "./dist/index.d.ts",
-    "default": "./dist/index.js"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./register": {
+      "import": "./dist/core/register.js",
+      "types": "./dist/core/register.d.ts"
+    }
   },
   "main": "./dist/index.js",
   "files": [

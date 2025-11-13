@@ -6,15 +6,24 @@ export type * from "11ty.ts";
 
 export type DockerTag = (typeof DOCKER_TAGS)[number];
 
-export type DockerLaunchId = "docker" | `docker:${DockerTag}`;
+export type DockerLaunchTag = `docker:${DockerTag}`;
+
+export type LaunchPath = "auto" | "nightly" | "docker" | DockerLaunchTag;
 
 export type ModelViewerTheme = (typeof THEMES)[number];
 
-export type PluginOptions = z.infer<typeof PluginOptionsSchema>;
+export type PluginOptions = {
+	launchPath: LaunchPath | (string & {});
+	theme?: ModelViewerTheme;
+	layout?: string | null;
+	resolveLaunchPath?: boolean;
+	collectionPage?: boolean;
+	verbose?: boolean;
+	noSTL?: boolean;
+	silent?: boolean;
+};
 
 export type ParsedPluginOptions = z.output<typeof PluginOptionsSchema>;
-
-export type LaunchPath = "auto" | "nightly" | DockerLaunchId;
 
 export type PluginOptionsInput = Omit<
 	z.input<typeof PluginOptionsSchema>,

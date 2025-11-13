@@ -1,9 +1,7 @@
-import EleventyPluginOpenSCAD from "./plugin";
+import { SCAD_BINS } from "./lib/scad-bin";
+import { EleventyPluginOpenSCAD } from "./plugin";
 
-export { addOpenSCADPlugin } from "./lib/register";
-export { SCAD_BINS } from "./lib/scad-bin";
-
-export { EleventyPluginOpenSCAD };
 export default EleventyPluginOpenSCAD;
+export { EleventyPluginOpenSCAD, SCAD_BINS };
 
 export type * from "./types";
