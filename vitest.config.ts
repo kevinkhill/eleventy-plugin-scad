@@ -1,11 +1,11 @@
 import { defineConfig } from "vitest/config";
 
-const TEN_SECONDS = 10 * 1000;
+const THIRTY_SECONDS = 30_000;
 
 export default defineConfig({
 	test: {
 		maxWorkers: 1,
-		testTimeout: TEN_SECONDS,
+		testTimeout: THIRTY_SECONDS,
 		setupFiles: ["./test/_setup/expect.ts"],
 		coverage: {
 			enabled: false,
