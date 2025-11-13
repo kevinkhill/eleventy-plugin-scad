@@ -1,4 +1,4 @@
-import { env, platform } from "node:process";
+import { platform } from "node:process";
 import z from "zod";
 import { DEFAULT_PLUGIN_THEME } from "../config";
 import { autoBinPath, Debug, getEnv } from "../lib";
@@ -11,13 +11,13 @@ const StringBoolSchema = z.union([z.boolean(), z.stringbool()]);
 
 const createStringBoolSchema = (opts: { envvar: string; default: boolean }) => {
 	return z
-		.preprocess((val) => val ?? env[opts.envvar], StringBoolSchema)
+		.preprocess((val) => val ?? getEnv(opts.envvar), StringBoolSchema)
 		.default(opts.default);
 };
 
 export const PluginOptionsSchema = z.object({
 	launchPath: z.preprocess((val) => {
-		if (val === null || val === "auto" || val === "nightly") {
+		if (val === "auto" || val === "nightly") {
 			return autoBinPath(platform, val ?? "auto");
 		}
 		return val;

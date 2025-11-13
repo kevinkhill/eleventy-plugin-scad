@@ -62,8 +62,7 @@ export default function EleventyPluginOpenSCAD(
 
 	if (parsedOptions.error) {
 		const message = prettifyError(parsedOptions.error);
-		log(red("Options Error"));
-		log(message);
+		log(red(message));
 		throw new Error(message);
 	}
 
