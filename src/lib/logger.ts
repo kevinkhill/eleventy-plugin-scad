@@ -1,4 +1,4 @@
-import { yellow } from "yoctocolors";
+import { reset, yellow } from "yoctocolors";
 import type { EleventyConfig } from "11ty.ts";
 
 export function getLogger(eleventyConfig: EleventyConfig): EleventyLogger {
@@ -14,7 +14,7 @@ export function createScadLogger(
 			message,
 			color: errorLogger ? "red" : "yellow",
 			type: errorLogger ? "error" : "log",
-			prefix: `[11ty/${yellow("scad")}]`,
+			prefix: reset(`[11ty/${yellow("scad")}]`),
 		});
 }
 
