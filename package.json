@@ -1,13 +1,15 @@
 {
   "name": "eleventy-plugin-scad",
   "version": "0.7.1",
-  "description": "Eleventy plugin to treat SCAD files as templates that need rendering to STL and showcased",
+  "description": "Eleventy plugin to use SCAD files as templates to rendering STLs and HTML",
   "keywords": [
     "eleventy",
     "eleventy-plugin",
     "openscad",
     "scad"
   ],
+  "homepage": "https://www.npmjs.com/package/eleventy-plugin-scad",
+  "readme": "https://github.com/kevinkhill/eleventy-plugin-scad#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kevinkhill/eleventy-plugin-scad.git"
