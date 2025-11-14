@@ -106,33 +106,18 @@
   </head>
 
   <body>
-    <!-- Details & Code / Left Side -->
+    {# Details & Code / Left Side #}
     <div id="info">
       <h1>{{ title }}</h1>
-      <table>
-        <tr>
-          <td>
-            <strong>SCAD</strong>
-          </td>
-          <td>{{ page.inputPath }}</td>
-        </tr>
-        <tr>
-          <td>
-            <strong>STL</strong>
-          </td>
-          <td>
-            <a href="{{ stlFileUrl }}">{{ stlFile }}</a>
-          </td>
-        </tr>
-      </table>
-      <h4>File Content</h4>
+      <h3><a href="./{{ stlFile }}">Download {{ stlFile }}</a></h3>
+      <h2>File Content</h2>
       <pre>{{ content | safe }}</pre>
     </div>
 
-    <!-- Container for STL / Right Side -->
+    {# Container for STL / Right Side #}
     <div id="viewer"></div>
 
-    <!-- Three.js Renderer -->
+    {# Three.js Renderer #}
     <script type="module">
       import * as THREE from "three"
       import { OrbitControls } from "three/addons/controls/OrbitControls.js"

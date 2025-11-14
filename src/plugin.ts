@@ -160,7 +160,7 @@ export function EleventyPluginOpenSCAD(
 				try {
 					if (noSTL) {
 						_log(
-							`${cyan("Would write")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
+							`${gray("Skipping write of")} ${reset(data.stlFile)} ${gray(`from ${inputPath}`)}`,
 						);
 						return inputContent;
 					}

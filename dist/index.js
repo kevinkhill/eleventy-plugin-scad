@@ -591,7 +591,7 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 			return async (data) => {
 				try {
 					if (noSTL) {
-						_log(`${cyan("Would write")} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
+						_log(`${gray("Skipping write of")} ${reset(data.stlFile)} ${gray(`from ${inputPath}`)}`);
 						return inputContent;
 					}
 					const elevenDirs = data.eleventy.directories;
