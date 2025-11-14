@@ -22,7 +22,7 @@ npm install eleventy-plugin-scad
   - `C:/openscad.exe` - Absolute paths work too
   - `openscad` - or in a bin folder and available on your `$PATH`
   - Can also be set with the environment variable `ELEVENTY_SCAD_LAUNCH_PATH`
-- **theme**: Use one of the 8 [W3C Core Styles](https://www.w3.org/StyleSheets/Core/) as a theme
+- **theme**: Use one of the [W3C Core Styles](https://www.w3.org/StyleSheets/Core/) as a theme
   - Traditional, Modernist, Midnight, Chocolate, Oldstyle, Steely, Swiss, Ultramarine
   - Preview the themes with the [W3C Core Style Sampler](https://www.w3.org/StyleSheets/Core/preview)
   - Can also be set with the environment variable `ELEVENTY_SCAD_THEME`
@@ -107,6 +107,19 @@ import { addOpenSCADPlugin, SCAD_BINS } from "eleventy-plugin-scad";
 export default (eleventyConfig) => {
   addOpenSCADPlugin(eleventyConfig, {
     launchPath: "nightly", // this will find "/usr/bin/openscad-nightly" on my path
+  });
+};
+```
+
+On any machine with Docker
+
+```js
+import { addOpenSCADPlugin, SCAD_BINS } from "eleventy-plugin-scad";
+
+/** @param {import("@11ty/eleventy/UserConfig").default} eleventyConfig */
+export default (eleventyConfig) => {
+  addOpenSCADPlugin(eleventyConfig, {
+    launchPath: "docker:bookworm", // use the latest Debian 12 container
   });
 };
 ```

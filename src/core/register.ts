@@ -1,4 +1,4 @@
-import EleventyPluginOpenSCAD from "../plugin";
+import { EleventyPluginOpenSCAD } from "../plugin";
 import type { EleventyConfig, PluginOptionsInput } from "../types";
 
 export function addOpenSCADPlugin(
