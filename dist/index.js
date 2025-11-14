@@ -115,10 +115,7 @@ function relativePathFromCwd(cwd, file) {
 async function mkdirForFileAsync(filepath) {
 	if (!path.isAbsolute(filepath)) throw new Error("mkdirForFileAsync() only works with absolute file paths");
 	const directory = path.dirname(filepath);
-	if (exists(directory)) return directory;
-	const result = mkdir(directory, { recursive: true });
-	if (typeof result !== "string") return null;
-	return directory;
+	await mkdir(directory, { recursive: true });
 }
 
 //#endregion
@@ -321,7 +318,8 @@ async function scad2stl(launchPath, files) {
 	debug$3("files: %O", files);
 	let scadProcess;
 	try {
-		await mkdirForFileAsync(files.out);
+		const outfileAbspath = path.join(files.cwd, files.out);
+		await mkdirForFileAsync(outfileAbspath);
 		if (launchPath.startsWith("docker") || launchPath.endsWith("docker")) {
 			const dockerTag = launchPath.split(":")[1];
 			scadProcess = spawnDockerOpenSCAD(files, dockerTag);
@@ -574,15 +572,20 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 	eleventyConfig.addExtension(SCAD_EXT, {
 		getData(inputPath) {
 			const filename = path.basename(inputPath);
-			return {
+			const data = {
 				title: filename,
-				layout: layout ?? DEFAULT_SCAD_LAYOUT,
-				theme: theme ?? DEFAULT_PLUGIN_THEME,
-				tags: ["scad"],
+				slug: filename.replace(DOT_SCAD, ""),
 				scadFile: inputPath,
 				stlFile: filename.replace(DOT_SCAD, DOT_STL),
-				slug: filename.replace(DOT_SCAD, "")
+				layout: layout ?? DEFAULT_SCAD_LAYOUT,
+				theme: theme ?? DEFAULT_PLUGIN_THEME,
+				tags: [SCAD_EXT]
 			};
+			debug.extend("getData")({
+				inputPath,
+				data
+			});
+			return data;
 		},
 		async compile(inputContent, inputPath) {
 			return async (data) => {
@@ -591,20 +594,21 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 						_log(`${cyan("Would write")} ${data.stlFile} ${gray(`from ${inputPath}`)}`);
 						return inputContent;
 					}
-					const dirs = data.eleventy.directories;
-					const projectRoot = path.resolve(dirs.output, "..");
-					const stlOutputDir = path.join(dirs.output, data.page.fileSlug);
+					const elevenDirs = data.eleventy.directories;
+					const projectRoot = data.eleventy.env.root;
 					/** `.scad` source */
-					const inFile = path.resolve(data.eleventy.env.root, data.scadFile);
+					const inFile = path.relative(projectRoot, data.page.inputPath);
+					const stlOutputDir = path.relative(projectRoot, path.join(elevenDirs.output, data.page.fileSlug));
 					/** `.stl` target */
 					const outFile = path.join(stlOutputDir, data.stlFile);
 					await ensureFileRegistered(inFile);
 					const stlExists = exists(outFile);
 					const hashesDiffer = await fileHashesDiffer(inFile);
-					debug({
+					debug.extend("compile")({
 						inFile,
 						outFile,
 						projectRoot,
+						pageData: data.page,
 						stlExists,
 						hashesDiffer
 					});

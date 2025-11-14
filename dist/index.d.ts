@@ -51,15 +51,25 @@ type ParsedPluginOptions = z.output<typeof PluginOptionsSchema>;
 type PluginOptionsInput = Omit<z.input<typeof PluginOptionsSchema>, "launchPath"> & {
   launchPath: LaunchPath | (string & {});
 };
-type ScadTemplateData = {
-  layout: string;
+/**
+ * Data passed into SCAD templates.
+ */
+interface ScadTemplateData {
+  /** Title of the generated page */
   title: string;
-  tags: string[];
-  theme: string;
+  /** Slug created from the filename without extension */
   slug: string;
+  /** Relative path to the `.scad` input file */
   scadFile: string;
+  /** Output STL filename (e.g., `model.stl`) */
   stlFile: string;
-};
+  /** Name of the layout file (e.g., `scad.viewer.njk`) */
+  layout: string;
+  /** Theme name for the viewer */
+  theme: string;
+  /** Tags added to the generated page */
+  tags: string[];
+}
 type FullPageData = EleventyScope & ScadTemplateData & {
   collections: {
     all: EleventySuppliedData[];

@@ -36,12 +36,5 @@ export async function mkdirForFileAsync(filepath: string) {
 		throw new Error("mkdirForFileAsync() only works with absolute file paths");
 	}
 	const directory = path.dirname(filepath);
-	if (exists(directory)) {
-		return directory;
-	}
-	const result = mkdir(directory, { recursive: true });
-	if (typeof result !== "string") {
-		return null;
-	}
-	return directory;
+	await mkdir(directory, { recursive: true });
 }

@@ -1,3 +1,4 @@
+import path from "node:path";
 import { spawn } from "cross-spawn";
 import { DEFAULT_DOCKER_TAG } from "../config";
 import { Debug, mkdirForFileAsync, relativePathFromCwd, Timer } from "../lib";
@@ -20,11 +21,8 @@ export async function scad2stl(
 
 	let scadProcess: ChildProcessWithoutNullStreams;
 	try {
-		// Writing of the html file actually creates the dir it belongs in, so
-		// relying on that mechanism to save STLs was failing as they are generated
-		// as part of that process, creating a race condition. Maybe a transformer
-		// would be more appropriate?
-		await mkdirForFileAsync(files.out);
+		const outfileAbspath = path.join(files.cwd, files.out);
+		await mkdirForFileAsync(outfileAbspath);
 
 		if (launchPath.startsWith("docker") || launchPath.endsWith("docker")) {
 			const dockerTag = launchPath.split(":")[1];

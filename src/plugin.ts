@@ -136,17 +136,19 @@ export function EleventyPluginOpenSCAD(
 		/**
 		 * Data provided to the layout & page of a `.scad` file template
 		 */
-		getData(inputPath: string): ScadTemplateData {
+		getData(inputPath: string) {
 			const filename = path.basename(inputPath);
-			return {
+			const data: ScadTemplateData = {
 				title: filename,
-				layout: layout ?? DEFAULT_SCAD_LAYOUT,
-				theme: theme ?? DEFAULT_PLUGIN_THEME,
-				tags: ["scad"],
+				slug: filename.replace(DOT_SCAD, ""),
 				scadFile: inputPath,
 				stlFile: filename.replace(DOT_SCAD, DOT_STL),
-				slug: filename.replace(DOT_SCAD, ""),
+				layout: layout ?? DEFAULT_SCAD_LAYOUT,
+				theme: theme ?? DEFAULT_PLUGIN_THEME,
+				tags: [SCAD_EXT],
 			};
+			debug.extend("getData")({ inputPath, data });
+			return data;
 		},
 		// #endregion
 		// #region compile
@@ -163,14 +165,20 @@ export function EleventyPluginOpenSCAD(
 						return inputContent;
 					}
 
-					// biome-ignore lint/suspicious/noExplicitAny: its fine
-					const dirs = (data.eleventy as any).directories as EleventyDirs;
-					const projectRoot = path.resolve(dirs.output, "..");
-					const stlOutputDir = path.join(dirs.output, data.page.fileSlug);
+					// @ts-expect-error this does exist but the types in 11ty.ts have `serverless` still
+					const elevenDirs = data.eleventy.directories as EleventyDirs;
+
+					// const projectRoot = path.resolve(dirs.output, "..");
+					const projectRoot = data.eleventy.env.root;
 
 					/** `.scad` source */
-					const inFile = path.resolve(data.eleventy.env.root, data.scadFile);
+					// const inFile = path.resolve(projectRoot, data.scadFile);
+					const inFile = path.relative(projectRoot, data.page.inputPath);
 
+					const stlOutputDir = path.relative(
+						projectRoot,
+						path.join(elevenDirs.output, data.page.fileSlug),
+					);
 					/** `.stl` target */
 					const outFile = path.join(stlOutputDir, data.stlFile);
 
@@ -180,7 +188,14 @@ export function EleventyPluginOpenSCAD(
 					const stlExists = exists(outFile);
 					const hashesDiffer = await cache.fileHashesDiffer(inFile);
 
-					debug({ inFile, outFile, projectRoot, stlExists, hashesDiffer });
+					debug.extend("compile")({
+						inFile,
+						outFile,
+						projectRoot,
+						pageData: data.page,
+						stlExists,
+						hashesDiffer,
+					});
 
 					if (!stlExists || hashesDiffer) {
 						_log(

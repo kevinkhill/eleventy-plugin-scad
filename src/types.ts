@@ -32,15 +32,31 @@ export type PluginOptionsInput = Omit<
 	launchPath: LaunchPath | (string & {});
 };
 
-export type ScadTemplateData = {
-	layout: string;
+/**
+ * Data passed into SCAD templates.
+ */
+export interface ScadTemplateData {
+	/** Title of the generated page */
 	title: string;
-	tags: string[];
-	theme: string;
+
+	/** Slug created from the filename without extension */
 	slug: string;
+
+	/** Relative path to the `.scad` input file */
 	scadFile: string;
+
+	/** Output STL filename (e.g., `model.stl`) */
 	stlFile: string;
-};
+
+	/** Name of the layout file (e.g., `scad.viewer.njk`) */
+	layout: string;
+
+	/** Theme name for the viewer */
+	theme: string;
+
+	/** Tags added to the generated page */
+	tags: string[];
+}
 
 export type FullPageData = EleventyScope &
 	ScadTemplateData & {

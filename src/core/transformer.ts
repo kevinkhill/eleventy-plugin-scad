@@ -28,6 +28,7 @@ export function registerTransformer(
 				);
 
 				await scad2stl(launchPath, {
+					cwd: "",
 					in: this.page.inputPath,
 					out: outFile,
 				});
