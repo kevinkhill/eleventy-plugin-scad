@@ -1,10 +1,10 @@
-# eleventy-plugin-scad ![NPM Version](https://img.shields.io/npm/v/eleventy-plugin-scad)
+# eleventy-plugin-scad [![NPM Version](https://img.shields.io/npm/v/eleventy-plugin-scad "npm version badge")][npm]
 
 A plugin for [Eleventy](https://www.11ty.dev) to showcase your SCAD files.
 
 ## Purpose
 
-Use Eleventy to generate a site to showcase your OpenSCAD models. This plugin adds `.scad` as a template and will use your system's OpenSCAD to render the file into an STL. An additional HTML file with Three.js STL viewer is gererated as well.
+Use Eleventy to generate a site to showcase your OpenSCAD models. This plugin adds `.scad` as a template and will use your OpenSCAD to render the file into an `.stl`. Along with the model, a Three.js model view page is gererated as well.
 
 ## Install into Project
 
@@ -18,7 +18,7 @@ npm install eleventy-plugin-scad
   - `auto` - Attempts to use `process.platform` to find OpenSCAD in the default install locations
   - `nightly` - Works the same as above for the `nightly` version of OpenSCAD
   - `docker` - Download and use containerized OpenSCAD. Defaults to `trixie`
-    - `docker:TAG` - You can append a [container tag](https://hub.docker.com/r/openscad/openscad) to use a specific version.
+    - `docker:TAG` - You can append a [container tag][docker] to use a specific version.
   - `C:/openscad.exe` - Absolute paths work too
   - `openscad` - or in a bin folder and available on your `$PATH`
   - Can also be set with the environment variable `ELEVENTY_SCAD_LAUNCH_PATH`
@@ -110,3 +110,6 @@ export default (eleventyConfig) => {
   });
 };
 ```
+
+[npm]: https://www.npmjs.com/package/eleventy-plugin-scad "npm page"
+[docker]: https://hub.docker.com/r/openscad/openscad "docker hub"

@@ -1,5 +1,6 @@
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import { Debug, md5 } from "../lib";
+import { Debug } from "../lib";
 
 const debug = Debug.extend("cache");
 const $cache = new Map<string, string>();
@@ -52,4 +53,8 @@ export async function ensureFileRegistered(file: string) {
 	if (fileNeedsRegistration(file)) {
 		await registerFile(file);
 	}
+}
+
+function md5(input: string) {
+	return createHash("md5").update(input).digest("hex");
 }

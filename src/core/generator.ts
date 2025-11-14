@@ -28,7 +28,6 @@ export async function scad2stl(
 
 		if (launchPath.startsWith("docker") || launchPath.endsWith("docker")) {
 			const dockerTag = launchPath.split(":")[1];
-
 			scadProcess = spawnDockerOpenSCAD(files, dockerTag);
 		} else {
 			scadProcess = spawnOpenSCAD(files, launchPath);
@@ -88,13 +87,17 @@ export function spawnOpenSCAD(files: Files, launchPath: string) {
 /**
  * Generate STL using Docker OpenSCAD
  */
-export function spawnDockerOpenSCAD(files: Files, tag: string) {
+export function spawnDockerOpenSCAD(files: Files, tag?: string) {
 	const uid = process.getuid?.() ?? 1000;
 	const gid = process.getgid?.() ?? 1000;
 	const inFile = relativePathFromCwd(files.cwd, files.in);
 	const outFile = relativePathFromCwd(files.cwd, files.out);
 
-	const dockerImage = `openscad/openscad:${tag ?? DEFAULT_DOCKER_TAG}`;
+	const dockerImage =
+		tag === "latest"
+			? `openscad/openscad`
+			: `openscad/openscad:${tag ?? DEFAULT_DOCKER_TAG}`;
+
 	const dockerArgs = [
 		"run",
 		"--rm",

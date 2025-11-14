@@ -11,18 +11,13 @@ import type { LaunchPath } from "../src";
 
 let eleventy: Eleventy;
 
-beforeAll(async () => {
-	eleventy = createTestInstance({
-		launchPath: "docker",
-		resolveLaunchPath: false,
-		silent: true,
-	});
-});
-
-const CASES: [LaunchPath][] = [["nightly"], ["docker:trixie"]];
-
-suite.each(CASES)("launchPath: %s", () => {
+suite("eleventy.write()", () => {
 	beforeAll(async () => {
+		eleventy = createTestInstance({
+			launchPath: "docker",
+			resolveLaunchPath: false,
+			silent: true,
+		});
 		await cleanOutputDir();
 		await eleventy.write();
 	});
