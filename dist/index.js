@@ -1,4 +1,3 @@
-import Debug from "debug";
 import path from "node:path";
 import { blue, bold, cyan, gray, green, red, reset, yellow } from "yoctocolors";
 import z, { prettifyError, stringbool, z as z$1 } from "zod";
@@ -6,66 +5,11 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile } from "node:fs/promises";
 import { existsSync, readFileSync } from "node:fs";
 import { findUpSync } from "find-up";
+import Debug from "debug";
 import which from "which";
 import { spawn } from "cross-spawn";
 import "he";
 
-//#region src/lib/debug.ts
-var debug_default = Debug("eleventy:scad");
-
-//#endregion
-//#region src/lib/scad-bin.ts
-const debug$8 = debug_default.extend("bin");
-/**
-* Default OpenSCAD install locations
-*
-* @TODO: Need to verify this since I have nightly installed
-*/
-const SCAD_BIN = {
-	linux: "openscad",
-	darwin: "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD",
-	win32: "C:/Program Files/Openscad/openscad.exe"
-};
-/**
-* Default OpenSCAD Nightly install locations
-*/
-const SCAD_BIN_NIGHTLY = {
-	linux: "openscad-nightly",
-	darwin: "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD",
-	win32: "C:/Program Files/Openscad/openscad-nightly.exe"
-};
-/**
-* Alias mappings to use when installing the plugin into an eleventy project.
-*
-* @example ```
-* import Eleventy from "@11ty/eleventy";
-* import { EleventyPluginOpenSCAD, SCAD_BINS } from "eleventy-plugin-scad";
-*
-* const launchPath = SCAD_BINS.MACOS;
-*```
-*/
-const SCAD_BINS = {
-	LINUX: SCAD_BIN.linux,
-	LINUX_NIGHTLY: SCAD_BIN_NIGHTLY.linux,
-	MACOS: SCAD_BIN.darwin,
-	MACOS_NIGHTLY: SCAD_BIN_NIGHTLY.darwin,
-	WINDOWS: SCAD_BIN.win32,
-	WINDOWS_NIGHTLY: SCAD_BIN_NIGHTLY.win32
-};
-/**
-* Returns the OpenSCAD binary path for the current platform.
-*/
-function autoBinPath(platform, binType = "auto") {
-	const binMap = binType === "nightly" ? SCAD_BIN_NIGHTLY : SCAD_BIN;
-	const bin = binMap[platform];
-	const retVal = typeof bin === "string" ? bin : null;
-	debug$8("platform: %s", platform);
-	debug$8("binType: %s", binType);
-	debug$8("using: %s", retVal);
-	return retVal;
-}
-
-//#endregion
 //#region src/config.ts
 /**
 * Default W3C Core Style
@@ -87,8 +31,12 @@ const DEFAULT_DOCKER_TAG = "dev";
 const THREE_JS_VERSION = "0.180.0";
 
 //#endregion
+//#region src/lib/debug.ts
+var debug_default = Debug("eleventy:scad");
+
+//#endregion
 //#region src/lib/assets.ts
-const debug$7 = debug_default.extend("assets");
+const debug$8 = debug_default.extend("assets");
 let assetPath = "";
 /**
 * Load an asset file from the bundle
@@ -96,7 +44,7 @@ let assetPath = "";
 function getAssetFileContent(file) {
 	const resPath = path.join(getAssetPath(), file);
 	const content = readFileSync(resPath, "utf8");
-	debug$7(`read from disk "%s"`, file);
+	debug$8(`read from disk "%s"`, file);
 	return content;
 }
 function getAssetPath() {
@@ -104,35 +52,35 @@ function getAssetPath() {
 	return assetPath;
 }
 function ensureAssetPath() {
-	debug$7(`ensuring asset path is set`);
-	if (assetPath) debug$7(`assetPath = "%s"`, assetPath);
+	debug$8(`ensuring asset path is set`);
+	if (assetPath) debug$8(`assetPath = "%s"`, assetPath);
 	else {
-		debug$7(`searching "%s"`, import.meta.dirname);
+		debug$8(`searching "%s"`, import.meta.dirname);
 		const found = findUpSync("assets", {
 			cwd: import.meta.dirname,
 			type: "directory"
 		});
 		if (!found) throw new Error(`"assets/" was not found!`);
-		debug$7(`found "%s"`, found);
+		debug$8(`found "%s"`, found);
 		assetPath = found;
 	}
 }
 
 //#endregion
 //#region src/lib/env.ts
-const debug$6 = debug_default.extend("env");
+const debug$7 = debug_default.extend("env");
 function getOptionsFromEnv(env) {
 	function getEnv(varName) {
 		const value = env[varName];
 		if (typeof value === "undefined") return;
-		debug$6.extend("string")("%s=%o", varName, value);
+		debug$7.extend("string")("%s=%o", varName, value);
 		return value;
 	}
 	function parseStringBool(varName) {
 		const value = env[varName];
 		if (typeof value === "undefined") return;
 		const result = stringbool().optional().parse(value);
-		debug$6.extend("boolean")("%s=%o", varName, result);
+		debug$7.extend("boolean")("%s=%o", varName, result);
 		return result;
 	}
 	return {
@@ -149,10 +97,10 @@ function getOptionsFromEnv(env) {
 
 //#endregion
 //#region src/lib/fs.ts
-const debug$5 = debug_default.extend("fs");
+const debug$6 = debug_default.extend("fs");
 function exists(pathToCheck) {
 	const state = existsSync(pathToCheck);
-	debug$5({
+	debug$6({
 		path: pathToCheck,
 		exists: state
 	});
@@ -198,6 +146,58 @@ function resolveOpenSCAD(launchPath) {
 	const pathStr = String(launchPath);
 	if (existsSync(pathStr)) return pathStr;
 	return which.sync(pathStr, { nothrow: true });
+}
+
+//#endregion
+//#region src/lib/scad-bin.ts
+const debug$5 = debug_default.extend("bin");
+/**
+* Default OpenSCAD install locations
+*
+* @TODO: Need to verify this since I have nightly installed
+*/
+const SCAD_BIN = {
+	linux: "openscad",
+	darwin: "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD",
+	win32: "C:/Program Files/Openscad/openscad.exe"
+};
+/**
+* Default OpenSCAD Nightly install locations
+*/
+const SCAD_BIN_NIGHTLY = {
+	linux: "openscad-nightly",
+	darwin: "/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD",
+	win32: "C:/Program Files/Openscad/openscad-nightly.exe"
+};
+/**
+* Alias mappings to use when installing the plugin into an eleventy project.
+*
+* @example ```
+* import Eleventy from "@11ty/eleventy";
+* import { EleventyPluginOpenSCAD, SCAD_BINS } from "eleventy-plugin-scad";
+*
+* const launchPath = SCAD_BINS.MACOS;
+*```
+*/
+const SCAD_BINS = {
+	LINUX: SCAD_BIN.linux,
+	LINUX_NIGHTLY: SCAD_BIN_NIGHTLY.linux,
+	MACOS: SCAD_BIN.darwin,
+	MACOS_NIGHTLY: SCAD_BIN_NIGHTLY.darwin,
+	WINDOWS: SCAD_BIN.win32,
+	WINDOWS_NIGHTLY: SCAD_BIN_NIGHTLY.win32
+};
+/**
+* Returns the OpenSCAD binary path for the current platform.
+*/
+function autoBinPath(platform, binType = "auto") {
+	const binMap = binType === "nightly" ? SCAD_BIN_NIGHTLY : SCAD_BIN;
+	const bin = binMap[platform];
+	const retVal = typeof bin === "string" ? bin : null;
+	debug$5("platform: %s", platform);
+	debug$5("binType: %s", binType);
+	debug$5("using: %s", retVal);
+	return retVal;
 }
 
 //#endregion
@@ -642,8 +642,14 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 }
 
 //#endregion
+//#region src/core/register.ts
+function addOpenSCADPlugin(eleventyConfig, options) {
+	eleventyConfig.addPlugin(EleventyPluginOpenSCAD, options);
+}
+
+//#endregion
 //#region src/index.ts
 var src_default = EleventyPluginOpenSCAD;
 
 //#endregion
-export { EleventyPluginOpenSCAD, SCAD_BINS, src_default as default };
+export { EleventyPluginOpenSCAD, SCAD_BINS, addOpenSCADPlugin, src_default as default };

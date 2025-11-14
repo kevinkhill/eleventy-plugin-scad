@@ -78,6 +78,9 @@ type EleventyDirs = {
 type MainPlatforms = Extract<"linux" | "darwin" | "win32", NodeJS.Platform>;
 type PlatformMap = Record<MainPlatforms, string>;
 //#endregion
+//#region src/core/register.d.ts
+declare function addOpenSCADPlugin(eleventyConfig: types_d_exports.EleventyConfig, options: PluginOptionsInput): void;
+//#endregion
 //#region src/lib/scad-bin.d.ts
 /**
  * Alias mappings to use when installing the plugin into an eleventy project.
@@ -110,9 +113,9 @@ declare const SCAD_BINS: {
  */
 declare function EleventyPluginOpenSCAD(eleventyConfig: types_d_exports.EleventyConfig, options: PluginOptionsInput): void;
 declare namespace index_d_exports {
-  export { DockerLaunchTag, DockerTag, EleventyDirs, EleventyPluginOpenSCAD, FullPageData, LaunchPath, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, SCAD_BINS, ScadTemplateData, EleventyPluginOpenSCAD as default };
+  export { DockerLaunchTag, DockerTag, EleventyDirs, EleventyPluginOpenSCAD, FullPageData, LaunchPath, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, SCAD_BINS, ScadTemplateData, addOpenSCADPlugin, EleventyPluginOpenSCAD as default };
 }
 __reExport(index_d_exports, types_d_exports);
 
 //#endregion
-export { DockerLaunchTag, DockerTag, EleventyDirs, EleventyPluginOpenSCAD, FullPageData, LaunchPath, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, SCAD_BINS, ScadTemplateData, EleventyPluginOpenSCAD as default };
+export { DockerLaunchTag, DockerTag, EleventyDirs, EleventyPluginOpenSCAD, FullPageData, LaunchPath, MainPlatforms, ModelViewerTheme, ParsedPluginOptions, PlatformMap, PluginOptions, PluginOptionsInput, SCAD_BINS, ScadTemplateData, addOpenSCADPlugin, EleventyPluginOpenSCAD as default };
