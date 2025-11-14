@@ -9,7 +9,6 @@
     "scad"
   ],
   "homepage": "https://www.npmjs.com/package/eleventy-plugin-scad",
-  "readme": "https://github.com/kevinkhill/eleventy-plugin-scad#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kevinkhill/eleventy-plugin-scad.git"
@@ -33,14 +32,13 @@
   "scripts": {
     "build": "tsdown",
     "bump": "bumpp",
-    "clean": "rm -rvf ./dist/*",
+    "clean": "concurrently -c 'auto' 'npm:clean:*'",
+    "clean:dist": "rm -rvf ./dist/*",
     "clean:test": "rm -rvf ./test/_11ty/output/*",
     "debug:start": "DEBUG=eleventy:scad* pnpm start",
     "debug:test": "DEBUG=eleventy:scad* pnpm test",
     "dev": "pnpm build --watch ./src",
-    "dpull:bookworm": "docker pull openscad/openscad:bookworm",
-    "dpull:latest": "docker pull openscad/openscad:latest",
-    "dpull:trixie": "docker pull openscad/openscad:trixie",
+    "docker:pull": "./scripts/docker-pull-openscad.sh",
     "start": "cd test/_11ty && eleventy --config=test.eleventy-config.js --serve",
     "test": "vitest",
     "typecheck": "tsc --noEmit"
@@ -77,5 +75,6 @@
   "peerDependencies": {
     "@11ty/eleventy": "^3"
   },
-  "packageManager": "pnpm@10.20.0"
+  "packageManager": "pnpm@10.20.0",
+  "readme": "https://github.com/kevinkhill/eleventy-plugin-scad#readme"
 }
