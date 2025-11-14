@@ -3,16 +3,17 @@ import path from "node:path";
 import { temporaryDirectory } from "tempy";
 import { describe, expect, it } from "vitest";
 import { scad2stl } from "../../src/core/generator";
-import type { DockerLaunchId } from "../../src";
+import type { DockerLaunchTag } from "../../src";
 
 describe("scad2stl() with docker containers", () => {
-	const engines: DockerLaunchId[] = [
-		"docker",
+	const engines: DockerLaunchTag[] = [
+		"docker:dev",
+		// "docker:latest",
 		"docker:trixie",
 		"docker:bookworm",
 	];
 
-	for (const engine of engines) {
+	for (const engine of ["docker", ...engines]) {
 		it(`uses "${engine}" to convert SCAD to STL`, async () => {
 			const tempDir = temporaryDirectory();
 
@@ -31,3 +32,22 @@ describe("scad2stl() with docker containers", () => {
 		});
 	}
 });
+
+// describe.runIf()(`scad2stl()`, () => {
+// 	it(`uses "openscad-nightly" to convert SCAD to STL`, async () => {
+// 		const tempDir = temporaryDirectory();
+
+// 		const inFile = path.join(tempDir, "cube.scad");
+// 		const outFile = path.join(tempDir, "cube.stl");
+
+// 		await writeFile(inFile, Buffer.from("cube(1);"));
+
+// 		await scad2stl("openscad-nightly", {
+// 			cwd: tempDir,
+// 			in: inFile,
+// 			out: outFile,
+// 		});
+
+// 		expect(outFile).toExist();
+// 	});
+// });

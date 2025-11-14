@@ -3,7 +3,6 @@ export { default as Debug } from "./debug";
 export * from "./env";
 export * from "./fs";
 export * from "./logger";
-export * from "./md5";
 export * from "./resolve";
 export * from "./scad-bin";
 export { default as Timer } from "./timer";
