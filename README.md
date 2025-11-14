@@ -101,7 +101,7 @@ export default (eleventyConfig) => {
 On my linux machine, I use this instead
 
 ```js
-import { addOpenSCADPlugin, SCAD_BINS } from "eleventy-plugin-scad";
+import { addOpenSCADPlugin } from "eleventy-plugin-scad";
 
 /** @param {import("@11ty/eleventy/UserConfig").default} eleventyConfig */
 export default (eleventyConfig) => {
@@ -114,7 +114,7 @@ export default (eleventyConfig) => {
 On any machine with Docker
 
 ```js
-import { addOpenSCADPlugin, SCAD_BINS } from "eleventy-plugin-scad";
+import { addOpenSCADPlugin } from "eleventy-plugin-scad";
 
 /** @param {import("@11ty/eleventy/UserConfig").default} eleventyConfig */
 export default (eleventyConfig) => {
