@@ -6,6 +6,8 @@ A plugin for [Eleventy](https://www.11ty.dev) to showcase your SCAD files.
 
 Use Eleventy to generate a site to showcase your OpenSCAD models. This plugin adds `.scad` as a template and will use your OpenSCAD to render the file into an `.stl`. Along with the model, a Three.js model view page is gererated as well.
 
+Check out [a demo site](https://kevinkhill.github.io/eleventy-scad-plugin-demo/) generated from the examples that come with OpenSCAD
+
 ## Install into Project
 
 ```bash
