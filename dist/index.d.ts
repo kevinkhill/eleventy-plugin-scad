@@ -11,7 +11,7 @@ declare const DOCKER_TAGS: readonly ["trixie", "dev", "bookworm", "2021.01", "la
 //#region src/core/options.d.ts
 declare const PluginOptionsSchema: z.ZodObject<{
   launchPath: z.ZodPipe<z.ZodTransform<unknown, unknown>, z.ZodDefault<z.ZodString>>;
-  layout: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+  layout: z.ZodDefault<z.ZodOptional<z.ZodString>>;
   theme: z.ZodDefault<z.ZodOptional<z.ZodEnum<{
     Traditional: "Traditional";
     Modernist: "Modernist";

@@ -23,7 +23,7 @@ export function getOptionsFromEnv(env: NodeJS.ProcessEnv) {
 		theme: getEnv("ELEVENTY_SCAD_THEME"),
 		layout: getEnv("ELEVENTY_SCAD_LAYOUT"),
 		launchPath: getEnv("ELEVENTY_SCAD_LAUNCH_PATH"),
-		noStl: parseStringBool("ELEVENTY_SCAD_NO_STL"),
+		noSTL: parseStringBool("ELEVENTY_SCAD_NO_STL"),
 		silent: parseStringBool("ELEVENTY_SCAD_SILENT"),
 		verbose: parseStringBool("ELEVENTY_SCAD_VERBOSE"),
 		collectionPage: parseStringBool("ELEVENTY_SCAD_COLLECTION_PAGE"),
