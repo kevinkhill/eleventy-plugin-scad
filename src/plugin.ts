@@ -111,7 +111,7 @@ export function EleventyPluginOpenSCAD(
 
 	// Add template file that lists all the collected `.scad` files
 	if (collectionPage) {
-		addScadCollectionVirtualTemplate(eleventyConfig);
+		addScadCollectionVirtualTemplate(eleventyConfig, theme);
 	}
 
 	/**

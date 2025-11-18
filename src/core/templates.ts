@@ -1,6 +1,6 @@
 import { Debug, getAssetFileContent } from "../lib";
 import { DEFAULT_COLLECTION_LAYOUT, DEFAULT_SCAD_LAYOUT } from "./const";
-import type { EleventyConfig } from "../types";
+import type { EleventyConfig, ModelViewerTheme } from "../types";
 
 const log = Debug.extend("templates");
 
@@ -17,6 +17,7 @@ export function addBuiltinScadLayoutVirtualTemplate(
 
 export function addScadCollectionVirtualTemplate(
 	eleventyConfig: EleventyConfig,
+	pageTheme: ModelViewerTheme,
 ) {
 	log(`(virtual) adding "%o"`, DEFAULT_COLLECTION_LAYOUT);
 	eleventyConfig.addTemplate(
@@ -33,7 +34,10 @@ export function addScadCollectionVirtualTemplate(
           		<li><a href="{{ item.data.page.url | url }}">{{ item.data.title }}</a></li>
         	{% endfor %}
 		</ul>`,
-		{ layout: DEFAULT_COLLECTION_LAYOUT },
+		{
+			layout: DEFAULT_COLLECTION_LAYOUT,
+			theme: pageTheme,
+		},
 	);
 	log(`(virtual) added "%o"`, DEFAULT_COLLECTION_TEMPLATE);
 }
