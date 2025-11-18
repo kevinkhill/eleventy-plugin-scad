@@ -14,7 +14,7 @@ export default function (eleventyConfig) {
 
     addOpenSCADPlugin(eleventyConfig, {
         launchPath: "docker",
-        noSTL: true,
-        // verbose: true,
+        verbose: true,
+        // noSTL: true,
     });
 }

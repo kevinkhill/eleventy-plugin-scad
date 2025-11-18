@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
 import { DEFAULT_PLUGIN_THEME } from "../../src/config";
+import { DEFAULT_SCAD_LAYOUT } from "../../src/core";
 import { parseOptions } from "../../src/core/options";
-import type { ModelViewerTheme } from "../../src";
+import type { ModelViewerTheme } from "../../src/types";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -16,7 +17,7 @@ describe("parseOptions()", () => {
 
 		expect(success).toBeTruthy();
 		expect(data?.launchPath).toBe("docker:dev");
-		expect(data?.layout).toBeUndefined();
+		expect(data?.layout).toBe(DEFAULT_SCAD_LAYOUT);
 		expect(data?.theme).toBe(DEFAULT_PLUGIN_THEME);
 		expect(data?.resolveLaunchPath).toBe(true);
 		expect(data?.collectionPage).toBe(true);
@@ -88,7 +89,7 @@ describe("parseOptions()", () => {
 		const { success, data } = parseOptions({}, process.env);
 
 		expect(success).toBeTruthy();
-		expect(data?.noSTL).toBeFalsy();
+		expect(data?.noSTL).toBeTruthy();
 	});
 
 	test(`ELEVENTY_SCAD_SILENT sets silent`, () => {

@@ -2,7 +2,7 @@ import z from "zod";
 import { DEFAULT_DOCKER_TAG, DEFAULT_PLUGIN_THEME } from "../config";
 import { autoBinPath, Debug } from "../lib";
 import { getOptionsFromEnv } from "../lib/env";
-import { THEMES } from "./const";
+import { DEFAULT_SCAD_LAYOUT, THEMES } from "./const";
 import type { PluginOptions } from "../types";
 
 /**
@@ -11,7 +11,7 @@ import type { PluginOptions } from "../types";
 export const DEFAULT_OPTIONS = {
 	launchPath: `docker:${DEFAULT_DOCKER_TAG}`,
 	theme: DEFAULT_PLUGIN_THEME,
-	layout: undefined,
+	layout: DEFAULT_SCAD_LAYOUT,
 	resolveLaunchPath: true,
 	collectionPage: true,
 	verbose: true,
@@ -21,7 +21,7 @@ export const DEFAULT_OPTIONS = {
 
 const debug = Debug.extend("options");
 
-export const StringBoolSchema = z.union([z.boolean(), z.stringbool()]);
+const StringBoolSchema = z.union([z.boolean(), z.stringbool()]);
 
 export const PluginOptionsSchema = z.object({
 	launchPath: z.preprocess((val) => {
@@ -30,8 +30,8 @@ export const PluginOptionsSchema = z.object({
 		}
 		return val;
 	}, z.string().default(DEFAULT_OPTIONS.launchPath)),
-	layout: z.nullish(z.string()),
-	theme: z.optional(z.enum(THEMES)).default(DEFAULT_PLUGIN_THEME),
+	layout: z.optional(z.string()).default(DEFAULT_OPTIONS.layout),
+	theme: z.optional(z.enum(THEMES)).default(DEFAULT_OPTIONS.theme),
 	noSTL: z.optional(StringBoolSchema).default(DEFAULT_OPTIONS.noSTL),
 	silent: z.optional(StringBoolSchema).default(DEFAULT_OPTIONS.silent),
 	verbose: z.optional(StringBoolSchema).default(DEFAULT_OPTIONS.verbose),

@@ -1,7 +1,6 @@
 import path from "node:path";
 import { blue, bold, cyan, gray, green, red, reset } from "yoctocolors";
 import { prettifyError } from "zod";
-import { DEFAULT_PLUGIN_THEME } from "./config";
 import {
 	addBuiltinScadLayoutVirtualTemplate,
 	addScadCollectionVirtualTemplate,
@@ -10,18 +9,8 @@ import {
 	parseOptions,
 	scad2stl,
 } from "./core";
-import {
-	DEFAULT_SCAD_LAYOUT,
-	DOT_SCAD,
-	DOT_STL,
-	PLUGIN_NAME,
-	SCAD_EXT,
-} from "./core/const";
-import { ensureAssetPath } from "./lib/assets";
-import Debug from "./lib/debug";
-import { exists } from "./lib/fs";
-import { createScadLogger } from "./lib/logger";
-import { resolveOpenSCAD } from "./lib/resolve";
+import { DOT_SCAD, DOT_STL, PLUGIN_NAME, SCAD_EXT } from "./core/const";
+import { createScadLogger, Debug, exists, resolveOpenSCAD } from "./lib";
 import type {
 	EleventyConfig,
 	EleventyDirs,
@@ -54,7 +43,6 @@ export function EleventyPluginOpenSCAD(
 		);
 	}
 
-	ensureAssetPath();
 	const log = createScadLogger(eleventyConfig);
 
 	// #region Parse Options
@@ -138,17 +126,15 @@ export function EleventyPluginOpenSCAD(
 		 */
 		getData(inputPath: string) {
 			const filename = path.basename(inputPath);
-			const data: ScadTemplateData = {
+			return {
 				title: filename,
 				slug: filename.replace(DOT_SCAD, ""),
 				scadFile: inputPath,
 				stlFile: filename.replace(DOT_SCAD, DOT_STL),
-				layout: layout ?? DEFAULT_SCAD_LAYOUT,
-				theme: theme ?? DEFAULT_PLUGIN_THEME,
+				layout: layout,
+				theme: theme,
 				tags: [SCAD_EXT],
-			};
-			debug.extend("getData")({ inputPath, data });
-			return data;
+			} satisfies ScadTemplateData;
 		},
 		// #endregion
 		// #region compile
@@ -157,6 +143,7 @@ export function EleventyPluginOpenSCAD(
 		 */
 		async compile(inputContent: string, inputPath: string) {
 			return async (data: FullPageData) => {
+				debug.extend("compile")("begin %O", { inputPath, data });
 				try {
 					if (noSTL) {
 						_log(
@@ -165,22 +152,29 @@ export function EleventyPluginOpenSCAD(
 						return inputContent;
 					}
 
+					if (!data.page.url) {
+						// _log(
+						// 	`${red("issue:")} ${reset(data.stlFile)} ${gray(`from ${inputPath}`)}`,
+						// );
+						throw new Error(
+							`${inputPath} must have "parmalink:true" in the frontmatter`,
+						);
+						// return inputContent;
+					}
+
 					// @ts-expect-error this does exist but the types in 11ty.ts have `serverless` still
 					const elevenDirs = data.eleventy.directories as EleventyDirs;
-
-					// const projectRoot = path.resolve(dirs.output, "..");
 					const projectRoot = data.eleventy.env.root;
 
+					const outputStem = path.relative(projectRoot, elevenDirs.output);
+
 					/** `.scad` source */
-					// const inFile = path.resolve(projectRoot, data.scadFile);
 					const inFile = path.relative(projectRoot, data.page.inputPath);
 
-					const stlOutputDir = path.relative(
-						projectRoot,
-						path.join(elevenDirs.output, data.page.fileSlug),
-					);
 					/** `.stl` target */
-					const outFile = path.join(stlOutputDir, data.stlFile);
+					const outFile = path
+						.join(outputStem, data.page.url, data.stlFile)
+						.replace(/^\//, "");
 
 					// md5 the contents of the file for caching
 					await cache.ensureFileRegistered(inFile);
@@ -188,11 +182,10 @@ export function EleventyPluginOpenSCAD(
 					const stlExists = exists(outFile);
 					const hashesDiffer = await cache.fileHashesDiffer(inFile);
 
-					debug.extend("compile")({
+					debug.extend("compile")("pre-generate %O", {
 						inFile,
 						outFile,
 						projectRoot,
-						pageData: data.page,
 						stlExists,
 						hashesDiffer,
 					});

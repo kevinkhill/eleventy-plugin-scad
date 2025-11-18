@@ -6,6 +6,7 @@
     {% threejs_importmap %}
     <script>
       window.STL_URL = new URL("{{ stlFile }}", window.location.href)
+      console.log({{ url }})
     </script>
     {% w3_theme_css theme %}
     <style>

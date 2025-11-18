@@ -75,6 +75,6 @@
   "peerDependencies": {
     "@11ty/eleventy": "^3"
   },
-  "packageManager": "pnpm@10.20.0",
+  "packageManager": "pnpm@10.22.0",
   "readme": "https://github.com/kevinkhill/eleventy-plugin-scad#readme"
 }

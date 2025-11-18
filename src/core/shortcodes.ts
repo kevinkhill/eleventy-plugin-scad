@@ -12,7 +12,6 @@ export function addShortcodes(eleventyConfig: EleventyConfig) {
 		eleventyConfig.addShortcode(name, filter);
 		debug(`added "%s"`, name);
 	};
-	debug("defaultTheme: %o", DEFAULT_PLUGIN_THEME);
 
 	/**
 	 * Link tag with url for themes created by w3.org

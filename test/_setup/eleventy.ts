@@ -10,8 +10,6 @@ export const TEST_SITE_ROOT = path.join(TEST_DIR, "_11ty");
 export const TEST_SITE_INPUT = path.join(TEST_SITE_ROOT, "input");
 export const TEST_SITE_OUTPUT = path.join(TEST_SITE_ROOT, "output");
 
-export const TEST_INPUT_PAGES = ["cube", "sphere", "cylinder"] as const;
-
 export function createTestInstance(options: PluginOptionsInput): Eleventy {
 	return new Eleventy(TEST_SITE_INPUT, TEST_SITE_OUTPUT, {
 		config: (eleventyConfig: EleventyConfig) => {

@@ -10,27 +10,6 @@ import which from "which";
 import { spawn } from "cross-spawn";
 import "he";
 
-//#region src/config.ts
-/**
-* Default W3C Core Style
-*
-* @link https://www.w3.org/StyleSheets/Core/
-*/
-const DEFAULT_PLUGIN_THEME = "Traditional";
-/**
-* Default OpenSCAD Docker tag
-*
-* @link https://hub.docker.com/r/openscad/openscad
-*/
-const DEFAULT_DOCKER_TAG = "dev";
-/**
-* Default `three.js` version
-*
-* @link https://www.npmjs.com/package/three
-*/
-const THREE_JS_VERSION = "0.180.0";
-
-//#endregion
 //#region src/lib/debug.ts
 var debug_default = Debug("eleventy:scad");
 
@@ -48,22 +27,17 @@ function getAssetFileContent(file) {
 	return content;
 }
 function getAssetPath() {
-	if (assetPath === "") throw new Error(`"assetPath" is not set, was "ensureAssetPath()" called?`);
-	return assetPath;
-}
-function ensureAssetPath() {
-	debug$8(`ensuring asset path is set`);
-	if (assetPath) debug$8(`assetPath = "%s"`, assetPath);
-	else {
-		debug$8(`searching "%s"`, import.meta.dirname);
+	if (!assetPath) {
+		debug$8(`searching: %o`, import.meta.dirname);
 		const found = findUpSync("assets", {
 			cwd: import.meta.dirname,
 			type: "directory"
 		});
 		if (!found) throw new Error(`"assets/" was not found!`);
-		debug$8(`found "%s"`, found);
+		debug$8(`found: %o`, found);
 		assetPath = found;
 	}
+	return assetPath;
 }
 
 //#endregion
@@ -87,7 +61,7 @@ function getOptionsFromEnv(env) {
 		theme: getEnv("ELEVENTY_SCAD_THEME"),
 		layout: getEnv("ELEVENTY_SCAD_LAYOUT"),
 		launchPath: getEnv("ELEVENTY_SCAD_LAUNCH_PATH"),
-		noStl: parseStringBool("ELEVENTY_SCAD_NO_STL"),
+		noSTL: parseStringBool("ELEVENTY_SCAD_NO_STL"),
 		silent: parseStringBool("ELEVENTY_SCAD_SILENT"),
 		verbose: parseStringBool("ELEVENTY_SCAD_VERBOSE"),
 		collectionPage: parseStringBool("ELEVENTY_SCAD_COLLECTION_PAGE"),
@@ -115,7 +89,11 @@ function relativePathFromCwd(cwd, file) {
 async function mkdirForFileAsync(filepath) {
 	if (!path.isAbsolute(filepath)) throw new Error("mkdirForFileAsync() only works with absolute file paths");
 	const directory = path.dirname(filepath);
-	await mkdir(directory, { recursive: true });
+	const dirExist = exists(directory);
+	if (!dirExist) {
+		await mkdir(directory, { recursive: true });
+		debug$6(`created ${directory}`);
+	}
 }
 
 //#endregion
@@ -306,6 +284,27 @@ const DEFAULT_SCAD_LAYOUT = "scad.viewer.njk";
 const DEFAULT_COLLECTION_LAYOUT = "scad.collection.njk";
 
 //#endregion
+//#region src/config.ts
+/**
+* Default W3C Core Style
+*
+* @link https://www.w3.org/StyleSheets/Core/
+*/
+const DEFAULT_PLUGIN_THEME = "Traditional";
+/**
+* Default OpenSCAD Docker tag
+*
+* @link https://hub.docker.com/r/openscad/openscad
+*/
+const DEFAULT_DOCKER_TAG = "dev";
+/**
+* Default `three.js` version
+*
+* @link https://www.npmjs.com/package/three
+*/
+const THREE_JS_VERSION = "0.180.0";
+
+//#endregion
 //#region src/core/generator.ts
 const debug$3 = debug_default.extend("generator");
 /**
@@ -424,7 +423,7 @@ function makeScadArgs(inFile, outFile) {
 const DEFAULT_OPTIONS = {
 	launchPath: `docker:${DEFAULT_DOCKER_TAG}`,
 	theme: DEFAULT_PLUGIN_THEME,
-	layout: void 0,
+	layout: DEFAULT_SCAD_LAYOUT,
 	resolveLaunchPath: true,
 	collectionPage: true,
 	verbose: true,
@@ -438,8 +437,8 @@ const PluginOptionsSchema = z.object({
 		if (val === "auto" || val === "nightly") return autoBinPath(process.platform, val ?? "auto");
 		return val;
 	}, z.string().default(DEFAULT_OPTIONS.launchPath)),
-	layout: z.nullish(z.string()),
-	theme: z.optional(z.enum(THEMES)).default(DEFAULT_PLUGIN_THEME),
+	layout: z.optional(z.string()).default(DEFAULT_OPTIONS.layout),
+	theme: z.optional(z.enum(THEMES)).default(DEFAULT_OPTIONS.theme),
 	noSTL: z.optional(StringBoolSchema).default(DEFAULT_OPTIONS.noSTL),
 	silent: z.optional(StringBoolSchema).default(DEFAULT_OPTIONS.silent),
 	verbose: z.optional(StringBoolSchema).default(DEFAULT_OPTIONS.verbose),
@@ -468,7 +467,6 @@ function addShortcodes(eleventyConfig) {
 		eleventyConfig.addShortcode(name$1, filter);
 		debug$1(`added "%s"`, name$1);
 	};
-	debug$1("defaultTheme: %o", DEFAULT_PLUGIN_THEME);
 	/**
 	* Link tag with url for themes created by w3.org
 	*
@@ -508,7 +506,7 @@ function addScadCollectionVirtualTemplate(eleventyConfig) {
 	const DEFAULT_COLLECTION_TEMPLATE = "index.njk";
 	eleventyConfig.addTemplate(DEFAULT_COLLECTION_TEMPLATE, `<ul>
 			{% for item in collections.scad %}
-          		<li><a href="{{ item.data.slug | url }}">{{ item.data.title }}</a></li>
+          		<li><a href="{{ item.data.page.url | url }}">{{ item.data.title }}</a></li>
         	{% endfor %}
 		</ul>`, { layout: DEFAULT_COLLECTION_LAYOUT });
 	log(`(virtual) added "%o"`, DEFAULT_COLLECTION_TEMPLATE);
@@ -529,7 +527,6 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 	} catch (e) {
 		console.log(`[${PLUGIN_NAME}] WARN Eleventy plugin compatibility: ${e.message}`);
 	}
-	ensureAssetPath();
 	const log$1 = createScadLogger(eleventyConfig);
 	const parsedOptions = parseOptions(options);
 	if (parsedOptions.error) {
@@ -572,43 +569,42 @@ function EleventyPluginOpenSCAD(eleventyConfig, options) {
 	eleventyConfig.addExtension(SCAD_EXT, {
 		getData(inputPath) {
 			const filename = path.basename(inputPath);
-			const data = {
+			return {
 				title: filename,
 				slug: filename.replace(DOT_SCAD, ""),
 				scadFile: inputPath,
 				stlFile: filename.replace(DOT_SCAD, DOT_STL),
-				layout: layout ?? DEFAULT_SCAD_LAYOUT,
-				theme: theme ?? DEFAULT_PLUGIN_THEME,
+				layout,
+				theme,
 				tags: [SCAD_EXT]
 			};
-			debug.extend("getData")({
-				inputPath,
-				data
-			});
-			return data;
 		},
 		async compile(inputContent, inputPath) {
 			return async (data) => {
+				debug.extend("compile")("begin %O", {
+					inputPath,
+					data
+				});
 				try {
 					if (noSTL) {
 						_log(`${gray("Skipping write of")} ${reset(data.stlFile)} ${gray(`from ${inputPath}`)}`);
 						return inputContent;
 					}
+					if (!data.page.url) throw new Error(`${inputPath} must have "parmalink:true" in the frontmatter`);
 					const elevenDirs = data.eleventy.directories;
 					const projectRoot = data.eleventy.env.root;
+					const outputStem = path.relative(projectRoot, elevenDirs.output);
 					/** `.scad` source */
 					const inFile = path.relative(projectRoot, data.page.inputPath);
-					const stlOutputDir = path.relative(projectRoot, path.join(elevenDirs.output, data.page.fileSlug));
 					/** `.stl` target */
-					const outFile = path.join(stlOutputDir, data.stlFile);
+					const outFile = path.join(outputStem, data.page.url, data.stlFile).replace(/^\//, "");
 					await ensureFileRegistered(inFile);
 					const stlExists = exists(outFile);
 					const hashesDiffer = await fileHashesDiffer(inFile);
-					debug.extend("compile")({
+					debug.extend("compile")("pre-generate %O", {
 						inFile,
 						outFile,
 						projectRoot,
-						pageData: data.page,
 						stlExists,
 						hashesDiffer
 					});

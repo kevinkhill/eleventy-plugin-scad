@@ -16,7 +16,7 @@ describe("getOptionsFromEnv()", () => {
 		const data = getOptionsFromEnv(process.env);
 
 		expect(data.theme).toBeUndefined();
-		expect(data.noStl).toBeUndefined();
+		expect(data.noSTL).toBeUndefined();
 		expect(data.silent).toBeUndefined();
 		expect(data.layout).toBeUndefined();
 		expect(data.verbose).toBeUndefined();
@@ -55,12 +55,12 @@ describe("getOptionsFromEnv()", () => {
 		expect(data.layout).toBe(value);
 	});
 
-	test(`ELEVENTY_SCAD_NO_STL sets noStl`, () => {
+	test(`ELEVENTY_SCAD_NO_STL sets noSTL`, () => {
 		process.env.ELEVENTY_SCAD_NO_STL = "true";
 
 		const data = getOptionsFromEnv(process.env);
 
-		expect(data.noStl).toBeTruthy();
+		expect(data.noSTL).toBeTruthy();
 	});
 
 	test(`ELEVENTY_SCAD_SILENT sets silent`, () => {
