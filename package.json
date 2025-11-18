@@ -1,6 +1,6 @@
 {
   "name": "eleventy-plugin-scad",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Eleventy plugin to use SCAD files as templates to rendering STLs and HTML",
   "keywords": [
     "eleventy",
