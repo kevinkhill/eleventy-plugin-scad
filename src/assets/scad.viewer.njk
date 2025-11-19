@@ -4,10 +4,7 @@
     <meta charset="UTF-8" />
     <title>{{ stlFile }}</title>
     {% threejs_importmap %}
-    <script>
-      window.STL_URL = new URL("{{ stlFile }}", window.location.href)
-      console.log({{ url }})
-    </script>
+    <script>window.STL_URL = new URL("{{ stlFile }}", window.location.href);</script>
     {% w3_theme_css theme %}
     <style>
       body {

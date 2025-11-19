@@ -4,7 +4,11 @@
     <title>OpenSCAD Files</title>
     {% w3_theme_css theme %}
     <script>
-      console.log({{ page | dump | safe }});
+      const searchParams = new URLSearchParams(window.location.search);
+
+      if (searchParams.has("dump", "true")) {
+        console.log({{ page | dump | safe }});
+      }
     </script>
   </head>
   <body>

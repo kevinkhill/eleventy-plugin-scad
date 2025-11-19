@@ -20,9 +20,22 @@ export function addShortcodes(eleventyConfig: EleventyConfig) {
 	 * @link https://www.w3.org/StyleSheets/Core/preview
 	 */
 	registerShortcode("w3_theme_css", (userTheme: ModelViewerTheme) => {
-		const $theme = useNonEmptyOrDefault(userTheme, DEFAULT_PLUGIN_THEME);
-		const url = `https://www.w3.org/StyleSheets/Core/${$theme}`;
-		return `<link rel="stylesheet" href="${url}">`;
+		const theme = useNonEmptyOrDefault(userTheme, DEFAULT_PLUGIN_THEME);
+		const url = `https://www.w3.org/StyleSheets/Core/${theme}`;
+		const w3cThemeCssLinkTag = `<link id="__eleventy_scad_theme" rel="stylesheet" href="${url}">`;
+		const themeOverrideScriptTag = `<script>
+			document.addEventListener('DOMContentLoaded', function (evt) {
+				console.log("content loaded");
+  				const searchParams = new URLSearchParams(window.location.search);
+				if (searchParams.has("theme")) {
+					const themeOverride = searchParams.get("theme");
+					console.log("has theme override", { themeOverride });
+					const link = document.getElementById("__eleventy_scad_theme");
+					link.href = link.href.replace("${theme}", themeOverride);
+				}
+			}, false);
+    	</script>`;
+		return [w3cThemeCssLinkTag, themeOverrideScriptTag].join("\n");
 	});
 
 	/**

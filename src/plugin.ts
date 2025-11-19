@@ -153,11 +153,8 @@ export function EleventyPluginOpenSCAD(
 					}
 
 					if (!data.page.url) {
-						// _log(
-						// 	`${red("issue:")} ${reset(data.stlFile)} ${gray(`from ${inputPath}`)}`,
-						// );
 						throw new Error(
-							`${inputPath} must have "parmalink:true" in the frontmatter`,
+							`${inputPath} must have "parmalink:true" set in the frontmatter`,
 						);
 						// return inputContent;
 					}

@@ -27,17 +27,28 @@ export function addScadCollectionVirtualTemplate(
 	);
 
 	const DEFAULT_COLLECTION_TEMPLATE = "index.njk";
-	eleventyConfig.addTemplate(
-		DEFAULT_COLLECTION_TEMPLATE,
-		`<ul>
-			{% for item in collections.scad %}
-          		<li><a href="{{ item.data.page.url | url }}">{{ item.data.title }}</a></li>
-        	{% endfor %}
-		</ul>`,
-		{
-			layout: DEFAULT_COLLECTION_LAYOUT,
-			theme: pageTheme,
-		},
-	);
+	const tableHTML = `<!-- added by addScadCollectionVirtualTemplate -->
+		<table>
+			<thead>
+				<tr>
+					<th>Title</th>
+					<th>Location</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for item in collections.scad %}
+				<tr>
+					<td>
+						<a href="{{ item.data.page.url | url }}">{{ item.data.title }}</a>
+					</td>
+					<td>{{ item.data.page.url }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>`;
+	eleventyConfig.addTemplate(DEFAULT_COLLECTION_TEMPLATE, tableHTML, {
+		layout: DEFAULT_COLLECTION_LAYOUT,
+		theme: pageTheme,
+	});
 	log(`(virtual) added "%o"`, DEFAULT_COLLECTION_TEMPLATE);
 }
