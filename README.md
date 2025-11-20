@@ -1,4 +1,4 @@
-# eleventy-plugin-scad [![NPM Version](https://img.shields.io/npm/v/eleventy-plugin-scad "npm version badge")][npm]
+# eleventy-plugin-scad [![NPM Version Badge](https://img.shields.io/npm/v/eleventy-plugin-scad "npm version badge")][npm]
 
 A plugin for [Eleventy](https://www.11ty.dev) to showcase your SCAD files.
 
