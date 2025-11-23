@@ -5,6 +5,15 @@ export function getLogger(eleventyConfig: EleventyConfig): EleventyLogger {
 	return eleventyConfig.logger;
 }
 
+/**
+ * create a logger that can be silenced
+ */
+export function createSilentLogger(log: (msg: string) => void, silent = true) {
+	return (it: string) => {
+		if (!silent) log(it);
+	};
+}
+
 export function createScadLogger(
 	eleventyConfig: EleventyConfig,
 	errorLogger = false,

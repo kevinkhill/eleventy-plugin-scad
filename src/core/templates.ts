@@ -1,43 +1,74 @@
 import { Debug, getAssetFileContent } from "../lib";
-import { DEFAULT_COLLECTION_LAYOUT, DEFAULT_SCAD_LAYOUT } from "./const";
+import { SCAD_COLLECTION_LAYOUT, SCAD_EXT, SCAD_VIEWER_LAYOUT } from "./const";
 import type { EleventyConfig, ModelViewerTheme } from "../types";
 
-const log = Debug.extend("templates");
+const debug = Debug.extend("templates");
 
-export function addBuiltinScadLayoutVirtualTemplate(
+export function addScadPluginTemplates(
 	eleventyConfig: EleventyConfig,
+	opts: { theme: ModelViewerTheme; collectionPage: boolean },
 ) {
-	log(`(virtual) adding "%o"`, DEFAULT_SCAD_LAYOUT);
-	eleventyConfig.addTemplate(
-		`_includes/${DEFAULT_SCAD_LAYOUT}`,
-		getAssetFileContent(DEFAULT_SCAD_LAYOUT),
-		{},
-	);
+	/**
+	 * Register `.scad` files as virtual template files and
+	 * define they are to be compiled into html & stl files.
+	 */
+	eleventyConfig.addTemplateFormats(SCAD_EXT);
+
+	// Common themeable pages
+	addTemplateFromAsset(eleventyConfig, "scad.base.njk");
+
+	// Default renderer for `.scad` files once turned into HTML
+	addTemplateFromAsset(eleventyConfig, SCAD_VIEWER_LAYOUT);
+
+	if (opts.collectionPage) {
+		// Add template that lists all the collected `.scad` files
+		addTemplateFromAsset(eleventyConfig, SCAD_COLLECTION_LAYOUT);
+		// Content template with listing
+		addScadCollectionVirtualTemplate(eleventyConfig, { theme: opts.theme });
+	}
 }
 
-export function addScadCollectionVirtualTemplate(
+/**
+ * Helper funcion to regester templates from internal library assets
+ */
+export function addTemplateFromAsset(
 	eleventyConfig: EleventyConfig,
-	pageTheme: ModelViewerTheme,
+	filename: string,
+	data?: Record<string, unknown>,
 ) {
-	log(`(virtual) adding "%o"`, DEFAULT_COLLECTION_LAYOUT);
-	eleventyConfig.addTemplate(
-		`_includes/${DEFAULT_COLLECTION_LAYOUT}`,
-		getAssetFileContent(DEFAULT_COLLECTION_LAYOUT),
-		{},
-	);
+	const html = getAssetFileContent(filename);
+	eleventyConfig.addTemplate(`_includes/${filename}`, html, data ?? {});
+	debug(`(virtual) added %o`, filename);
+}
 
-	const DEFAULT_COLLECTION_TEMPLATE = "index.njk";
-	eleventyConfig.addTemplate(
-		DEFAULT_COLLECTION_TEMPLATE,
-		`<ul>
-			{% for item in collections.scad %}
-          		<li><a href="{{ item.data.page.url | url }}">{{ item.data.title }}</a></li>
-        	{% endfor %}
-		</ul>`,
-		{
-			layout: DEFAULT_COLLECTION_LAYOUT,
-			theme: pageTheme,
-		},
-	);
-	log(`(virtual) added "%o"`, DEFAULT_COLLECTION_TEMPLATE);
+function addScadCollectionVirtualTemplate(
+	eleventyConfig: EleventyConfig,
+	{ theme, filename }: { theme: ModelViewerTheme; filename?: string },
+) {
+	const indexFile = filename ?? "index.njk";
+	const tableHTML = `
+		<table>
+			<thead>
+				<tr>
+					<th>Title</th>
+					<th>Location</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for item in collections.scad %}
+				<tr>
+					<td>
+						<a href="{{ item.data.page.url | url }}">{{ item.data.title }}</a>
+					</td>
+					<td>{{ item.data.page.url }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>`;
+	eleventyConfig.addTemplate(indexFile, tableHTML, {
+		layout: SCAD_COLLECTION_LAYOUT,
+		theme,
+		I_AM: "BATMAN",
+	});
+	debug(`(virtual) added %o`, indexFile);
 }

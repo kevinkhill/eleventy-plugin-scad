@@ -18,5 +18,16 @@ export default defineConfig([
 				],
 			}),
 		],
+		hooks: {
+			"build:prepare": () => {
+				console.error("-=-=-=-=-=-=-=-=-=- PREPARE -=-=-=-=-=-=-=-=-=-");
+			},
+			"build:before": () => {
+				console.error("-=-=-=-=-=-=-=-=-=- BEFORE -=-=-=-=-=-=-=-=-=-");
+			},
+			"build:done": () => {
+				console.error("-=-=-=-=-=-=-=-=-=- DONE -=-=-=-=-=-=-=-=-=-");
+			},
+		},
 	},
 ]);

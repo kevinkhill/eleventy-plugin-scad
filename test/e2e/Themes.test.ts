@@ -1,5 +1,5 @@
 import path from "node:path";
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { createTestInstance } from "../_setup/eleventy";
 import type { EleventyDirs, ModelViewerTheme } from "../../src";
 

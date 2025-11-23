@@ -2,9 +2,14 @@
 <html lang="en">
   <head>
     <title>OpenSCAD Files</title>
-    {% w3_theme_css theme %}
+    {% w3_theme theme %}
     <script>
-      console.log({{ page | dump | safe }});
+      console.log("{{ I_AM }}");
+      const searchParams = new URLSearchParams(window.location.search);
+
+      if (searchParams.has("dump", "true")) {
+        console.log({{ page | dump | safe }});
+      }
     </script>
   </head>
   <body>
