@@ -2,7 +2,7 @@ import z from "zod";
 import { DEFAULT_DOCKER_TAG, DEFAULT_PLUGIN_THEME } from "../config";
 import { autoBinPath, Debug } from "../lib";
 import { getOptionsFromEnv } from "../lib/env";
-import { DEFAULT_SCAD_LAYOUT, THEMES } from "./const";
+import { SCAD_VIEWER_LAYOUT, THEMES } from "./const";
 import type { PluginOptions } from "../types";
 
 /**
@@ -11,7 +11,7 @@ import type { PluginOptions } from "../types";
 export const DEFAULT_OPTIONS = {
 	launchPath: `docker:${DEFAULT_DOCKER_TAG}`,
 	theme: DEFAULT_PLUGIN_THEME,
-	layout: DEFAULT_SCAD_LAYOUT,
+	layout: SCAD_VIEWER_LAYOUT,
 	resolveLaunchPath: true,
 	collectionPage: true,
 	verbose: true,
