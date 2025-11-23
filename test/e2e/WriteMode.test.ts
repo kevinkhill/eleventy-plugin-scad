@@ -10,14 +10,19 @@ import type Eleventy from "@11ty/eleventy";
 
 const TEST_CASES = [
 	[
-		"input/cube.scad", //
-		`output/cube/index.html`,
-		`output/cube/cube.stl`,
-	],
-	[
 		"input/sphere.scad", //
 		`output/sphere/index.html`,
 		`output/sphere/sphere.stl`,
+	],
+	[
+		"input/cubes/cube1.scad", //
+		`output/cubes/cube1/index.html`,
+		`output/cubes/cube1/cube1.stl`,
+	],
+	[
+		"input/cubes/cube2.scad", //
+		`output/cubes/cube2/index.html`,
+		`output/cubes/cube2/cube2.stl`,
 	],
 	[
 		"input/nested/grouped/cylinder.scad",

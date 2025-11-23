@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
 import { DEFAULT_PLUGIN_THEME } from "../../src/config";
-import { DEFAULT_SCAD_LAYOUT } from "../../src/core";
+import { SCAD_VIEWER_LAYOUT } from "../../src/core";
 import { parseOptions } from "../../src/core/options";
 import type { ModelViewerTheme } from "../../src/types";
 
@@ -17,7 +17,7 @@ describe("parseOptions()", () => {
 
 		expect(success).toBeTruthy();
 		expect(data?.launchPath).toBe("docker:dev");
-		expect(data?.layout).toBe(DEFAULT_SCAD_LAYOUT);
+		expect(data?.layout).toBe(SCAD_VIEWER_LAYOUT);
 		expect(data?.theme).toBe(DEFAULT_PLUGIN_THEME);
 		expect(data?.resolveLaunchPath).toBe(true);
 		expect(data?.collectionPage).toBe(true);
