@@ -1,33 +1,15 @@
 import { Debug, getAssetFileContent } from "../lib";
-import { DEFAULT_COLLECTION_LAYOUT, DEFAULT_SCAD_LAYOUT } from "./const";
+import { SCAD_COLLECTION_LAYOUT } from "./const";
 import type { EleventyConfig, ModelViewerTheme } from "../types";
 
-const log = Debug.extend("templates");
-
-export function addBuiltinScadLayoutVirtualTemplate(
-	eleventyConfig: EleventyConfig,
-) {
-	log(`(virtual) adding "%o"`, DEFAULT_SCAD_LAYOUT);
-	eleventyConfig.addTemplate(
-		`_includes/${DEFAULT_SCAD_LAYOUT}`,
-		getAssetFileContent(DEFAULT_SCAD_LAYOUT),
-		{},
-	);
-}
+const debug = Debug.extend("templates");
 
 export function addScadCollectionVirtualTemplate(
 	eleventyConfig: EleventyConfig,
-	pageTheme: ModelViewerTheme,
+	{ theme, filename }: { theme: ModelViewerTheme; filename?: string },
 ) {
-	log(`(virtual) adding "%o"`, DEFAULT_COLLECTION_LAYOUT);
-	eleventyConfig.addTemplate(
-		`_includes/${DEFAULT_COLLECTION_LAYOUT}`,
-		getAssetFileContent(DEFAULT_COLLECTION_LAYOUT),
-		{},
-	);
-
-	const DEFAULT_COLLECTION_TEMPLATE = "index.njk";
-	const tableHTML = `<!-- added by addScadCollectionVirtualTemplate -->
+	const indexFile = filename ?? "index.njk";
+	const tableHTML = `
 		<table>
 			<thead>
 				<tr>
@@ -46,9 +28,23 @@ export function addScadCollectionVirtualTemplate(
 				{% endfor %}
 			</tbody>
 		</table>`;
-	eleventyConfig.addTemplate(DEFAULT_COLLECTION_TEMPLATE, tableHTML, {
-		layout: DEFAULT_COLLECTION_LAYOUT,
-		theme: pageTheme,
+	eleventyConfig.addTemplate(indexFile, tableHTML, {
+		layout: SCAD_COLLECTION_LAYOUT,
+		theme,
+		I_AM: "BATMAN",
 	});
-	log(`(virtual) added "%o"`, DEFAULT_COLLECTION_TEMPLATE);
+	debug(`(virtual) added %o`, indexFile);
+}
+
+/**
+ * Helper funcion to regester templates from internal library assets
+ */
+export function addTemplateFromAsset(
+	eleventyConfig: EleventyConfig,
+	filename: string,
+	data?: Record<string, unknown>,
+) {
+	const html = getAssetFileContent(filename);
+	eleventyConfig.addTemplate(`_includes/${filename}`, html, data ?? {});
+	debug(`(virtual) added %o`, filename);
 }

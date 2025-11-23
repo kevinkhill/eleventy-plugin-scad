@@ -2,14 +2,21 @@ import path from "node:path";
 import { blue, bold, cyan, gray, green, red, reset } from "yoctocolors";
 import { prettifyError } from "zod";
 import {
-	addBuiltinScadLayoutVirtualTemplate,
 	addScadCollectionVirtualTemplate,
 	addShortcodes,
+	addTemplateFromAsset,
 	cache,
 	parseOptions,
 	scad2stl,
 } from "./core";
-import { DOT_SCAD, DOT_STL, PLUGIN_NAME, SCAD_EXT } from "./core/const";
+import {
+	DOT_SCAD,
+	DOT_STL,
+	PLUGIN_NAME,
+	SCAD_COLLECTION_LAYOUT,
+	SCAD_EXT,
+	SCAD_VIEWER_LAYOUT,
+} from "./core/const";
 import { createScadLogger, Debug, exists, resolveOpenSCAD } from "./lib";
 import type {
 	EleventyConfig,
@@ -104,14 +111,19 @@ export function EleventyPluginOpenSCAD(
 	// #endregion
 
 	// #region Plugin Body
-	addShortcodes(eleventyConfig);
+	addShortcodes(eleventyConfig, { theme });
+
+	// Common themeable pages
+	addTemplateFromAsset(eleventyConfig, "scad.base.njk");
 
 	// Default renderer for `.scad` files once turned into HTML
-	addBuiltinScadLayoutVirtualTemplate(eleventyConfig);
+	addTemplateFromAsset(eleventyConfig, SCAD_VIEWER_LAYOUT);
 
-	// Add template file that lists all the collected `.scad` files
 	if (collectionPage) {
-		addScadCollectionVirtualTemplate(eleventyConfig, theme);
+		// Add template that lists all the collected `.scad` files
+		addTemplateFromAsset(eleventyConfig, SCAD_COLLECTION_LAYOUT);
+		// Content template with listing
+		addScadCollectionVirtualTemplate(eleventyConfig, { theme });
 	}
 
 	/**
