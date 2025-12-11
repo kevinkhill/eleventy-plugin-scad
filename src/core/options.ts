@@ -2,7 +2,7 @@ import z from "zod";
 import { DEFAULT_DOCKER_TAG, DEFAULT_PLUGIN_THEME } from "../config";
 import { autoBinPath, Debug } from "../lib";
 import { getOptionsFromEnv } from "../lib/env";
-import { SCAD_VIEWER_LAYOUT, THEMES } from "./const";
+import { COLOR_SCHEMES, SCAD_VIEWER_LAYOUT, THEMES } from "./const";
 import type { PluginOptions } from "../types";
 
 /**
@@ -14,6 +14,8 @@ export const DEFAULT_OPTIONS = {
 	layout: SCAD_VIEWER_LAYOUT,
 	resolveLaunchPath: true,
 	collectionPage: true,
+	collectionPageTitle: "SCAD Collection",
+	thumbnailColorScheme: "Cornfield",
 	verbose: true,
 	noSTL: false,
 	silent: false,
@@ -38,6 +40,12 @@ export const PluginOptionsSchema = z.object({
 	collectionPage: z
 		.optional(StringBoolSchema)
 		.default(DEFAULT_OPTIONS.collectionPage),
+	collectionPageTitle: z
+		.optional(z.string())
+		.default(DEFAULT_OPTIONS.collectionPageTitle),
+	thumbnailColorScheme: z
+		.optional(z.enum(COLOR_SCHEMES))
+		.default(DEFAULT_OPTIONS.thumbnailColorScheme),
 	resolveLaunchPath: z
 		.optional(StringBoolSchema)
 		.default(DEFAULT_OPTIONS.resolveLaunchPath),

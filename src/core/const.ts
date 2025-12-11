@@ -16,6 +16,10 @@ export const SCAD_VIEWER_LAYOUT = "scad.viewer.njk";
 
 export const SCAD_COLLECTION_LAYOUT = "scad.collection.njk";
 
+/**
+ * @link https://www.w3.org/StyleSheets/Core/Overview
+ * @link https://www.w3.org/StyleSheets/Core/preview
+ */
 export const THEMES = [
 	"Traditional",
 	"Modernist",
@@ -27,10 +31,33 @@ export const THEMES = [
 	"Ultramarine",
 ] as const;
 
+/**
+ * @link https://hub.docker.com/r/openscad/openscad
+ */
 export const DOCKER_TAGS = [
 	"trixie",
 	"dev",
 	"bookworm",
 	"2021.01",
 	"latest",
+] as const;
+
+/**
+ * @link https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Using_OpenSCAD_in_a_command_line_environment#:~:text=colorscheme
+ */
+export const COLOR_SCHEMES = [
+	"Cornfield",
+	"Metallic",
+	"Sunset",
+	"Starnight",
+	"BeforeDawn",
+	"Nature",
+	"Daylight Gem",
+	"Nocturnal Gem",
+	"DeepOcean",
+	"Solarized",
+	"Tomorrow",
+	"Tomorrow Night",
+	"ClearSky",
+	"Monotone",
 ] as const;

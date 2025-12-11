@@ -15,6 +15,8 @@ export default function (eleventyConfig) {
     addOpenSCADPlugin(eleventyConfig, {
         launchPath: "docker",
         verbose: true,
+        collectionPageTitle: "Custom Title",
+        thumbnailColorScheme: "BeforeDawn"
         // noSTL: true,
     });
 }

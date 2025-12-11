@@ -1,21 +1,78 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>OpenSCAD Files</title>
+    <title>{{ title }}</title>
     {% w3_theme theme %}
-    <script>
-      console.log("{{ I_AM }}");
-      const searchParams = new URLSearchParams(window.location.search);
-
-      if (searchParams.has("dump", "true")) {
-        console.log({{ page | dump | safe }});
+    <style>
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1em;
+        padding: 1em 0;
       }
-    </script>
+
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75em;
+        padding: 0.5em 1em 1em;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+      }
+
+      .card a {
+        background: inherit;
+      }
+
+      .card img {
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+      }
+
+      .card-title {
+        font-weight: bold;
+        font-size: 1.1em;
+        text-decoration: none;
+        display: block;
+      }
+
+      .card-footer {
+        margin-top: auto;
+        font-size: 0.9em;
+        opacity: 0.7;
+      }
+
+      .block {
+        display: block;
+      }
+    </style>
   </head>
+
   <body>
     <header>
-      <h1>OpenSCAD Files</h1>
+      <h1>{{ title }}</h1>
     </header>
-    <section>{{ content | safe }}</section>
+
+    <section class="cards">
+      {% for item in collections.scad %}
+        {% set thumb = [item.data.page.url, item.data.page.fileSlug, ".png"] | join %}
+        <a href="{{ item.data.page.url | url }}" class="card-title">
+          <div class="card">
+            <span>
+              {{ item.data.title }}
+            </span>
+            <img
+            src="{{ thumb | url }}"
+            title="Thumbnail image of {{ item.data.page.fileSlug }}.scad"/>
+            {# <span class="card-footer block">📁 {{ item.data.page.url }}</span> #}
+          </div>
+        </a>
+      {% endfor %}
+    </section>
+
+    <footer>{{ content | safe }}</footer>
   </body>
 </html>

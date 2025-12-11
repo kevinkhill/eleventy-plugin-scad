@@ -1,6 +1,11 @@
 import type { EleventyScope, EleventySuppliedData } from "11ty.ts";
 import type z from "zod";
-import type { DOCKER_TAGS, PluginOptionsSchema, THEMES } from "./core";
+import type {
+	COLOR_SCHEMES,
+	DOCKER_TAGS,
+	PluginOptionsSchema,
+	THEMES,
+} from "./core";
 
 export type * from "11ty.ts";
 
@@ -13,6 +18,8 @@ export type DockerLaunchTag = `docker:${DockerTag}`;
 export type LaunchPath = "auto" | "nightly" | "docker" | DockerLaunchTag;
 
 export type ModelViewerTheme = (typeof THEMES)[number];
+
+export type ThumbnailColorScheme = (typeof COLOR_SCHEMES)[number];
 
 export type ScadExportResult = {
 	ok: boolean;
@@ -30,9 +37,11 @@ export type Files = {
 export type PluginOptions = {
 	launchPath: LaunchPath | (string & {});
 	theme?: ModelViewerTheme;
+	thumbnailColorScheme: ThumbnailColorScheme;
 	layout?: string | null;
 	resolveLaunchPath?: boolean;
 	collectionPage?: boolean;
+	collectionPageTitle?: string;
 	verbose?: boolean;
 	noSTL?: boolean;
 	silent?: boolean;

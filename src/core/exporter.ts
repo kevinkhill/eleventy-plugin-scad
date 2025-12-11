@@ -2,20 +2,27 @@ import path from "node:path";
 import { Debug, mkdirForFileAsync, Timer } from "../lib";
 import { spawnDockerOpenSCAD, spawnOpenSCAD } from "./openscad";
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
-import type { Files, ScadExportResult } from "../types";
+import type {
+	DockerLaunchTag,
+	Files,
+	PluginOptions,
+	ScadExportResult,
+} from "../types";
 
-const debug = Debug.extend("export");
+const _debug = Debug.extend("export");
 
 /**
  * Generate an `.stl` from a given `.scad` file
  */
 export async function scadExporter(
-	launchPath: string,
+	launchPath: DockerLaunchTag | PluginOptions["launchPath"],
 	files: Files,
 ): Promise<ScadExportResult> {
 	const stlResult = Promise.withResolvers<ScadExportResult>();
 	const timer = new Timer();
 	const lines: string[] = [];
+
+	const debug = _debug.extend("fn");
 
 	debug("files: %O", files);
 

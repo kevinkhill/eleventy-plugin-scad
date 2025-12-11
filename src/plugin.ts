@@ -67,7 +67,7 @@ export function EleventyPluginOpenSCAD(
 	);
 
 	addShortcodes(eleventyConfig, { theme });
-	addScadPluginTemplates(eleventyConfig, { collectionPage, theme });
+	addScadPluginTemplates(eleventyConfig, parsedOptions.data);
 	addScadExtensionHandler(eleventyConfig, parsedOptions.data);
 	// addScad2PngTransformer(eleventyConfig, launchPath);
 }
