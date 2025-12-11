@@ -3,10 +3,8 @@ import { prettifyError } from "zod";
 import { addScadPluginTemplates, addShortcodes, parseOptions } from "./core";
 import { PLUGIN_NAME } from "./core/const";
 import { addScadExtensionHandler } from "./core/extension";
-import { createScadLogger, createSilentLogger, Debug } from "./lib";
+import { createScadLogger, createSilentLogger } from "./lib";
 import type { EleventyConfig, PluginOptionsInput } from "./types";
-
-const debug = Debug.extend("core");
 
 /**
  * Eleventy Plugin for OpenSCAD
@@ -71,4 +69,5 @@ export function EleventyPluginOpenSCAD(
 	addShortcodes(eleventyConfig, { theme });
 	addScadPluginTemplates(eleventyConfig, { collectionPage, theme });
 	addScadExtensionHandler(eleventyConfig, parsedOptions.data);
+	// addScad2PngTransformer(eleventyConfig, launchPath);
 }

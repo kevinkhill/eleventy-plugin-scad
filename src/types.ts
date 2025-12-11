@@ -6,11 +6,26 @@ export type * from "11ty.ts";
 
 export type DockerTag = (typeof DOCKER_TAGS)[number];
 
+export type ExportFormat = "stl" | "png";
+
 export type DockerLaunchTag = `docker:${DockerTag}`;
 
 export type LaunchPath = "auto" | "nightly" | "docker" | DockerLaunchTag;
 
 export type ModelViewerTheme = (typeof THEMES)[number];
+
+export type ScadExportResult = {
+	ok: boolean;
+	output: string[];
+	exitCode: number | null;
+	duration: number;
+};
+
+export type Files = {
+	cwd: string;
+	in: string;
+	out: string;
+};
 
 export type PluginOptions = {
 	launchPath: LaunchPath | (string & {});

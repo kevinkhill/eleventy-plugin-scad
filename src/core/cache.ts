@@ -33,10 +33,6 @@ export async function fileHashesMatch(key: string) {
 	return hashMatch;
 }
 
-export async function fileHashesDiffer(key: string) {
-	return (await fileHashesMatch(key)) !== true;
-}
-
 export async function updateHash(key: string) {
 	const scadContent = await readFile(key, "utf8");
 	const hash = md5(scadContent);

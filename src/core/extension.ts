@@ -1,6 +1,6 @@
 import path from "node:path";
 import { bold, gray, green, red, reset } from "yoctocolors";
-import { cache, scad2stl } from "../core";
+import { cache, scadExporter } from "../core";
 import { DOT_SCAD, DOT_STL, PLUGIN_NAME, SCAD_EXT } from "../core/const";
 import {
 	createScadLogger,
@@ -12,6 +12,7 @@ import {
 import type {
 	EleventyConfig,
 	EleventyDirs,
+	Files,
 	FullPageData,
 	ParsedPluginOptions,
 	ScadTemplateData,
@@ -63,7 +64,7 @@ export function addScadExtensionHandler(
 		// #endregion
 		// #region compile
 		/**
-		 * Compile `.scad` files into `.stl`
+		 * Compile `.scad` files into `.stl` & `.png`
 		 */
 		async compile(inputContent: string, inputPath: string) {
 			return async (data: FullPageData) => {
@@ -87,44 +88,50 @@ export function addScadExtensionHandler(
 					const elevenDirs = data.eleventy.directories as EleventyDirs;
 					const projectRoot = data.eleventy.env.root;
 
+					const outFiles = { stl: "", png: "" };
 					const outputStem = path.relative(projectRoot, elevenDirs.output);
+					const outputBasePath = path.join(outputStem, data.page.url);
+					const joinOutputFile = (file: string) => {
+						return path.join(outputBasePath, file).replace(/^\//, "");
+					};
 
 					/** `.scad` source */
 					const inFile = path.relative(projectRoot, data.page.inputPath);
 
 					/** `.stl` target */
-					const outFile = path
-						.join(outputStem, data.page.url, data.stlFile)
-						.replace(/^\//, "");
+					outFiles.stl = joinOutputFile(data.stlFile);
+
+					/** `.png` target */
+					outFiles.png = joinOutputFile(data.stlFile.replace(/stl$/, "png"));
 
 					// md5 the contents of the file for caching
 					await cache.ensureFileRegistered(inFile);
 
-					const stlExists = exists(outFile);
-					const hashesDiffer = await cache.fileHashesDiffer(inFile);
+					const stlExists = exists(outFiles.stl);
+					const hashMatch = await cache.fileHashesMatch(inFile);
 
-					debug.extend("compile")("pre-generate %O", {
+					debug.extend("compile")("pre-generate: %O", {
 						inFile,
-						outFile,
+						outFiles,
 						projectRoot,
 						stlExists,
-						hashesDiffer,
+						hashMatch,
 					});
 
-					if (!stlExists || hashesDiffer) {
+					if (!stlExists || !hashMatch) {
 						_log(
 							`${reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
 						);
 
-						const scadResult = await scad2stl(String(resolvedScadBin), {
+						const exportResult = await scadExporter(String(resolvedScadBin), {
 							cwd: projectRoot,
 							in: inFile,
-							out: outFile,
+							out: outFiles.stl,
 						});
 
-						if (!scadResult.ok) {
+						if (!exportResult.ok) {
 							log(red("OpenSCAD encountered an issue"));
-							for (const line of scadResult.output) {
+							for (const line of exportResult.output) {
 								const cleanLine = line.replaceAll("\n", "");
 								log(red(cleanLine));
 							}
@@ -135,18 +142,18 @@ export function addScadExtensionHandler(
 
 						// log what OpenSCAD output during rendering
 						if (opts.verbose) {
-							const lines = scadResult.output.flatMap((l) => l.split("\n"));
+							const lines = exportResult.output.flatMap((l) => l.split("\n"));
 							for (const line of lines) {
 								_log(gray(`\t${line}`));
 							}
 						}
 
-						const duration = scadResult.duration.toFixed(2);
+						const duration = exportResult.duration.toFixed(2);
 						_log(
 							green(`Wrote ${bold(data.stlFile)} in ${bold(duration)} seconds`),
 						);
 					} else {
-						debug("%o is up to date; skipped", path.basename(outFile));
+						debug("%o is up to date; skipped", path.basename(outFiles.stl));
 					}
 				} catch (e) {
 					const err = e as Error;

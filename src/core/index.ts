@@ -1,6 +1,6 @@
 export * as cache from "./cache";
 export * from "./const";
-export * from "./generator";
+export * from "./exporter";
 export * from "./highlighters";
 export * from "./options";
 export * from "./register";

@@ -29,7 +29,7 @@ export function addScadPluginTemplates(
 }
 
 /**
- * Helper funcion to regester templates from internal library assets
+ * Helper funcion to register templates from internal library assets
  */
 export function addTemplateFromAsset(
 	eleventyConfig: EleventyConfig,
