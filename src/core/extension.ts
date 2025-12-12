@@ -44,6 +44,9 @@ export function addScadExtensionHandler(
 		}
 	}
 
+	eleventyConfig.addTemplateFormats(SCAD_EXT);
+	debug("registered .scad as extension for templates");
+
 	eleventyConfig.addExtension(SCAD_EXT, {
 		// #region getData
 		/**
@@ -88,31 +91,25 @@ export function addScadExtensionHandler(
 					const elevenDirs = data.eleventy.directories as EleventyDirs;
 					const projectRoot = data.eleventy.env.root;
 
-					const outFiles = { stl: "", png: "" };
 					const outputStem = path.relative(projectRoot, elevenDirs.output);
-					const outputBasePath = path.join(outputStem, data.page.url);
-					const joinOutputFile = (file: string) => {
-						return path.join(outputBasePath, file).replace(/^\//, "");
-					};
 
 					/** `.scad` source */
 					const inFile = path.relative(projectRoot, data.page.inputPath);
 
 					/** `.stl` target */
-					outFiles.stl = joinOutputFile(data.stlFile);
-
-					/** `.png` target */
-					outFiles.png = joinOutputFile(data.stlFile.replace(/stl$/, "png"));
+					const outFile = path
+						.join(outputStem, data.page.url, data.stlFile)
+						.replace(/^\//, "");
 
 					// md5 the contents of the file for caching
 					await cache.ensureFileRegistered(inFile);
 
-					const stlExists = exists(outFiles.stl);
+					const stlExists = exists(outFile);
 					const hashMatch = await cache.fileHashesMatch(inFile);
 
 					debug.extend("compile")("pre-generate: %O", {
 						inFile,
-						outFiles,
+						outFile,
 						projectRoot,
 						stlExists,
 						hashMatch,
@@ -126,7 +123,7 @@ export function addScadExtensionHandler(
 						const exportResult = await scadExporter(String(resolvedScadBin), {
 							cwd: projectRoot,
 							in: inFile,
-							out: outFiles.stl,
+							out: outFile,
 						});
 
 						if (!exportResult.ok) {
@@ -153,7 +150,7 @@ export function addScadExtensionHandler(
 							green(`Wrote ${bold(data.stlFile)} in ${bold(duration)} seconds`),
 						);
 					} else {
-						debug("%o is up to date; skipped", path.basename(outFiles.stl));
+						debug("%o is up to date; skipped", path.basename(outFile));
 					}
 				} catch (e) {
 					const err = e as Error;

@@ -2,7 +2,7 @@ import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { temporaryDirectory } from "tempy";
 import { describe, expect, it } from "vitest";
-import { scad2stl } from "../../src/core/generator";
+import { scadExporter } from "../../src/core/exporter";
 import type { DockerLaunchTag } from "../../src";
 
 describe("scad2stl() with docker containers", () => {
@@ -22,7 +22,7 @@ describe("scad2stl() with docker containers", () => {
 
 			await writeFile(inFile, Buffer.from("cube(1);"));
 
-			await scad2stl(engine, {
+			await scadExporter(engine, {
 				cwd: tempDir,
 				in: inFile,
 				out: outFile,

@@ -1,6 +1,6 @@
 import { spawn } from "cross-spawn";
 import { DEFAULT_DOCKER_TAG } from "../config";
-import { Debug, relativePathFromCwd } from "../lib";
+import { Debug, getRelativePaths } from "../lib";
 import type { Files, ThumbnailColorScheme } from "../types";
 
 const _debug = Debug.extend("openscad");
@@ -14,8 +14,7 @@ export function spawnOpenSCAD(
 	colorScheme?: ThumbnailColorScheme,
 ) {
 	const debug = _debug.extend("native");
-	const inFile = relativePathFromCwd(files.cwd, files.in);
-	const outFile = relativePathFromCwd(files.cwd, files.out);
+	const { inFile, outFile } = getRelativePaths(files);
 	const spawnArgs = makeScadArgs(inFile, outFile, colorScheme);
 
 	debug("launch path: %o", launchPath);
@@ -33,8 +32,6 @@ export function spawnDockerOpenSCAD(
 	colorScheme?: ThumbnailColorScheme,
 ) {
 	const debug = _debug.extend("docker");
-	const inFile = relativePathFromCwd(files.cwd, files.in);
-	const outFile = relativePathFromCwd(files.cwd, files.out);
 
 	const uid = process.getuid?.() ?? 1000;
 	const gid = process.getgid?.() ?? 1000;
@@ -49,6 +46,7 @@ export function spawnDockerOpenSCAD(
 		dockerImage,
 	];
 
+	const { inFile, outFile } = getRelativePaths(files);
 	const scadArgs = makeScadArgs(inFile, outFile, colorScheme);
 	const spawnArgs = [...dockerArgs, "openscad", ...scadArgs];
 
@@ -69,16 +67,12 @@ function makeScadArgs(
 	colorScheme: ThumbnailColorScheme = "Cornfield",
 ): string[] {
 	return [
-		// use the new faster backend
-		["--backend", "Manifold"],
-		// prefer binary stl over ascii
-		// ["--export-format", format === "stl" ? "binstl" : "png"],
-		// output STL
-		["--o", outFile],
-		// output PNG
-		["--o", outFile.replace(/stl$/, "png")],
-		["--colorscheme", colorScheme],
-		// input SCAD file
-		inFile,
+		// Can't use this option while exporting both stl and png in one spawn
+		// ["--export-format", "binstl"], // prefer binary stl over ascii
+		["--backend", "Manifold"], // use the new faster backend
+		["--colorscheme", colorScheme], // thumbnail colors
+		["--o", outFile], // output STL
+		["--o", outFile.replace(/stl$/, "png")], // output PNG
+		inFile, // input SCAD file
 	].flat(2);
 }

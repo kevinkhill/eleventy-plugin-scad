@@ -1,9 +1,12 @@
 import { Debug, getAssetFileContent } from "../lib";
-import { SCAD_COLLECTION_LAYOUT, SCAD_EXT, SCAD_VIEWER_LAYOUT } from "./const";
+import { SCAD_COLLECTION_LAYOUT, SCAD_VIEWER_LAYOUT } from "./const";
 import type { EleventyConfig, ParsedPluginOptions } from "../types";
 
 const debug = Debug.extend("templates");
 
+/**
+ * Load nunjucks templates from disk and register as virtual templates
+ */
 export function addScadPluginTemplates(
 	eleventyConfig: EleventyConfig,
 	{
@@ -24,9 +27,6 @@ export function addScadPluginTemplates(
 		eleventyConfig.addTemplate(templatePath, html, data);
 		debug(`(virtual) added %o`, templatePath);
 	};
-
-	// Register `.scad` files as virtual template files
-	eleventyConfig.addTemplateFormats(SCAD_EXT);
 
 	// Default renderer for `.scad` files once turned into HTML
 	addVirtualTemplate(`_includes/${SCAD_VIEWER_LAYOUT}`, SCAD_VIEWER_LAYOUT);

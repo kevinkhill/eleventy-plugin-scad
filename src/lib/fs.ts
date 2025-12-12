@@ -3,6 +3,7 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import Debug from "./debug";
 import type { PathLike } from "node:fs";
+import type { Files } from "../types";
 
 const debug = Debug.extend("fs");
 
@@ -12,8 +13,11 @@ export function exists(pathToCheck: PathLike) {
 	return state;
 }
 
-export function relativePathFromCwd(cwd: string, file: string) {
-	return `./${path.relative(cwd, file)}`;
+export function getRelativePaths({ cwd, ...files }: Files) {
+	return {
+		inFile: `./${path.relative(cwd, files.in)}`,
+		outFile: `./${path.relative(cwd, files.out)}`,
+	};
 }
 
 /**

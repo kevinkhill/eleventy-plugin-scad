@@ -1,7 +1,9 @@
 export * as cache from "./cache";
 export * from "./const";
 export * from "./exporter";
+export * from "./extension";
 export * from "./highlighters";
+export * from "./openscad";
 export * from "./options";
 export * from "./register";
 export * from "./shortcodes";
