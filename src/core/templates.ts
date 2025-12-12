@@ -28,8 +28,13 @@ export function addScadPluginTemplates(
 		debug(`(virtual) added %o`, templatePath);
 	};
 
+	eleventyConfig.addPassthroughCopy("img");
+
 	// Default renderer for `.scad` files once turned into HTML
-	addVirtualTemplate(`_includes/${SCAD_VIEWER_LAYOUT}`, SCAD_VIEWER_LAYOUT);
+	addVirtualTemplate(`_includes/${SCAD_VIEWER_LAYOUT}`, SCAD_VIEWER_LAYOUT, {
+		rendererJS: getAssetFileContent("scad.renderer.js"),
+		// rendererJS: getAssetFileContent("scad.bloomRenderer.js"),
+	});
 
 	if (collectionPage) {
 		// Template that lists all the collected `.scad` files

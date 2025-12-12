@@ -69,4 +69,6 @@ export function EleventyPluginOpenSCAD(
 	addShortcodes(eleventyConfig, { theme });
 	addScadPluginTemplates(eleventyConfig, parsedOptions.data);
 	addScadExtensionHandler(eleventyConfig, parsedOptions.data);
+
+	// eleventyConfig.setServerPassthroughCopyBehavior("passthrough");
 }

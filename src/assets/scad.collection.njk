@@ -1,78 +1,80 @@
 <!doctype html>
-<html lang="fr">
-  <head>
-    <title>{{ title }}</title>
-    {% w3_theme theme %}
-    <style>
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 1em;
-        padding: 1em 0;
-      }
+<html lang="en">
+    <head>
+        <title>{{ title }}</title>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        {% w3_theme theme %}
+        <style>
+            .cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 1em;
+                padding: 1em 0;
+            }
 
-      .card {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75em;
-        padding: 0.5em 1em 1em;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        backdrop-filter: blur(16px) saturate(180%);
-        -webkit-backdrop-filter: blur(16px) saturate(180%);
-      }
+            .card {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75em;
+                padding: 0.5em 1em 1em;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+                backdrop-filter: blur(16px) saturate(180%);
+                -webkit-backdrop-filter: blur(16px) saturate(180%);
+            }
 
-      .card a {
-        background: inherit;
-      }
+            .card a {
+                background: inherit;
+            }
 
-      .card img {
-        width: 100%;
-        height: auto;
-        border-radius: 4px;
-      }
+            .card img {
+                width: 100%;
+                height: auto;
+                border-radius: 4px;
+            }
 
-      .card-title {
-        font-weight: bold;
-        font-size: 1.1em;
-        text-decoration: none;
-        display: block;
-      }
+            .card-title {
+                font-weight: bold;
+                font-size: 1.1em;
+                text-decoration: none;
+                display: block;
+            }
 
-      .card-footer {
-        margin-top: auto;
-        font-size: 0.9em;
-        opacity: 0.7;
-      }
+            .card-footer {
+                margin-top: auto;
+                font-size: 0.9em;
+                opacity: 0.7;
+            }
 
-      .block {
-        display: block;
-      }
-    </style>
-  </head>
+            .block {
+                display: block;
+            }
+        </style>
+    </head>
 
-  <body>
-    <header>
-      <h1>{{ title }}</h1>
-    </header>
+    <body>
+        <header>
+            <h1>{{ title }}</h1>
+        </header>
 
-    <section class="cards">
-      {% for item in collections.scad %}
-        {% set thumb = [item.data.page.url, item.data.page.fileSlug, ".png"] | join %}
-        <a href="{{ item.data.page.url | url }}" class="card-title">
-          <div class="card">
-            <span>
-              {{ item.data.title }}
-            </span>
-            <img
+        <section class="cards">
+            {% for item in collections.scad %}
+                {% set thumb = [item.data.page.url, item.data.page.fileSlug, ".png"] | join %}
+                <a href="{{ item.data.page.url | url }}" class="card-title">
+                    <div class="card">
+                        <span>
+                            {{ item.data.title }}
+                        </span>
+                        <img
             src="{{ thumb | url }}"
             title="Thumbnail image of {{ item.data.page.fileSlug }}.scad"/>
-            {# <span class="card-footer block">📁 {{ item.data.page.url }}</span> #}
-          </div>
-        </a>
-      {% endfor %}
-    </section>
+                        {# <span class="card-footer block">📁 {{ item.data.page.url }}</span> #}
+                    </div>
+                </a>
+            {% endfor %}
+        </section>
 
-    <footer>{{ content | safe }}</footer>
-  </body>
+        <footer>{{ content | safe }}</footer>
+    </body>
 </html>

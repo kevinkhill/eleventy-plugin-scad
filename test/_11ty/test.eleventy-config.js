@@ -10,14 +10,14 @@ export default function (eleventyConfig) {
     eleventyConfig.setQuietMode(false);
     eleventyConfig.setInputDirectory("input");
     eleventyConfig.setOutputDirectory("output");
-    eleventyConfig.addWatchTarget("../../dist/assets/**");
-    eleventyConfig.setServerOptions({ watch: ["../../dist/assets/**"] });
+    eleventyConfig.addWatchTarget("../../dist/**");
+    // eleventyConfig.setServerOptions({ watch: ["../../dist/assets/**"] });
 
     addOpenSCADPlugin(eleventyConfig, {
         collectionPageTitle: "Dev Collection",
         thumbnailColorScheme: "BeforeDawn",
         launchPath: "docker",
+        noSTL: true,
         // verbose: true,
-        // noSTL: true,
     });
 }
