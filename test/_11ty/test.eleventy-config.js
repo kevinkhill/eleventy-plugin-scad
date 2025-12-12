@@ -7,16 +7,17 @@ import { addOpenSCADPlugin } from "../../dist/index.js";
  * @param {import("@11ty/eleventy/UserConfig").default} eleventyConfig
  */
 export default function (eleventyConfig) {
+    eleventyConfig.setQuietMode(false);
     eleventyConfig.setInputDirectory("input");
     eleventyConfig.setOutputDirectory("output");
-    eleventyConfig.setWatchJavaScriptDependencies("../../dist/**/*");
-    eleventyConfig.setQuietMode(false);
+    eleventyConfig.addWatchTarget("../../dist/assets/**");
+    eleventyConfig.setServerOptions({ watch: ["../../dist/assets/**"] });
 
     addOpenSCADPlugin(eleventyConfig, {
+        collectionPageTitle: "Dev Collection",
+        thumbnailColorScheme: "BeforeDawn",
         launchPath: "docker",
-        verbose: true,
-        collectionPageTitle: "Custom Title",
-        thumbnailColorScheme: "BeforeDawn"
+        // verbose: true,
         // noSTL: true,
     });
 }

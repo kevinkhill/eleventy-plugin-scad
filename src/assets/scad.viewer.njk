@@ -111,6 +111,7 @@
 
 			const loader = new STLLoader();
 			const container = document.getElementById("viewer");
+			const deg2rad = (degrees) => (degrees * (Math.PI / 180));
 
 			let renderer,
 				camera,
@@ -184,6 +185,7 @@
 					geometry.translate(center.x, center.y, center.z);
 
 					const mesh = new THREE.Mesh(geometry, material);
+					mesh.rotateX(deg2rad(-90));
 
 					scene.add(mesh);
 				});
@@ -211,6 +213,7 @@
 			function setupGUI(initialState) {
 				const {lightPos, cameraPos} = initialState;
 				const gui = new GUI();
+
 				gui.onChange((event) => {
 					console.log(gui.save());
 				});
@@ -238,7 +241,7 @@
 				cameraFolder.add(cameraPos, "x", -90, 90, 1);
 				cameraFolder.add(cameraPos, "y", -90, 90, 1);
 				cameraFolder.add(cameraPos, "z", -90, 90, 1);
-				cameraFolder.add(cameraPos, "zoom", 1, 20, 0.5);
+				cameraFolder.add(cameraPos, "zoom", -10, 10, 1);
 			}
 
 			function init() {
@@ -246,21 +249,21 @@
 					lightPos: {
 						x: 20,
 						y: 50,
-						z: 100
+						z: 200
 					},
 					cameraPos: {
-						x: 30,
-						y: 30,
-						z: 30,
+						x: 45,
+						y: 45,
+						z: 45,
 						zoom: 1
 					}
 				};
 				setupRenderer();
 				setupScene(initialState.lightPos);
 				setupCameraAndControls(initialState.cameraPos);
-				setupResizeHandler();
 				setupGUI(initialState);
 				loadSTL(window.STL_URL); // STL_URL is defined in the <head>
+				setupResizeHandler();
 				animate();
 			}
 
