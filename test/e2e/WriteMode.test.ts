@@ -16,16 +16,16 @@ const TEST_CASES = [
 		`output/sphere/sphere.png`,
 	],
 	[
-		"input/cubes/cube1.scad", //
-		`output/cubes/cube1/index.html`,
-		`output/cubes/cube1/cube1.stl`,
-		`output/cubes/cube1/cube1.png`,
+		"input/cubes/bridge.scad", //
+		`output/cubes/bridge/index.html`,
+		`output/cubes/bridge/bridge.stl`,
+		`output/cubes/bridge/bridge.png`,
 	],
 	[
-		"input/cubes/cube2.scad", //
-		`output/cubes/cube2/index.html`,
-		`output/cubes/cube2/cube2.stl`,
-		`output/cubes/cube2/cube2.png`,
+		"input/cubes/xyz_cube.scad", //
+		`output/cubes/xyz_cube/index.html`,
+		`output/cubes/xyz_cube/xyz_cube.stl`,
+		`output/cubes/xyz_cube/xyz_cube.png`,
 	],
 	[
 		"input/nested/grouped/cylinder.scad",

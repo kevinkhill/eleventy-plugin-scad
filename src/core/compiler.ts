@@ -120,11 +120,12 @@ export function addScadExtensionHandler(
 							hashMatch,
 						});
 
-						const openscad = new OpenSCAD(projectRoot);
-
-						openscad.setInput(inFile);
-						openscad.setOutput(outFile);
-						openscad.setColorScheme(opts.thumbnailColorScheme);
+						const openscad = OpenSCAD.create({
+							cwd: projectRoot,
+							in: inFile,
+							out: outFile,
+							colorscheme: opts.thumbnailColorScheme,
+						});
 
 						const exportResult = await openscad.export(resolvedScadBin);
 

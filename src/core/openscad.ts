@@ -5,6 +5,7 @@ import { Debug, mkdirForFileAsync, Timer } from "../lib";
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import type {
 	DockerLaunchTag,
+	Files,
 	PluginOptions,
 	ScadExportResult,
 	ThumbnailColorScheme,
@@ -44,14 +45,17 @@ export class OpenSCAD {
 
 	setInput(input: string) {
 		this.inFile = input;
+		return this;
 	}
 
 	setOutput(output: string) {
 		this.outFile = output;
+		return this;
 	}
 
 	setColorScheme(scheme: ThumbnailColorScheme) {
 		this.colorscheme = scheme;
+		return this;
 	}
 
 	/**
@@ -151,5 +155,17 @@ export class OpenSCAD {
 		debug("spawn args: %O", spawnArgs);
 
 		return spawn("docker", spawnArgs, { cwd: this.cwd });
+	}
+
+	static create(
+		args: Files & { colorscheme?: ThumbnailColorScheme },
+	): OpenSCAD {
+		const instance = new OpenSCAD(args.cwd);
+		instance.setInput(args.in);
+		instance.setOutput(args.out);
+		if (args.colorscheme) {
+			instance.setColorScheme(args.colorscheme);
+		}
+		return instance;
 	}
 }
