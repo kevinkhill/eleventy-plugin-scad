@@ -1,9 +1,9 @@
 import { blue, cyan, gray, green, red, reset } from "yoctocolors";
 import { prettifyError } from "zod";
 import { addScadPluginTemplates, addShortcodes, parseOptions } from "./core";
+import { addScadExtensionHandler } from "./core/compiler";
 import { PLUGIN_NAME } from "./core/const";
-import { addScadExtensionHandler } from "./core/extension";
-import { createScadLogger, createSilentLogger } from "./lib";
+import { createScadLogger, createSilentLogger, getAssetPath } from "./lib";
 import type { EleventyConfig, PluginOptionsInput } from "./types";
 
 /**
@@ -69,6 +69,4 @@ export function EleventyPluginOpenSCAD(
 	addShortcodes(eleventyConfig, { theme });
 	addScadPluginTemplates(eleventyConfig, parsedOptions.data);
 	addScadExtensionHandler(eleventyConfig, parsedOptions.data);
-
-	// eleventyConfig.setServerPassthroughCopyBehavior("passthrough");
 }

@@ -1,5 +1,9 @@
 import { Debug, getAssetFileContent } from "../lib";
-import { SCAD_COLLECTION_LAYOUT, SCAD_VIEWER_LAYOUT } from "./const";
+import {
+	SCAD_COLLECTION_LAYOUT,
+	SCAD_VIEWER_JS,
+	SCAD_VIEWER_LAYOUT,
+} from "./const";
 import type { EleventyConfig, ParsedPluginOptions } from "../types";
 
 const debug = Debug.extend("templates");
@@ -28,12 +32,9 @@ export function addScadPluginTemplates(
 		debug(`(virtual) added %o`, templatePath);
 	};
 
-	eleventyConfig.addPassthroughCopy("img");
-
 	// Default renderer for `.scad` files once turned into HTML
 	addVirtualTemplate(`_includes/${SCAD_VIEWER_LAYOUT}`, SCAD_VIEWER_LAYOUT, {
-		rendererJS: getAssetFileContent("scad.renderer.js"),
-		// rendererJS: getAssetFileContent("scad.bloomRenderer.js"),
+		rendererJS: getAssetFileContent(SCAD_VIEWER_JS),
 	});
 
 	if (collectionPage) {

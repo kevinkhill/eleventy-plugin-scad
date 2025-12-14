@@ -20,6 +20,8 @@ let renderer,
 	scene,
 	controls;
 
+const lights = { key: undefined, fill: undefined, rim: undefined };
+
 function frameObject(object, camera, controls, fitOffset = 1.2) {
 	const box = new THREE.Box3().setFromObject(object);
 	const size = box.getSize(new THREE.Vector3());
@@ -96,15 +98,6 @@ function setupPostProcessing({ strength, radius, threshold }) {
 	// composer.addPass(outputPass);
 }
 
-/**
- * Setup initial camera position & orbit controls.
- *
- * @param {Object} options - Configuration object for the initial camera position.
- * @param {number} options.x - The x-coordinate of the camera position.
- * @param {number} options.y - The y-coordinate of the camera position.
- * @param {number} options.z - The z-coordinate of the camera position.
- * @param {number} options.fov - The field of view of the camera
- */
 function setupCameraAndControls() {
 	const aspect = container.clientWidth / container.clientHeight;
 	const frustumSize = 100;
@@ -126,31 +119,23 @@ function setupCameraAndControls() {
 	// controls.enableDamping = true;
 }
 
-/**
- * Setup the initial spotlight position.
- *
- * @param {Object} options - Configuration object for the initial spotlight position.
- * @param {number} options.x - The x-coordinate of the spotlight position.
- * @param {number} options.y - The y-coordinate of the spotlight position.
- * @param {number} options.z - The z-coordinate of the spotlight position.
- */
-function setupScene({ x, y, z }) {
+function setupScene() {
 	scene = new THREE.Scene();
 
 	// Slight ambient so shadows aren’t pure black
 	scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
-	const key = new THREE.DirectionalLight(0xffffff, 1.2);
-	key.position.set(2, 3, 4);
-	scene.add(key);
+	lights.key = new THREE.DirectionalLight(0xffffff, 1.2);
+	lights.key.position.set(2, 3, 4);
+	scene.add(lights.key);
 
-	const fill = new THREE.DirectionalLight(0xffffff, 0.6);
-	fill.position.set(-3, 1, 2);
-	scene.add(fill);
+	lights.fill = new THREE.DirectionalLight(0xffffff, 0.6);
+	lights.fill.position.set(-3, 1, 2);
+	scene.add(lights.fill);
 
-	const rim = new THREE.DirectionalLight(0xffffff, 0.9);
-	rim.position.set(0, 3, -4);
-	scene.add(rim);
+	lights.rim = new THREE.DirectionalLight(0xffffff, 0.9);
+	lights.rim.position.set(0, 3, -4);
+	scene.add(lights.rim);
 }
 
 /**
@@ -212,37 +197,26 @@ function animate() {
 
 function setupGUI(initialState) {
 	const gui = new GUI();
-	// const cameraFolder = gui.addFolder("Camera");
-	// const lightingFolder = gui.addFolder("Lighting");
-	// const meshFolder = gui.addFolder("Mesh");
 	const bloomFolder = gui.addFolder("Bloom");
-	const { lightPos, bloomPass } = initialState;
-	const set = (target, key) => (value) => { target[key] = Number(value); };
+	const { bloomPass } = initialState;
 
 	// gui.onChange((event) => {
 	// 	console.log("Saving: %O", gui.save());
 	// });
 
-	// meshFolder.addColor(initialState.mesh, "color").onChange(console.log);
-	// lightingFolder.add(lightPos, "x", -500, 500, 1).onChange(set(spotLight.position, "x"));
-	// lightingFolder.add(lightPos, "y", -500, 500, 1).onChange(set(spotLight.position, "y"));
-	// lightingFolder.add(lightPos, "z", -500, 500, 1).onChange(set(spotLight.position, "z"));
-
-	bloomFolder.add(bloomPass, "radius", 0, 1, 0.1).onChange(set(bloomPass, "radius"));
-	bloomFolder.add(bloomPass, "strength", 0, 3, 0.1).onChange(set(bloomPass, "strength"));
-	bloomFolder.add(bloomPass, "threshold", 0, 1, 0.1).onChange(set(bloomPass, "threshold"));
+	bloomFolder.add(bloomPass, "radius", 0, 1, 0.1).onChange(v => {
+		bloomPass.radius = Number(v);
+	});
+	bloomFolder.add(bloomPass, "strength", 0, 3, 0.1).onChange(v => {
+		bloomPass.strength = Number(v);
+	});
+	bloomFolder.add(bloomPass, "threshold", 0, 1, 0.1).onChange(v => {
+		bloomPass.threshold = Number(v);
+	});
 }
 
 function init() {
 	const initialState = {
-		// mesh: {
-		// 	color: "#ab98fc"
-		// },
-		lightPos: {
-			x: 20,
-			y: 50,
-			z: 200
-		},
 		bloomPass: {
 			strength: 1,
 			radius: .5,
@@ -250,7 +224,7 @@ function init() {
 		}
 	};
 	setupRenderer();
-	setupScene(initialState.lightPos);
+	setupScene();
 	setupCameraAndControls();
 	setupPostProcessing(initialState.bloomPass);
 	setupGUI(initialState);

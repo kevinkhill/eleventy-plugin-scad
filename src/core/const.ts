@@ -12,6 +12,8 @@ export const SCAD_EXT = "scad";
 
 export const DOT_SCAD = `.${SCAD_EXT}`;
 
+export const SCAD_VIEWER_JS = "scad.renderer.js";
+
 export const SCAD_VIEWER_LAYOUT = "scad.viewer.njk";
 
 export const SCAD_COLLECTION_LAYOUT = "scad.collection.njk";

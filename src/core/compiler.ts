@@ -1,7 +1,5 @@
 import path from "node:path";
 import { bold, gray, green, red, reset } from "yoctocolors";
-import { cache, scadExporter } from "../core";
-import { DOT_SCAD, DOT_STL, PLUGIN_NAME, SCAD_EXT } from "../core/const";
 import {
 	createScadLogger,
 	createSilentLogger,
@@ -9,10 +7,12 @@ import {
 	exists,
 	resolveOpenSCAD,
 } from "../lib";
+import * as cache from "./cache";
+import { DOT_SCAD, DOT_STL, PLUGIN_NAME, SCAD_EXT } from "./const";
+import { OpenSCAD } from "./openscad";
 import type {
 	EleventyConfig,
 	EleventyDirs,
-	Files,
 	FullPageData,
 	ParsedPluginOptions,
 	ScadTemplateData,
@@ -107,24 +107,26 @@ export function addScadExtensionHandler(
 					const stlExists = exists(outFile);
 					const hashMatch = await cache.fileHashesMatch(inFile);
 
-					debug.extend("compile")("pre-generate: %O", {
-						inFile,
-						outFile,
-						projectRoot,
-						stlExists,
-						hashMatch,
-					});
-
 					if (!stlExists || !hashMatch) {
 						_log(
 							`${reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
 						);
 
-						const exportResult = await scadExporter(String(resolvedScadBin), {
-							cwd: projectRoot,
-							in: inFile,
-							out: outFile,
+						debug.extend("compile")("pre-generate: %O", {
+							inFile,
+							outFile,
+							projectRoot,
+							stlExists,
+							hashMatch,
 						});
+
+						const openscad = new OpenSCAD(projectRoot);
+
+						openscad.setInput(inFile);
+						openscad.setOutput(outFile);
+						openscad.setColorScheme(opts.thumbnailColorScheme);
+
+						const exportResult = await openscad.export(resolvedScadBin);
 
 						if (!exportResult.ok) {
 							log(red("OpenSCAD encountered an issue"));

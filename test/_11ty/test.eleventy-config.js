@@ -11,13 +11,13 @@ export default function (eleventyConfig) {
     eleventyConfig.setInputDirectory("input");
     eleventyConfig.setOutputDirectory("output");
     eleventyConfig.addWatchTarget("../../dist/**");
-    // eleventyConfig.setServerOptions({ watch: ["../../dist/assets/**"] });
 
     addOpenSCADPlugin(eleventyConfig, {
-        collectionPageTitle: "Dev Collection",
-        thumbnailColorScheme: "BeforeDawn",
         launchPath: "docker",
-        noSTL: true,
+        theme: "Midnight",
+        thumbnailColorScheme: "Nocturnal Gem",
+        collectionPageTitle: "Dev Collection",
+        // noSTL: true,
         // verbose: true,
     });
 }
