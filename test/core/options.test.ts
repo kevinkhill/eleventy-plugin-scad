@@ -19,6 +19,7 @@ describe("parseOptions()", () => {
 		expect(data?.launchPath).toBe("docker:dev");
 		expect(data?.layout).toBe(SCAD_VIEWER_LAYOUT);
 		expect(data?.theme).toBe(DEFAULT_PLUGIN_THEME);
+		expect(data?.thumbnailColorScheme).toBe("Cornfield");
 		expect(data?.resolveLaunchPath).toBe(true);
 		expect(data?.collectionPage).toBe(true);
 		expect(data?.verbose).toBe(true);
