@@ -61,9 +61,3 @@ export function parseOptions(options: unknown, env = process.env) {
 	debug("parsed: %O", parsedOptions);
 	return parsedOptions;
 }
-
-//   --colorscheme arg                 =colorscheme: *Cornfield | Metallic |
-//                                     Sunset | Starnight | BeforeDawn | Nature |
-//                                     Daylight Gem | Nocturnal Gem | DeepOcean |
-//                                     Solarized | Tomorrow | Tomorrow Night |
-//                                     ClearSky | Monotone

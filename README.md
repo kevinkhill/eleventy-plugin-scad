@@ -25,7 +25,7 @@ npm install eleventy-plugin-scad
   - `openscad` - or in a bin folder and available on your `$PATH`
   - Can also be set with the environment variable `ELEVENTY_SCAD_LAUNCH_PATH`
 - **theme**: Use one of the [W3C Core Styles](https://www.w3.org/StyleSheets/Core/) as a theme
-  - Traditional, Modernist, Midnight, Chocolate, Oldstyle, Steely, Swiss, Ultramarine
+  - Options: Traditional, Modernist, Midnight, Chocolate, Oldstyle, Steely, Swiss, Ultramarine
   - Preview the themes with the [W3C Core Style Sampler](https://www.w3.org/StyleSheets/Core/preview)
   - Can also be set with the environment variable `ELEVENTY_SCAD_THEME`
 - **layout**: Use a custom layout for the scad files
@@ -45,6 +45,9 @@ npm install eleventy-plugin-scad
   - This was added to disable trying to verify if the passed `launchPath` exists and/or is callable.
   - Whatever is set to `launchPath` will be passed to `spawn(launchPath, ["--o", STL_OUT_FILE, SCAD_INPUT]);`
   - Can also be set with the environment variable `ELEVENTY_SCAD_RESOLVE_LAUNCH_PATH`
+- **thumbnailColorScheme** _(default: Cornfield)_: Set to change the colors of the models on the collection page.
+  - Options: Cornfield, Metallic, Sunset, Starnight, BeforeDawn, Nature, Daylight Gem, Nocturnal Gem, DeepOcean, Solarized, Tomorrow, Tomorrow Night, ClearSky, Monotone
+  - Can also be set with the environment variable `ELEVENTY_SCAD_THUMBNAIL_COLOR_SCHEME`
 
 ## Add Plugin to Eleventy
 

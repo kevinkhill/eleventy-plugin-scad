@@ -45,6 +45,16 @@ describe("getOptionsFromEnv()", () => {
 		expect(data.theme).toBe(value);
 	});
 
+	test(`ELEVENTY_SCAD_THUMBNAIL_COLOR_SCHEME sets thumbnailColorScheme`, () => {
+		const value = "Monotone";
+
+		process.env.ELEVENTY_SCAD_THUMBNAIL_COLOR_SCHEME = value;
+
+		const data = getOptionsFromEnv(process.env);
+
+		expect(data.thumbnailColorScheme).toBe(value);
+	});
+
 	test(`ELEVENTY_SCAD_LAYOUT sets layout`, () => {
 		const value = "my-layout.njk";
 
