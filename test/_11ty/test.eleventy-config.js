@@ -17,7 +17,7 @@ export default function (eleventyConfig) {
         theme: "Midnight",
         thumbnailColorScheme: "Nocturnal Gem",
         collectionPageTitle: "Dev Collection",
-        // noSTL: true,
+        noSTL: true,
         // verbose: true,
     });
 }

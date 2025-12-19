@@ -4,7 +4,14 @@
 		<title>{{ stlFile }}</title>
 		<meta charset="UTF-8"/>
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		{% threejs_importmap %}
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+					"three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+				}
+			}
+		</script>
 		<script>
 			window.STL_URL = new URL("{{ stlFile }}", window.location.href);
 		</script>

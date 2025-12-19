@@ -1,26 +1,21 @@
-import GUI from "https://cdn.jsdelivr.net/npm/lil-gui@0.21/+esm";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
 const loader = new STLLoader();
 const container = document.getElementById("viewer");
-const deg2rad = (degrees) => (degrees * (Math.PI / 180));
+const deg2rad = (degrees) => degrees * (Math.PI / 180);
+const lights = {
+	key: undefined,
+	fill: undefined,
+	rim: undefined,
+};
 
-let renderer,
-	composer,
-	bloomPass,
-	mesh,
-	camera,
-	spotLight,
-	scene,
-	controls;
-
-const lights = { key: undefined, fill: undefined, rim: undefined };
+let renderer, composer, mesh, material, camera, scene, controls, bloomPass;
 
 function frameObject(object, camera, controls, fitOffset = 1.2) {
 	const box = new THREE.Box3().setFromObject(object);
@@ -55,10 +50,10 @@ function setupRenderer() {
 	renderer.setClearColor(0xffffff, 0);
 
 	renderer.autoClear = true;
-	renderer.toneMappingExposure = 1.0;
 	renderer.physicallyCorrectLights = true;
 	renderer.outputColorSpace = THREE.SRGBColorSpace;
 	renderer.toneMapping = THREE.ACESFilmicToneMapping;
+	renderer.toneMappingExposure = 0.85;
 
 	container.appendChild(renderer.domElement);
 }
@@ -82,16 +77,22 @@ function setupResizeHandler() {
 }
 
 function setupPostProcessing({ strength, radius, threshold }) {
-	const resolution = new THREE.Vector2(container.clientWidth, container.clientHeight);
+	const resolution = new THREE.Vector2(
+		container.clientWidth,
+		container.clientHeight,
+	);
 	const renderScene = new RenderPass(scene, camera);
 	// const outputPass = new OutputPass();
 
 	bloomPass = new UnrealBloomPass(resolution, strength, radius, threshold);
-	composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(
-		container.clientWidth,
-		container.clientHeight,
-		{ format: THREE.RGBAFormat } // alpha channel
-	));
+	composer = new EffectComposer(
+		renderer,
+		new THREE.WebGLRenderTarget(
+			container.clientWidth,
+			container.clientHeight,
+			{ format: THREE.RGBAFormat }, // alpha channel
+		),
+	);
 
 	composer.addPass(renderScene);
 	// composer.addPass(bloomPass);
@@ -108,7 +109,7 @@ function setupCameraAndControls() {
 		frustumSize / 2,
 		frustumSize / -2,
 		0.1,
-		5000
+		5000,
 	);
 
 	// camera.position.set(x, y, z);
@@ -141,48 +142,32 @@ function setupScene() {
 /**
  * Load the model into the scene
  *
- * @param {string} URL to the STL model file
+ * @param {string} stlUrl to the STL model file
  */
 function loadSTL(stlUrl) {
-	// const material = new THREE.MeshPhongMaterial({ color: 0x5588ff });
-	const material = new THREE.MeshStandardMaterial({
-		color: 0x5588ff,
-		emissive: 0x3366ff,
-		emissiveIntensity: 0.3,
-		metalness: 0.3,
-		roughness: 0.2
-	});
-
 	loader.load(stlUrl, (geometry) => {
 		const center = new THREE.Vector3();
+		// edges highlight / darken
+		const edges = new THREE.EdgesGeometry(geometry, 25);
+		const lines = new THREE.LineSegments(
+			edges,
+			new THREE.LineBasicMaterial({ color: 0x111111 }),
+		);
 
 		geometry.computeVertexNormals();
 		geometry.computeBoundingBox();
-		geometry
-			.boundingBox
-			.getCenter(center)
-			.negate();
+		geometry.boundingBox.getCenter(center).negate();
 		geometry.translate(center.x, center.y, center.z);
 
 		mesh = new THREE.Mesh(geometry, material);
 		mesh.rotateX(deg2rad(-90));
+		mesh.add(lines);
 
 		scene.add(mesh);
 
 		frameObject(mesh, camera, controls, 2);
-
-		// if (showEdges) {
-		// 	// optional: edges overlay for instant readability
-		// 	const edges = new THREE.EdgesGeometry(mesh.geometry, 20);
-		// 	const line = new THREE.LineSegments(
-		// 		edges,
-		// 		new THREE.LineBasicMaterial({ color: 0x111111 }),
-		// 	);
-		// 	mesh.add(line);
-		// }
 	});
 }
-
 
 function renderScene() {
 	// renderer.render(scene, camera);
@@ -195,42 +180,58 @@ function animate() {
 	renderScene();
 }
 
-function setupGUI(initialState) {
-	const gui = new GUI();
-	const bloomFolder = gui.addFolder("Bloom");
-	const { bloomPass } = initialState;
+/**
+ * Initializes the STL renderer.
+ *
+ * @param {string} url - URL to the STL file.
+ * @param {RenderOptions} state - Renderer configuration options.
+ */
+function init(url, state) {
+	material = state.material;
 
-	// gui.onChange((event) => {
-	// 	console.log("Saving: %O", gui.save());
-	// });
-
-	bloomFolder.add(bloomPass, "radius", 0, 1, 0.1).onChange(v => {
-		bloomPass.radius = Number(v);
-	});
-	bloomFolder.add(bloomPass, "strength", 0, 3, 0.1).onChange(v => {
-		bloomPass.strength = Number(v);
-	});
-	bloomFolder.add(bloomPass, "threshold", 0, 1, 0.1).onChange(v => {
-		bloomPass.threshold = Number(v);
-	});
-}
-
-function init() {
-	const initialState = {
-		bloomPass: {
-			strength: 1,
-			radius: .5,
-			threshold: .5
-		}
-	};
+	setupResizeHandler();
 	setupRenderer();
 	setupScene();
 	setupCameraAndControls();
-	setupPostProcessing(initialState.bloomPass);
-	setupGUI(initialState);
-	setupResizeHandler();
-	loadSTL(window.STL_URL); // STL_URL is defined in the <head>
+	setupPostProcessing(state.bloomPass);
+	loadSTL(url);
 	animate();
 }
 
-init();
+/**
+ * Initialize the three.js renderer with the initial state for the gui
+ *
+ * `window.STL_URL` is defined in the <head> from the `scad.renderer.js` template
+ */
+init(window.STL_URL, {
+	bloomPass: {
+		strength: 1,
+		radius: .2,
+		threshold: .5
+	},
+	material: new THREE.MeshStandardMaterial({
+		color: 0x5588ff,
+		emissive: 0x3366ff,
+		emissiveIntensity: 0.1,
+		metalness: 0.1,
+		roughness: 0.1,
+	}),
+});
+
+/**
+ * @typedef {Object} MaterialProps
+ *
+ * @property {number} [metalness] - Material metalness value (0 = goop, 1 = titanium).
+ * @property {number} [roughness] - Material roughness value (0 = smooth, 1 = rough).
+ */
+
+/**
+ * @typedef {Object} RenderOptions
+ *
+ * @property {Object} [bloomPass] - Bloom post-processing configuration.
+ * @property {number} [bloomPass.strength] - Intensity of the bloom effect.
+ * @property {number} [bloomPass.radius] - Radius of the bloom blur.
+ * @property {number} [bloomPass.threshold] - Luminance threshold for bloom activation.
+ *
+ * @property {import("three").Material} [material] - Material configuration overrides.
+ */

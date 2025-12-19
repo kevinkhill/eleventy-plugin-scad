@@ -1,4 +1,3 @@
-import { THREE_JS_VERSION } from "../config";
 import { Debug, useNonEmptyOrDefault } from "../lib";
 import type { EleventyConfig, ModelViewerTheme } from "../types";
 
@@ -37,21 +36,4 @@ export function addShortcodes(
 		return [w3cThemeCssLinkTag, themeOverrideScriptTag].join("\n");
 	});
 	debug(`added "%s"`, "w3_theme");
-
-	/**
-	 * Import Maps for three.js
-	 *
-	 * @example {% threejs_importmap %}
-	 */
-	eleventyConfig.addShortcode("threejs_importmap", () => {
-		const cdn_base = `https://cdn.jsdelivr.net/npm/three@${THREE_JS_VERSION}`;
-		const importmap = {
-			imports: {
-				three: `${cdn_base}/build/three.module.js`,
-				"three/addons/": `${cdn_base}/examples/jsm/`,
-			},
-		};
-		return `<script type="importmap">${JSON.stringify(importmap)}</script>`;
-	});
-	debug(`added "%s"`, "threejs_importmap");
 }
