@@ -1,1 +1,1 @@
-sphere(PI);
+sphere(PI, $fn = 12);

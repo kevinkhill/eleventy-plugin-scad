@@ -9,6 +9,7 @@ import {
 } from "../lib";
 import * as cache from "./cache";
 import { DOT_SCAD, DOT_STL, PLUGIN_NAME, SCAD_EXT } from "./const";
+import { parseScadFileFrontMatter } from "./frontmatter";
 import { OpenSCAD } from "./openscad";
 import type {
 	EleventyConfig,
@@ -18,7 +19,7 @@ import type {
 	ScadTemplateData,
 } from "../types";
 
-const debug = Debug.extend("extension");
+const debug = Debug.extend("compiler");
 
 /**
  * Eleventy Plugin for OpenSCAD
@@ -45,16 +46,15 @@ export function addScadExtensionHandler(
 	}
 
 	eleventyConfig.addTemplateFormats(SCAD_EXT);
-	debug("registered .scad as extension for templates");
-
 	eleventyConfig.addExtension(SCAD_EXT, {
 		// #region getData
 		/**
 		 * Data provided to the layout & page of a `.scad` file template
 		 */
-		getData(inputPath: string) {
+		async getData(inputPath: string) {
 			const filename = path.basename(inputPath);
-			return {
+			const rendererSettings = parseScadFileFrontMatter(inputPath);
+			const data = {
 				title: filename,
 				slug: filename.replace(DOT_SCAD, ""),
 				scadFile: inputPath,
@@ -62,27 +62,38 @@ export function addScadExtensionHandler(
 				layout: opts.layout,
 				theme: opts.theme,
 				tags: [SCAD_EXT],
+				renderer: rendererSettings.content ?? {},
 			} satisfies ScadTemplateData;
+			debug("data for: %o", inputPath);
+			debug(data);
+			return data;
 		},
 		// #endregion
+
 		// #region compile
 		/**
 		 * Compile `.scad` files into `.stl` & `.png`
 		 */
 		async compile(inputContent: string, inputPath: string) {
-			return async (data: FullPageData) => {
-				debug.extend("compile")("begin %O", { inputPath, data });
-				try {
-					if (opts.noSTL) {
-						_log(
-							`${gray("Skipping write of")} ${reset(data.stlFile)} ${gray(`from ${inputPath}`)}`,
-						);
-						return inputContent;
-					}
+			debug("compiling %O", inputPath);
 
+			if (opts.noSTL) {
+				return async (data: FullPageData) => {
+					debug("noSTL is set; returning bare render function.");
+					_log(
+						`${gray("Skipping write of")} ${reset(data.stlFile)} ${gray(`from ${inputPath}`)}`,
+					);
+					return inputContent;
+				};
+			}
+
+			return async (data: FullPageData) => {
+				debug("rendering %O", inputPath);
+
+				try {
 					if (!data.page.url) {
 						throw new Error(
-							`${inputPath} must have "parmalink:true" set in the frontmatter`,
+							`${inputPath} must have "permalink:true" set in the frontmatter`,
 						);
 						// return inputContent;
 					}
@@ -105,6 +116,8 @@ export function addScadExtensionHandler(
 					await cache.ensureFileRegistered(inFile);
 
 					const stlExists = exists(outFile);
+
+					// @TODO can this be replaced with `inputContent`????
 					const hashMatch = await cache.fileHashesMatch(inFile);
 
 					if (!stlExists || !hashMatch) {
@@ -112,7 +125,7 @@ export function addScadExtensionHandler(
 							`${reset("Writing")} ${data.stlFile} ${gray(`from ${inputPath}`)}`,
 						);
 
-						debug.extend("compile")("pre-generate: %O", {
+						debug("pre-generate: %O", {
 							inFile,
 							outFile,
 							projectRoot,

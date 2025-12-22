@@ -1,8 +1,11 @@
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "cross-spawn";
 import { DEFAULT_DOCKER_TAG } from "../config";
 import { Debug, mkdirForFileAsync, Timer } from "../lib";
+import { parseTomlFrontMatter } from "./frontmatter";
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
+import type { Debugger } from "debug";
 import type {
 	DockerLaunchTag,
 	Files,
@@ -11,9 +14,8 @@ import type {
 	ThumbnailColorScheme,
 } from "../types";
 
-const _debug = Debug.extend("spawn");
-
 export class OpenSCAD {
+	debug: Debugger;
 	inFile!: string;
 	outFile!: string;
 	scadProcess!: ChildProcessWithoutNullStreams;
@@ -22,6 +24,8 @@ export class OpenSCAD {
 	constructor(public cwd: string) {
 		this.cwd = cwd;
 		this.colorscheme = "Cornfield";
+
+		this.debug = Debug.extend("worker");
 	}
 
 	/**
@@ -45,17 +49,24 @@ export class OpenSCAD {
 
 	setInput(input: string) {
 		this.inFile = input;
+		this.debug("inFile set: %O", this.inFile);
 		return this;
 	}
 
 	setOutput(output: string) {
 		this.outFile = output;
+		this.debug("outFile set: %O", this.outFile);
 		return this;
 	}
 
 	setColorScheme(scheme: ThumbnailColorScheme) {
 		this.colorscheme = scheme;
 		return this;
+	}
+
+	async getFrontMatter() {
+		const scadContent = await readFile(this.inFile, "utf8");
+		return parseTomlFrontMatter(scadContent);
 	}
 
 	/**
@@ -66,7 +77,6 @@ export class OpenSCAD {
 	): Promise<ScadExportResult> {
 		const stlResult = Promise.withResolvers<ScadExportResult>();
 		const timer = new Timer();
-		const debug = _debug.extend("export");
 
 		try {
 			const lines: string[] = [];
@@ -87,22 +97,22 @@ export class OpenSCAD {
 			});
 
 			this.scadProcess.stderr.on("data", (data) => {
-				debug.extend("stderr")(data.toString());
+				this.debug.extend("stderr")(data.toString());
 				lines.push(data.toString());
 			});
 
 			this.scadProcess.stdout.on("data", (data) => {
-				debug.extend("stdout")(data.toString());
+				this.debug.extend("stdout")(data.toString());
 			});
 
 			this.scadProcess.on("error", (err) => {
-				debug.extend("error")(err);
+				this.debug.extend("error")(err);
 				stlResult.reject({ output: err, ok: false });
 			});
 
 			this.scadProcess.on("close", (exitCode) => {
 				const duration = timer.readAndReset();
-				debug.extend("close")({ exitCode, duration });
+				this.debug.extend("close")({ exitCode, duration });
 				stlResult.resolve({
 					ok: exitCode === 0,
 					output: lines,
@@ -121,11 +131,10 @@ export class OpenSCAD {
 	 * Generate STL using installed OpenSCAD
 	 */
 	spawnNative(launchPath: string) {
-		const debug = _debug.extend("native");
 		const spawnArgs = this.scadArgs;
 
-		debug("launch path: %o", launchPath);
-		debug("spawn args: %O", spawnArgs);
+		this.debug("using native launch path: %o", launchPath);
+		this.debug("spawn args: %O", spawnArgs);
 
 		return spawn(launchPath, spawnArgs, { cwd: this.cwd });
 	}
@@ -134,8 +143,6 @@ export class OpenSCAD {
 	 * Generate STL using Docker OpenSCAD
 	 */
 	spawnDocker(tag?: string) {
-		const debug = _debug.extend("docker");
-
 		const uid = process.getuid?.() ?? 1000;
 		const gid = process.getgid?.() ?? 1000;
 		const dockerImage = `openscad/openscad:${tag ?? DEFAULT_DOCKER_TAG}`;
@@ -151,8 +158,8 @@ export class OpenSCAD {
 
 		const spawnArgs = [...dockerArgs, "openscad", ...this.scadArgs];
 
-		debug("using image: %o", dockerImage);
-		debug("spawn args: %O", spawnArgs);
+		this.debug("using docker image: %o", dockerImage);
+		this.debug("spawn args: %O", spawnArgs);
 
 		return spawn("docker", spawnArgs, { cwd: this.cwd });
 	}

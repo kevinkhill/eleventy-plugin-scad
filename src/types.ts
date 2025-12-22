@@ -80,6 +80,9 @@ export interface ScadTemplateData {
 
 	/** Tags added to the generated page */
 	tags: string[];
+
+	/** Parsed TOML frontmatter if found */
+	renderer: Record<string, unknown>;
 }
 
 export type FullPageData = EleventyScope &

@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
     <head>
         <title>{{ title }}</title>
         <meta charset="UTF-8"/>
@@ -66,9 +67,7 @@
                         <span>
                             {{ item.data.title }}
                         </span>
-                        <img
-            src="{{ thumb | url }}"
-            title="Thumbnail image of {{ item.data.page.fileSlug }}.scad"/>
+                        <img src="{{ thumb | url }}" title="Thumbnail image of {{ item.data.page.fileSlug }}.scad"/>
                         {# <span class="card-footer block">📁 {{ item.data.page.url }}</span> #}
                     </div>
                 </a>
@@ -77,4 +76,5 @@
 
         <footer>{{ content | safe }}</footer>
     </body>
+
 </html>

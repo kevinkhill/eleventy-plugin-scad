@@ -14,10 +14,10 @@ export default function (eleventyConfig) {
 
     addOpenSCADPlugin(eleventyConfig, {
         launchPath: "docker",
-        theme: "Midnight",
-        thumbnailColorScheme: "Nocturnal Gem",
+        theme: "Swiss",
+        thumbnailColorScheme: "ClearSky",
         collectionPageTitle: "Dev Collection",
-        noSTL: true,
-        // verbose: true,
+        // noSTL: true,
+        verbose: false,
     });
 }
