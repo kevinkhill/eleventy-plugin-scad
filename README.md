@@ -148,6 +148,8 @@ export default (eleventyConfig) => {
 };
 ```
 
+The model in the examples below is a [Turner's Cube][tcube] and the scad code for it is [here](./scripts/turnercube.scad).
+
 | ColorScheme    | Thumbnail                                                  |
 | -------------- | ---------------------------------------------------------- |
 | Cornfield      | ![Cornfield](./images/turnercube_Cornfield.png)            |
@@ -169,3 +171,4 @@ export default (eleventyConfig) => {
 
 [npm]: https://www.npmjs.com/package/eleventy-plugin-scad "npm page"
 [docker]: https://hub.docker.com/r/openscad/openscad "docker hub"
+[tcube]: https://www.google.com/search?q=turners+cube
