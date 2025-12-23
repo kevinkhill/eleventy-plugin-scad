@@ -9,8 +9,6 @@ const scad = new OpenSCAD(cwd, {
 	thumbnailOnly: true,
 });
 
-const readmeContent: string[] = [];
-
 for (const scheme of COLOR_SCHEMES) {
 	const output = `turnercube_${scheme}.stl`;
 	const image = output.replace(/stl$/, "png");
