@@ -33,6 +33,8 @@ npm install eleventy-plugin-scad
   - Can also be set with the environment variable `ELEVENTY_SCAD_LAYOUT`
 - **collectionPage** _(default: true)_: Set `false` to disable the generation of a listing page with links from the `scad` tagged files _(uses Collections API)_
   - Can also be set with the environment variable `ELEVENTY_SCAD_COLLECTION_PAGE`
+- **collectionPageTitle** _(default: SCAD Collection)_: Set to a string for the title of the collection page.
+  - Can also be set with the environment variable `ELEVENTY_SCAD_COLLECTION_PAGE_TITLE`
 - **verbose** _(default: false)_: Set `true` to view the compilation output from OpenSCAD
   - If your model uses `echo()` this is how to see the output
   - Can also be set with the environment variable `ELEVENTY_SCAD_VERBOSE`
@@ -129,9 +131,21 @@ export default (eleventyConfig) => {
 };
 ```
 
+## Collection Page
+
+As of version `0.9.0` the default collection page shows a grid of cards instead of a list of links.
+![New Collection Layout](./images/collection.png)
+
+## Renderer
+
+Each `scad` file is rendered and exported as an STL for inspection
+![three.js renderer](./images/renderer.png)
+
 ## Color Schemes
 
-OpenSCAD has built-in color schemes which can be toggled during export.
+OpenSCAD has built-in color schemes which can be set before export.
+
+> NOTE: This only affects the output of the thumbnails.
 
 ```js
 import { addOpenSCADPlugin } from "eleventy-plugin-scad";
@@ -148,7 +162,7 @@ export default (eleventyConfig) => {
 };
 ```
 
-The model in the examples below is a [Turner's Cube][tcube] and the scad code for it is [here](./scripts/turnercube.scad).
+The model in the examples below is a [Turner's Cube][tcube] and the scad code for it is [here](./scripts/turnercube.scad) if you want to make one too.
 
 | ColorScheme    | Thumbnail                                                  |
 | -------------- | ---------------------------------------------------------- |

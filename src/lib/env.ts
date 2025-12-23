@@ -30,6 +30,7 @@ export function getOptionsFromEnv(
 		theme: getEnv("ELEVENTY_SCAD_THEME") as ModelViewerTheme,
 		layout: getEnv("ELEVENTY_SCAD_LAYOUT"),
 		launchPath: getEnv("ELEVENTY_SCAD_LAUNCH_PATH"),
+		collectionPageTitle: getEnv("ELEVENTY_SCAD_COLLECTION_PAGE_TITLE"),
 		thumbnailColorScheme: getEnv(
 			"ELEVENTY_SCAD_THUMBNAIL_COLOR_SCHEME",
 		) as ThumbnailColorScheme,

@@ -20,6 +20,7 @@ describe("parseOptions()", () => {
 		expect(data?.layout).toBe(SCAD_VIEWER_LAYOUT);
 		expect(data?.theme).toBe(DEFAULT_PLUGIN_THEME);
 		expect(data?.thumbnailColorScheme).toBe("Cornfield");
+		expect(data?.collectionPageTitle).toBe("SCAD Collection");
 		expect(data?.resolveLaunchPath).toBe(true);
 		expect(data?.collectionPage).toBe(true);
 		expect(data?.verbose).toBe(true);
@@ -64,6 +65,16 @@ describe("parseOptions()", () => {
 
 		expect(success).toBeTruthy();
 		expect(data?.resolveLaunchPath).toBe(false);
+	});
+
+	test(`ELEVENTY_SCAD_COLLECTION_PAGE_TITLE sets theme`, () => {
+		const title = "fancy title";
+		process.env.ELEVENTY_SCAD_COLLECTION_PAGE_TITLE = title;
+
+		const { success, data } = parseOptions({}, process.env);
+
+		expect(success).toBeTruthy();
+		expect(data?.collectionPageTitle).toBe(title);
 	});
 
 	test(`ELEVENTY_SCAD_COLLECTION_PAGE sets collectionPage`, () => {

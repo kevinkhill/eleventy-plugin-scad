@@ -16,7 +16,7 @@ export default function (eleventyConfig) {
         launchPath: "docker",
         theme: "Swiss",
         thumbnailColorScheme: "ClearSky",
-        collectionPageTitle: "Dev Collection",
+        collectionPageTitle: "New Collection Layout",
         // noSTL: true,
         // verbose: false,
     });
