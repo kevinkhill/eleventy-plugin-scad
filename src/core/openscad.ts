@@ -20,12 +20,19 @@ export class OpenSCAD {
 	outFile!: string;
 	scadProcess!: ChildProcessWithoutNullStreams;
 	colorscheme: ThumbnailColorScheme;
+	thumbnailOnly: boolean;
 
-	constructor(public cwd: string) {
+	constructor(
+		public cwd: string,
+		opts?: { input?: string; thumbnailOnly?: boolean },
+	) {
 		this.cwd = cwd;
 		this.colorscheme = "Cornfield";
-
+		this.thumbnailOnly = opts?.thumbnailOnly ?? false;
 		this.debug = Debug.extend("worker");
+		if (opts?.input) {
+			this.setInput(opts.input);
+		}
 	}
 
 	/**
@@ -35,27 +42,26 @@ export class OpenSCAD {
 	 */
 	get scadArgs(): string[] {
 		const pngFile = this.outFile.replace(/stl$/, "png");
-
-		return [
-			// Can't use this option while exporting both stl and png in one spawn
-			// ["--export-format", "binstl"], // prefer binary stl over ascii
+		const args = [
 			["--backend", "Manifold"], // use the new faster backend
 			["--colorscheme", this.colorscheme], // thumbnail colors
-			["--o", this.outFile], // output STL
 			["--o", pngFile], // output PNG
-			this.inFile, // input SCAD file
-		].flat(2);
+		];
+
+		if (this.thumbnailOnly === false) {
+			args.push(["--o", this.outFile]); // output STL
+		}
+
+		return [...args, this.inFile].flat(2);
 	}
 
 	setInput(input: string) {
 		this.inFile = input;
-		this.debug("inFile set: %O", this.inFile);
 		return this;
 	}
 
 	setOutput(output: string) {
 		this.outFile = output;
-		this.debug("outFile set: %O", this.outFile);
 		return this;
 	}
 
@@ -77,6 +83,10 @@ export class OpenSCAD {
 	): Promise<ScadExportResult> {
 		const stlResult = Promise.withResolvers<ScadExportResult>();
 		const timer = new Timer();
+
+		if (!this.outFile) {
+			this.outFile = this.inFile.replace(/scad$/, "stl");
+		}
 
 		try {
 			const lines: string[] = [];
@@ -165,9 +175,15 @@ export class OpenSCAD {
 	}
 
 	static create(
-		args: Files & { colorscheme?: ThumbnailColorScheme },
+		args: Files &
+			Partial<{
+				thumbnailOnly: boolean;
+				colorscheme: ThumbnailColorScheme;
+			}>,
 	): OpenSCAD {
-		const instance = new OpenSCAD(args.cwd);
+		const instance = new OpenSCAD(args.cwd, {
+			thumbnailOnly: args?.thumbnailOnly,
+		});
 		instance.setInput(args.in);
 		instance.setOutput(args.out);
 		if (args.colorscheme) {

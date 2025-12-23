@@ -18,6 +18,6 @@ export default function (eleventyConfig) {
         thumbnailColorScheme: "ClearSky",
         collectionPageTitle: "Dev Collection",
         // noSTL: true,
-        verbose: false,
+        // verbose: false,
     });
 }

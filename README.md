@@ -45,7 +45,7 @@ npm install eleventy-plugin-scad
   - This was added to disable trying to verify if the passed `launchPath` exists and/or is callable.
   - Whatever is set to `launchPath` will be passed to `spawn(launchPath, ["--o", STL_OUT_FILE, SCAD_INPUT]);`
   - Can also be set with the environment variable `ELEVENTY_SCAD_RESOLVE_LAUNCH_PATH`
-- **thumbnailColorScheme** _(default: Cornfield)_: Set to change the colors of the models on the collection page.
+- **thumbnailColorScheme** _(default: Cornfield)_: Set to change the model thumbnail colors on the collection page.
   - Options: Cornfield, Metallic, Sunset, Starnight, BeforeDawn, Nature, Daylight Gem, Nocturnal Gem, DeepOcean, Solarized, Tomorrow, Tomorrow Night, ClearSky, Monotone
   - Can also be set with the environment variable `ELEVENTY_SCAD_THUMBNAIL_COLOR_SCHEME`
 
@@ -128,6 +128,44 @@ export default (eleventyConfig) => {
   });
 };
 ```
+
+## Color Schemes
+
+OpenSCAD has built-in color schemes which can be toggled during export.
+
+```js
+import { addOpenSCADPlugin } from "eleventy-plugin-scad";
+
+/** @param {import("@11ty/eleventy/UserConfig").default} eleventyConfig */
+export default (eleventyConfig) => {
+  addOpenSCADPlugin(eleventyConfig, {
+    thumbnailColorScheme: "Cornfield",
+    // or try...
+    // Metallic, Sunset, Starnight, BeforeDawn
+    // Nature, Daylight Gem, Nocturnal Gem, DeepOcean
+    // Solarized, Tomorrow, Tomorrow Night, ClearSky, Monotone
+  });
+};
+```
+
+| ColorScheme    | Thumbnail                                                  |
+| -------------- | ---------------------------------------------------------- |
+| Cornfield      | ![Cornfield](./images/turnercube_Cornfield.png)            |
+| Metallic       | ![Metallic](./images/turnercube_Metallic.png)              |
+| Sunset         | ![Sunset](./images/turnercube_Sunset.png)                  |
+| Starnight      | ![Starnight](./images/turnercube_Starnight.png)            |
+| BeforeDawn     | ![BeforeDawn](./images/turnercube_BeforeDawn.png)          |
+| Nature         | ![Nature](./images/turnercube_Nature.png)                  |
+| Daylight Gem   | ![DaylightGem](./images/turnercube_Daylight%20Gem.png)     |
+| Nocturnal Gem  | ![NocturnalGem]("./images/turnercube_Nocturnal%20Gem.png)  |
+| DeepOcean      | ![DeepOcean](./images/turnercube_DeepOcean.png)            |
+| Solarized      | ![Solarized](./images/turnercube_Solarized.png)            |
+| Tomorrow       | ![Tomorrow](./images/turnercube_Tomorrow.png)              |
+| Tomorrow Night | ![TomorrowNight](./images/turnercube_Tomorrow%20Night.png) |
+| ClearSky       | ![ClearSky](./images/turnercube_ClearSky.png)              |
+| Monotone       | ![Monotone](./images/turnercube_Monotone.png)              |
+
+<!-- LINKS -->
 
 [npm]: https://www.npmjs.com/package/eleventy-plugin-scad "npm page"
 [docker]: https://hub.docker.com/r/openscad/openscad "docker hub"
